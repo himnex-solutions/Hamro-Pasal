@@ -2,12 +2,8 @@ class AppConstants {
   AppConstants._();
 
   // ── Supabase ──────────────────────────────────────────────────
-  static const String supabaseUrl =
-      String.fromEnvironment('SUPABASE_URL',
-          defaultValue: 'https://dgevkedwjmyggclnjbal.supabase.co');
-  static const String supabaseAnonKey = String.fromEnvironment(
-      'SUPABASE_ANON_KEY',
-      defaultValue: 'sb_publishable_lL4kMneQ3Arv81QmJ2z5EA_aTYsYqzZ');
+  static const String supabaseUrl = String.fromEnvironment('SUPABASE_URL');
+  static const String supabaseAnonKey = String.fromEnvironment('SUPABASE_ANON_KEY');
 
   // ── App Info ──────────────────────────────────────────────────
   static const String appName = 'Hamro Pasal';
