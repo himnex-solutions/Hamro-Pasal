@@ -47,10 +47,10 @@ class ProfileNotifier extends StateNotifier<AsyncValue<UserProfile?>> {
   }
 
   Future<void> saveProfile(UserProfile profile) async {
-    state = const AsyncValue.loading();
     try {
       await SupabaseService.instance.upsertProfile(profile.toJson());
-      state = AsyncValue.data(profile);
+      // Reload from DB to get the server-assigned id/timestamps
+      await loadProfile();
     } catch (e, st) {
       state = AsyncValue.error(e, st);
     }
