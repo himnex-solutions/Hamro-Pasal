@@ -34,11 +34,21 @@ class AppConstants {
 
   // ── Route Names ───────────────────────────────────────────────
   static const String routeSplash = '/';
+  static const String routeSelectProfile = '/select-profile';
   static const String routeLogin = '/login';
   static const String routeSignup = '/signup';
+  static const String routeBusinessSignup = '/business-signup';
+  static const String routePersonalSignup = '/personal-signup';
+  static const String routeEmailOtp = '/email-otp';
+  static const String routeEmailVerification = '/email-verification';
+  static const String routeForgotPassword = '/forgot-password';
+  static const String routeResetPassword = '/reset-password';
   static const String routeProfileSetup = '/profile-setup';
   static const String routeSubscription = '/subscription';
   static const String routeDashboard = '/dashboard';
+  static const String routePersonalDashboard = '/personal-dashboard';
+  static const String routeProfileSwitcher = '/profile-switcher';
+  static const String routeUpdatePersonalProfile = '/update-personal-profile';
   static const String routePOS = '/pos';
   static const String routeInventory = '/inventory';
   static const String routeAddProduct = '/inventory/add';

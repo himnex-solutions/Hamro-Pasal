@@ -6,7 +6,7 @@ import 'package:intl/intl.dart';
 import '../../../core/constants/app_constants.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../core/services/supabase_service.dart';
-import '../../../features/auth/providers/auth_provider.dart';
+import '../../../features/auth/providers/profile_provider.dart';
 
 final _fmt = NumberFormat('#,##0.00', 'en_US');
 
@@ -14,7 +14,9 @@ final _fmt = NumberFormat('#,##0.00', 'en_US');
 
 final dashboardStatsProvider = FutureProvider<_DashboardStats>((ref) async {
   final userId = SupabaseService.instance.currentUserId;
-  if (userId == null) return _DashboardStats.empty();
+  if (userId == null) {
+    return _DashboardStats.empty();
+  }
   final svc = SupabaseService.instance;
 
   // Parallel fetch for speed
@@ -26,10 +28,10 @@ final dashboardStatsProvider = FutureProvider<_DashboardStats>((ref) async {
     svc.getCustomers(userId),
   ]);
 
-  final todaySales = results[0] as List<Map<String, dynamic>>;
-  final monthSales = results[1] as List<Map<String, dynamic>>;
-  final products = results[2] as List<Map<String, dynamic>>;
-  final customers = results[3] as List<Map<String, dynamic>>;
+  final todaySales = results[0];
+  final monthSales = results[1];
+  final products = results[2];
+  final customers = results[3];
 
   final todayRevenue = todaySales.fold<double>(
       0, (sum, s) => sum + (s['total'] as num? ?? 0).toDouble());
@@ -88,7 +90,7 @@ class DashboardScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final profile = ref.watch(profileProvider).valueOrNull;
+    final profile = ref.watch(businessProfileProvider).valueOrNull;
     final stats = ref.watch(dashboardStatsProvider);
 
     return Scaffold(
@@ -96,7 +98,7 @@ class DashboardScreen extends ConsumerWidget {
         title: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(profile?.pasalName ?? 'Hamro Pasal'),
+            Text(profile?.businessName ?? 'Hamro Pasal'),
             Text(DateFormat('EEEE, d MMM yyyy').format(DateTime.now()),
                 style: Theme.of(context)
                     .textTheme
@@ -105,6 +107,11 @@ class DashboardScreen extends ConsumerWidget {
           ],
         ),
         actions: [
+          IconButton(
+            icon: const Icon(Icons.manage_accounts_rounded),
+            onPressed: () => context.go(AppConstants.routeProfileSwitcher),
+            tooltip: 'Switch Profile',
+          ),
           IconButton(
             icon: const Icon(Icons.notifications_outlined),
             onPressed: () {},
@@ -115,8 +122,8 @@ class DashboardScreen extends ConsumerWidget {
             child: CircleAvatar(
               backgroundColor: AppColors.primaryLight,
               child: Text(
-                (profile?.pasalName.isNotEmpty == true
-                        ? profile!.pasalName[0].toUpperCase()
+                (profile?.businessName.isNotEmpty == true
+                        ? profile!.businessName[0].toUpperCase()
                         : 'H'),
                 style: const TextStyle(
                     color: AppColors.primary, fontWeight: FontWeight.w700),
@@ -251,9 +258,9 @@ class _QuickBtn extends StatelessWidget {
               width: 52,
               height: 52,
               decoration: BoxDecoration(
-                color: Colors.white.withOpacity(0.15),
+                color: Colors.white.withValues(alpha: 0.15),
                 borderRadius: BorderRadius.circular(14),
-                border: Border.all(color: Colors.white.withOpacity(0.2)),
+                border: Border.all(color: Colors.white.withValues(alpha: 0.2)),
               ),
               child: Icon(icon, color: color, size: 26),
             ),
@@ -351,7 +358,7 @@ class _StatCard extends StatelessWidget {
               Container(
                 padding: const EdgeInsets.all(6),
                 decoration: BoxDecoration(
-                  color: color.withOpacity(0.1),
+                  color: color.withValues(alpha: 0.1),
                   borderRadius: BorderRadius.circular(8),
                 ),
                 child: Icon(icon, color: color, size: 18),
@@ -391,32 +398,32 @@ class _MenuGrid extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final items = [
-      _MenuItem(
+      const _MenuItem(
           icon: Icons.point_of_sale_rounded,
           label: 'POS Billing',
           color: AppColors.posColor,
           route: AppConstants.routePOS),
-      _MenuItem(
+      const _MenuItem(
           icon: Icons.inventory_2_rounded,
           label: 'Inventory',
           color: AppColors.inventoryColor,
           route: AppConstants.routeInventory),
-      _MenuItem(
+      const _MenuItem(
           icon: Icons.people_rounded,
           label: 'Customers',
           color: AppColors.customersColor,
           route: AppConstants.routeCustomers),
-      _MenuItem(
+      const _MenuItem(
           icon: Icons.bar_chart_rounded,
           label: 'Reports',
           color: AppColors.reportsColor,
           route: AppConstants.routeReports),
-      _MenuItem(
+      const _MenuItem(
           icon: Icons.receipt_rounded,
           label: 'Expenses',
           color: AppColors.expensesColor,
           route: AppConstants.routeExpenses),
-      _MenuItem(
+      const _MenuItem(
           icon: Icons.local_shipping_rounded,
           label: 'Suppliers',
           color: AppColors.suppliersColor,
@@ -473,7 +480,7 @@ class _MenuTile extends StatelessWidget {
               width: 52,
               height: 52,
               decoration: BoxDecoration(
-                color: item.color.withOpacity(0.12),
+                color: item.color.withValues(alpha: 0.12),
                 borderRadius: BorderRadius.circular(14),
               ),
               child: Icon(item.icon, color: item.color, size: 28),
@@ -503,9 +510,9 @@ class _ErrorWidget extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(24),
       decoration: BoxDecoration(
-        color: AppColors.error.withOpacity(0.05),
+        color: AppColors.error.withValues(alpha: 0.05),
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: AppColors.error.withOpacity(0.2)),
+        border: Border.all(color: AppColors.error.withValues(alpha: 0.2)),
       ),
       child: Column(
         children: [

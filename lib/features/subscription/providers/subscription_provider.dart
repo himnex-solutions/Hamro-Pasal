@@ -66,8 +66,12 @@ class SubscriptionNotifier extends StateNotifier<AsyncValue<Subscription?>> {
 
   bool hasFeature(String feature) {
     final sub = state.valueOrNull;
-    if (sub == null) return false;
-    if (!sub.isActive && !sub.isTrial) return false;
+    if (sub == null) {
+      return false;
+    }
+    if (!sub.isActive && !sub.isTrial) {
+      return false;
+    }
 
     const freeFeatures = ['basic_billing', 'basic_reports'];
     if (sub.isTrial || sub.planType == SubscriptionPlan.free) {

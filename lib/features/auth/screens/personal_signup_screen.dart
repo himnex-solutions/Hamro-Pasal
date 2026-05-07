@@ -1,24 +1,29 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../../../core/constants/app_constants.dart';
+import '../../../core/services/supabase_service.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../shared/widgets/app_text_field.dart';
 import '../../../shared/widgets/app_button.dart';
 import '../../../shared/widgets/loading_overlay.dart';
-import '../providers/auth_provider.dart';
+import '../models/personal_profile.dart';
+import '../models/user_profile.dart';
 
-class SignupScreen extends ConsumerStatefulWidget {
-  const SignupScreen({super.key});
+class PersonalSignupScreen extends ConsumerStatefulWidget {
+  const PersonalSignupScreen({super.key});
 
   @override
-  ConsumerState<SignupScreen> createState() => _SignupScreenState();
+  ConsumerState<PersonalSignupScreen> createState() => _PersonalSignupScreenState();
 }
 
-class _SignupScreenState extends ConsumerState<SignupScreen> {
+class _PersonalSignupScreenState extends ConsumerState<PersonalSignupScreen> {
   final _formKey = GlobalKey<FormState>();
+  final _fullNameCtrl = TextEditingController();
   final _emailCtrl = TextEditingController();
+  final _phoneCtrl = TextEditingController();
   final _passCtrl = TextEditingController();
   final _confirmCtrl = TextEditingController();
   bool _obscure = true;
@@ -26,7 +31,9 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
 
   @override
   void dispose() {
+    _fullNameCtrl.dispose();
     _emailCtrl.dispose();
+    _phoneCtrl.dispose();
     _passCtrl.dispose();
     _confirmCtrl.dispose();
     super.dispose();
@@ -37,30 +44,104 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
       return;
     }
     setState(() => _loading = true);
-    await ref.read(authNotifierProvider.notifier).signUp(
-          email: _emailCtrl.text.trim(),
-          password: _passCtrl.text,
-        );
-    if (!mounted) {
-      return;
-    }
-    setState(() => _loading = false);
-    final err = ref.read(authNotifierProvider).error;
-    if (err != null) {
+
+    try {
+      // 1. Create Auth User (no verification email sent)
+      final signUpRes = await SupabaseService.instance.signUp(
+        email: _emailCtrl.text.trim(),
+        password: _passCtrl.text,
+      );
+
+      if (signUpRes.user == null) {
+        throw Exception('Failed to create account. Please try again.');
+      }
+
+      // 2. Sign in temporarily to save profile data (RLS requires auth)
+      await SupabaseService.instance.signInWithPassword(
+        email: _emailCtrl.text.trim(),
+        password: _passCtrl.text,
+      );
+
+      final userId = Supabase.instance.client.auth.currentUser!.id;
+
+      // 3. Save User Profile (email_verified = false for OTP verification on first login)
+      final userProfile = UserProfile(
+        id: '',
+        userId: userId,
+        profileType: 'personal',
+        fullName: _fullNameCtrl.text.trim(),
+        email: _emailCtrl.text.trim(),
+        phone: _phoneCtrl.text.trim(),
+        isFirstLogin: true,
+        emailVerified: false,
+        createdAt: DateTime.now(),
+        updatedAt: DateTime.now(),
+      );
+      await SupabaseService.instance.upsertUserProfile(userProfile.toJson());
+
+      // 4. Save Personal Profile
+      final personalProfile = PersonalProfile(
+        id: '',
+        userId: userId,
+        fullName: _fullNameCtrl.text.trim(),
+        phone: _phoneCtrl.text.trim(),
+        email: _emailCtrl.text.trim(),
+        createdAt: DateTime.now(),
+        updatedAt: DateTime.now(),
+      );
+      await SupabaseService.instance.upsertPersonalProfile(personalProfile.toJson());
+
+      // 5. Sign out — user must login manually
+      await SupabaseService.instance.signOut();
+
+      if (!mounted) {
+        return;
+      }
+      setState(() => _loading = false);
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Account created successfully! Please sign in.'),
+          backgroundColor: AppColors.success,
+        ),
+      );
+
+      // 6. Redirect to login page
+      context.go(AppConstants.routeLogin);
+    } catch (e) {
+      if (!mounted) {
+        return;
+      }
+      setState(() => _loading = false);
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-            content: Text(err.toString().replaceAll('Exception: ', '')),
+            content: Text(e.toString().replaceAll('Exception: ', '')),
             backgroundColor: AppColors.error),
       );
-      return;
     }
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text('Account created! Please sign in to continue.'),
-        backgroundColor: AppColors.success,
-      ),
-    );
-    context.go(AppConstants.routeLogin);
+  }
+
+  // Password Validation
+  String? _validatePassword(String? value) {
+    if (value == null || value.isEmpty) {
+      return 'Password is required';
+    }
+    if (value.length < 8) {
+      return 'Minimum 8 characters required';
+    }
+    if (!RegExp(r'(?=.*[A-Z])').hasMatch(value)) {
+      return 'Must contain uppercase letter';
+    }
+    if (!RegExp(r'(?=.*[a-z])').hasMatch(value)) {
+      return 'Must contain lowercase letter';
+    }
+    if (!RegExp(r'(?=.*[0-9])').hasMatch(value)) {
+      return 'Must contain a number';
+    }
+    if (!RegExp(r'(?=.*[!@#\$&*~])').hasMatch(value)) {
+      return 'Must contain a special character';
+    }
+    return null;
   }
 
   @override
@@ -69,9 +150,10 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
       isLoading: _loading,
       child: Scaffold(
         appBar: AppBar(
+          title: const Text('Personal Finance'),
           leading: IconButton(
             icon: const Icon(Icons.arrow_back_rounded),
-            onPressed: () => context.go(AppConstants.routeLogin),
+            onPressed: () => context.go(AppConstants.routeSelectProfile),
           ),
         ),
         body: SafeArea(
@@ -85,44 +167,27 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text('Create Account 🏪',
+                      Text('Create Personal Account 👤',
                           style: Theme.of(context).textTheme.headlineMedium),
                       const SizedBox(height: 8),
-                      Text('Start your 14-day free trial today',
+                      Text('Track your expenses and credits',
                           style: Theme.of(context)
                               .textTheme
                               .bodyMedium
                               ?.copyWith(color: AppColors.textSecondary)),
-                      const SizedBox(height: 8),
-
-                      // Free trial badge
-                      Container(
-                        padding: const EdgeInsets.symmetric(
-                            horizontal: 12, vertical: 6),
-                        decoration: BoxDecoration(
-                          color: AppColors.successLight,
-                          borderRadius: BorderRadius.circular(20),
-                        ),
-                        child: Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            const Icon(Icons.verified_rounded,
-                                size: 16, color: AppColors.success),
-                            const SizedBox(width: 6),
-                            Text('14 days FREE – No credit card needed',
-                                style: Theme.of(context)
-                                    .textTheme
-                                    .labelSmall
-                                    ?.copyWith(color: AppColors.success)),
-                          ],
-                        ),
-                      ),
                       const SizedBox(height: 32),
+
+                      AppTextField(
+                        controller: _fullNameCtrl,
+                        label: 'Full Name',
+                        prefixIcon: Icons.person_rounded,
+                        validator: (v) => v!.isEmpty ? 'Full Name is required' : null,
+                      ),
+                      const SizedBox(height: 16),
 
                       AppTextField(
                         controller: _emailCtrl,
                         label: 'Email',
-                        hint: 'your@email.com',
                         prefixIcon: Icons.email_outlined,
                         keyboardType: TextInputType.emailAddress,
                         validator: (v) => v!.isEmpty || !v.contains('@')
@@ -132,9 +197,17 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
                       const SizedBox(height: 16),
 
                       AppTextField(
+                        controller: _phoneCtrl,
+                        label: 'Phone Number',
+                        prefixIcon: Icons.phone_rounded,
+                        keyboardType: TextInputType.phone,
+                        validator: (v) => v!.isEmpty ? 'Phone number is required' : null,
+                      ),
+                      const SizedBox(height: 16),
+
+                      AppTextField(
                         controller: _passCtrl,
                         label: 'Password',
-                        hint: '••••••••',
                         prefixIcon: Icons.lock_outline_rounded,
                         obscureText: _obscure,
                         suffixIcon: IconButton(
@@ -144,15 +217,13 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
                           onPressed: () =>
                               setState(() => _obscure = !_obscure),
                         ),
-                        validator: (v) =>
-                            v!.length < 6 ? 'Min 6 characters' : null,
+                        validator: _validatePassword,
                       ),
                       const SizedBox(height: 16),
 
                       AppTextField(
                         controller: _confirmCtrl,
                         label: 'Confirm Password',
-                        hint: '••••••••',
                         prefixIcon: Icons.lock_outline_rounded,
                         obscureText: _obscure,
                         validator: (v) => v != _passCtrl.text
@@ -162,7 +233,7 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
                       const SizedBox(height: 28),
 
                       AppButton(
-                        label: 'Create Account',
+                        label: 'Sign Up',
                         onPressed: _signUp,
                         icon: Icons.person_add_rounded,
                       ),

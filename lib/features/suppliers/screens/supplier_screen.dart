@@ -85,7 +85,7 @@ class SupplierScreen extends ConsumerWidget {
                     side: const BorderSide(color: AppColors.border)),
                 tileColor: Theme.of(context).cardColor,
                 leading: CircleAvatar(
-                  backgroundColor: AppColors.suppliersColor.withOpacity(0.12),
+                  backgroundColor: AppColors.suppliersColor.withValues(alpha: 0.12),
                   child: Text(s.name[0].toUpperCase(),
                       style: const TextStyle(
                           color: AppColors.suppliersColor,
@@ -173,7 +173,9 @@ class SupplierScreen extends ConsumerWidget {
               const SizedBox(height: 20),
               ElevatedButton(
                 onPressed: () async {
-                  if (nameCtrl.text.trim().isEmpty) return;
+                  if (nameCtrl.text.trim().isEmpty) {
+                    return;
+                  }
                   await SupabaseService.instance.insertSupplier({
                     'user_id': SupabaseService.instance.currentUserId!,
                     'name': nameCtrl.text.trim(),
@@ -182,7 +184,9 @@ class SupplierScreen extends ConsumerWidget {
                     'total_due': 0.0,
                   });
                   await ref.read(suppliersProvider.notifier).load();
-                  if (context.mounted) Navigator.pop(context);
+                  if (context.mounted) {
+                    Navigator.pop(context);
+                  }
                 },
                 style: ElevatedButton.styleFrom(
                     minimumSize: const Size(double.infinity, 48)),

@@ -91,7 +91,9 @@ class POSNotifier extends StateNotifier<POSState> {
   void clearCart() => state = const POSState();
 
   Future<Map<String, dynamic>?> checkout() async {
-    if (state.items.isEmpty) return null;
+    if (state.items.isEmpty) {
+      return null;
+    }
     state = state.copyWith(isLoading: true);
     try {
       final userId = SupabaseService.instance.currentUserId!;
@@ -480,7 +482,9 @@ class _CheckoutButton extends ConsumerWidget {
           ? null
           : () async {
               final sale = await ref.read(posProvider.notifier).checkout();
-              if (!context.mounted || sale == null) return;
+              if (!context.mounted || sale == null) {
+                return;
+              }
               context.push(AppConstants.routeReceipt, extra: sale);
             },
       icon: posState.isLoading
@@ -505,7 +509,9 @@ class _CartSummaryBar extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final posState = ref.watch(posProvider);
-    if (posState.items.isEmpty) return const SizedBox.shrink();
+    if (posState.items.isEmpty) {
+      return const SizedBox.shrink();
+    }
     return Container(
       padding: const EdgeInsets.fromLTRB(16, 12, 16, 20),
       decoration: const BoxDecoration(
@@ -523,7 +529,9 @@ class _CartSummaryBar extends ConsumerWidget {
         ElevatedButton.icon(
           onPressed: () async {
             final sale = await ref.read(posProvider.notifier).checkout();
-            if (!context.mounted || sale == null) return;
+            if (!context.mounted || sale == null) {
+              return;
+            }
             context.push(AppConstants.routeReceipt, extra: sale);
           },
           icon: const Icon(Icons.check_circle_rounded),

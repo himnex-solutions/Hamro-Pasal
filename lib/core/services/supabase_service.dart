@@ -17,11 +17,13 @@ class SupabaseService {
     required String email,
     required String password,
   }) async {
-    final res = await client.auth.signUp(email: email, password: password);
-    if (res.session != null) {
-      // Force sign out immediately so they have to manually login
-      await client.auth.signOut();
-    }
+    // Sign up without sending verification email
+    // Email verification is handled separately via OTP on first login
+    final res = await client.auth.signUp(
+      email: email,
+      password: password,
+      data: {'email_verified_custom': false},
+    );
     return res;
   }
 
@@ -30,6 +32,30 @@ class SupabaseService {
     required String password,
   }) =>
       client.auth.signInWithPassword(email: email, password: password);
+
+  Future<void> signInWithOtp({
+    required String email,
+  }) =>
+      client.auth.signInWithOtp(email: email);
+
+  Future<AuthResponse> verifyOtp({
+    required String email,
+    required String token,
+  }) =>
+      client.auth.verifyOTP(email: email, token: token, type: OtpType.magiclink);
+
+  /// Send OTP for email verification (not login)
+  Future<void> sendVerificationOtp({
+    required String email,
+  }) =>
+      client.auth.signInWithOtp(email: email, shouldCreateUser: false);
+
+  /// Verify the email OTP code
+  Future<AuthResponse> verifyEmailOtp({
+    required String email,
+    required String token,
+  }) =>
+      client.auth.verifyOTP(email: email, token: token, type: OtpType.email);
 
   Future<bool> signInWithGoogle() =>
       client.auth.signInWithOAuth(OAuthProvider.google,
@@ -42,18 +68,60 @@ class SupabaseService {
 
   // ─── Profile ─────────────────────────────────────────────────────────────────
 
-  Future<Map<String, dynamic>?> getProfile(String userId) async {
+  // User Profile
+  Future<Map<String, dynamic>?> getUserProfile(String userId) async {
     final res = await client
-        .from('profiles')
+        .from('user_profiles')
         .select()
         .eq('user_id', userId)
         .maybeSingle();
     return res;
   }
 
-  Future<void> upsertProfile(Map<String, dynamic> data) async {
-    // Specify onConflict to update if the user_id already exists
-    await client.from('profiles').upsert(data, onConflict: 'user_id');
+  Future<void> upsertUserProfile(Map<String, dynamic> data) async {
+    await client.from('user_profiles').upsert(data, onConflict: 'user_id');
+  }
+
+  // Business Profile
+  Future<Map<String, dynamic>?> getBusinessProfile(String userId) async {
+    final res = await client
+        .from('business_profiles')
+        .select()
+        .eq('user_id', userId)
+        .maybeSingle();
+    return res;
+  }
+
+  Future<void> upsertBusinessProfile(Map<String, dynamic> data) async {
+    await client.from('business_profiles').upsert(data, onConflict: 'user_id');
+  }
+
+  // Personal Profile
+  Future<Map<String, dynamic>?> getPersonalProfile(String userId) async {
+    final res = await client
+        .from('personal_profiles')
+        .select()
+        .eq('user_id', userId)
+        .maybeSingle();
+    return res;
+  }
+
+  Future<void> upsertPersonalProfile(Map<String, dynamic> data) async {
+    await client.from('personal_profiles').upsert(data, onConflict: 'user_id');
+  }
+
+  // Active Profile
+  Future<Map<String, dynamic>?> getActiveProfile(String userId) async {
+    final res = await client
+        .from('active_profiles')
+        .select()
+        .eq('user_id', userId)
+        .maybeSingle();
+    return res;
+  }
+
+  Future<void> upsertActiveProfile(Map<String, dynamic> data) async {
+    await client.from('active_profiles').upsert(data, onConflict: 'user_id');
   }
 
   // ─── Subscription ────────────────────────────────────────────────────────────

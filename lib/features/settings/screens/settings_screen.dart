@@ -7,6 +7,7 @@ import '../../../core/constants/app_constants.dart';
 import '../../../core/providers/theme_provider.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../features/auth/providers/auth_provider.dart';
+import '../../../features/auth/providers/profile_provider.dart';
 import '../../../features/subscription/providers/subscription_provider.dart';
 import '../../../features/subscription/models/subscription.dart';
 
@@ -15,20 +16,65 @@ class SettingsScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final profile = ref.watch(profileProvider).valueOrNull;
+    final activeProfile = ref.watch(activeProfileProvider).valueOrNull;
+    final isBusiness = activeProfile?.activeProfileType != 'personal';
+
+    final businessProfile = ref.watch(businessProfileProvider).valueOrNull;
+    final personalProfile = ref.watch(personalProfileProvider).valueOrNull;
     final sub = ref.watch(subscriptionProvider).valueOrNull;
     final themeMode = ref.watch(themeModeProvider);
+
+    final currentProfileName = isBusiness
+        ? (businessProfile?.businessName ?? 'Hamro Pasal')
+        : (personalProfile?.fullName ?? 'Personal Profile');
+
+    final currentProfilePhone = isBusiness
+        ? (businessProfile?.phone ?? '')
+        : (personalProfile?.phone ?? '');
 
     return Scaffold(
       appBar: AppBar(title: const Text('Settings')),
       body: ListView(
         children: [
           // Profile card
-          _ProfileCard(profile: profile, sub: sub),
+          _ProfileCard(
+            name: currentProfileName,
+            phone: currentProfilePhone,
+            sub: sub,
+            isBusiness: isBusiness,
+          ),
           const SizedBox(height: 8),
 
+          // Profile Management
+          const _SectionHeader('Profile Management'),
+          _SettingsTile(
+            icon: Icons.manage_accounts_rounded,
+            iconColor: AppColors.primary,
+            title: 'Switch Profile',
+            subtitle: 'Change between Business and Personal',
+            onTap: () => context.push(AppConstants.routeProfileSwitcher),
+            showArrow: true,
+          ),
+          if (isBusiness)
+            _SettingsTile(
+              icon: Icons.storefront_rounded,
+              iconColor: AppColors.primary,
+              title: 'Edit Business Details',
+              onTap: () => context.push(AppConstants.routeProfileSetup),
+              showArrow: true,
+            )
+          else
+            _SettingsTile(
+              icon: Icons.person_outline_rounded,
+              iconColor: AppColors.primary,
+              title: 'Edit Personal Profile',
+              onTap: () =>
+                  context.push(AppConstants.routeUpdatePersonalProfile),
+              showArrow: true,
+            ),
+
           // Appearance
-          _SectionHeader('Appearance'),
+          const _SectionHeader('Appearance'),
           _SettingsTile(
             icon: Icons.dark_mode_rounded,
             iconColor: AppColors.posColor,
@@ -37,12 +83,12 @@ class SettingsScreen extends ConsumerWidget {
               value: themeMode == ThemeMode.dark,
               onChanged: (_) =>
                   ref.read(themeModeProvider.notifier).toggleTheme(),
-              activeColor: AppColors.primary,
+              activeThumbColor: AppColors.primary,
             ),
           ),
 
           // Subscription
-          _SectionHeader('Subscription'),
+          const _SectionHeader('Subscription'),
           _SettingsTile(
             icon: Icons.workspace_premium_rounded,
             iconColor: AppColors.accent,
@@ -56,29 +102,25 @@ class SettingsScreen extends ConsumerWidget {
               icon: Icons.calendar_today_rounded,
               iconColor: AppColors.success,
               title: 'Valid Until',
-              subtitle: '${sub.endDate.day}/${sub.endDate.month}/${sub.endDate.year} (${sub.daysRemaining} days left)',
+              subtitle:
+                  '${sub.endDate.day}/${sub.endDate.month}/${sub.endDate.year} (${sub.daysRemaining} days left)',
             ),
 
-          // Shop
-          _SectionHeader('Shop'),
-          _SettingsTile(
-            icon: Icons.storefront_rounded,
-            iconColor: AppColors.primary,
-            title: 'Edit Shop Profile',
-            onTap: () => context.push(AppConstants.routeProfileSetup),
-            showArrow: true,
-          ),
-          _SettingsTile(
-            icon: Icons.print_rounded,
-            iconColor: AppColors.inventoryColor,
-            title: 'Receipt Settings',
-            subtitle: 'Configure receipt format',
-            onTap: () {},
-            showArrow: true,
-          ),
+          // Shop Settings (Only for Business)
+          if (isBusiness) ...[
+            const _SectionHeader('Shop Settings'),
+            _SettingsTile(
+              icon: Icons.print_rounded,
+              iconColor: AppColors.inventoryColor,
+              title: 'Receipt Settings',
+              subtitle: 'Configure receipt format',
+              onTap: () {},
+              showArrow: true,
+            ),
+          ],
 
           // Data
-          _SectionHeader('Data & Backup'),
+          const _SectionHeader('Data & Backup'),
           _SettingsTile(
             icon: Icons.backup_rounded,
             iconColor: AppColors.suppliersColor,
@@ -96,7 +138,7 @@ class SettingsScreen extends ConsumerWidget {
           ),
 
           // Support
-          _SectionHeader('Support'),
+          const _SectionHeader('Support'),
           _SettingsTile(
             icon: Icons.help_outline_rounded,
             iconColor: AppColors.info,
@@ -135,7 +177,9 @@ class SettingsScreen extends ConsumerWidget {
   }
 
   String _planLabel(Subscription? sub) {
-    if (sub == null) return 'No active plan';
+    if (sub == null) {
+      return 'No active plan';
+    }
     switch (sub.planType) {
       case SubscriptionPlan.free:
         return 'Free Trial (${sub.daysRemaining} days left)';
@@ -177,9 +221,16 @@ class SettingsScreen extends ConsumerWidget {
 }
 
 class _ProfileCard extends StatelessWidget {
-  final dynamic profile;
+  final String name;
+  final String phone;
   final dynamic sub;
-  const _ProfileCard({required this.profile, required this.sub});
+  final bool isBusiness;
+  const _ProfileCard({
+    required this.name,
+    required this.phone,
+    required this.sub,
+    required this.isBusiness,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -187,8 +238,10 @@ class _ProfileCard extends StatelessWidget {
       margin: const EdgeInsets.all(16),
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        gradient: const LinearGradient(
-          colors: [AppColors.primary, Color(0xFF1338B0)],
+        gradient: LinearGradient(
+          colors: isBusiness
+              ? [AppColors.primary, const Color(0xFF1338B0)]
+              : [const Color(0xFF0D47A1), const Color(0xFF1976D2)],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
         ),
@@ -198,11 +251,9 @@ class _ProfileCard extends StatelessWidget {
         children: [
           CircleAvatar(
             radius: 32,
-            backgroundColor: Colors.white.withOpacity(0.2),
+            backgroundColor: Colors.white.withValues(alpha: 0.2),
             child: Text(
-              profile?.pasalName.isNotEmpty == true
-                  ? profile!.pasalName[0].toUpperCase()
-                  : 'H',
+              name.isNotEmpty ? name[0].toUpperCase() : 'H',
               style: const TextStyle(
                   color: Colors.white,
                   fontSize: 28,
@@ -214,21 +265,23 @@ class _ProfileCard extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(profile?.pasalName ?? 'Hamro Pasal',
+                Text(name,
                     style: const TextStyle(
                         color: Colors.white,
                         fontSize: 18,
                         fontWeight: FontWeight.w700)),
                 const SizedBox(height: 4),
-                Text(profile?.phone ?? '',
-                    style: const TextStyle(
-                        color: Colors.white70, fontSize: 13)),
+                if (phone.isNotEmpty)
+                  Text(phone,
+                      style:
+                          const TextStyle(color: Colors.white70, fontSize: 13)),
                 const SizedBox(height: 4),
-                if (sub != null)
+                if (isBusiness && sub != null)
                   Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
                     decoration: BoxDecoration(
-                      color: Colors.white.withOpacity(0.2),
+                      color: Colors.white.withValues(alpha: 0.2),
                       borderRadius: BorderRadius.circular(10),
                     ),
                     child: Text(
@@ -289,7 +342,7 @@ class _SettingsTile extends StatelessWidget {
           width: 38,
           height: 38,
           decoration: BoxDecoration(
-            color: iconColor.withOpacity(0.12),
+            color: iconColor.withValues(alpha: 0.12),
             borderRadius: BorderRadius.circular(10),
           ),
           child: Icon(icon, color: iconColor, size: 20),
@@ -326,7 +379,8 @@ class _VersionTileState extends State<_VersionTile> {
   void initState() {
     super.initState();
     PackageInfo.fromPlatform().then((info) {
-      if (mounted) setState(() => _version = '${info.version}+${info.buildNumber}');
+      if (mounted)
+        setState(() => _version = '${info.version}+${info.buildNumber}');
     });
   }
 

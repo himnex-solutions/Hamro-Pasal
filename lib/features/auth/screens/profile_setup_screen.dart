@@ -7,8 +7,9 @@ import '../../../core/theme/app_theme.dart';
 import '../../../shared/widgets/app_text_field.dart';
 import '../../../shared/widgets/app_button.dart';
 import '../../../shared/widgets/loading_overlay.dart';
-import '../models/user_profile.dart';
+import '../models/business_profile.dart';
 import '../providers/auth_provider.dart';
+import '../providers/profile_provider.dart';
 
 class ProfileSetupScreen extends ConsumerStatefulWidget {
   const ProfileSetupScreen({super.key});
@@ -29,11 +30,11 @@ class _ProfileSetupScreenState extends ConsumerState<ProfileSetupScreen> {
   @override
   void initState() {
     super.initState();
-    final profile = ref.read(profileProvider).valueOrNull;
-    _nameCtrl = TextEditingController(text: profile?.pasalName ?? '');
-    _panCtrl = TextEditingController(text: profile?.panNumber ?? '');
+    final profile = ref.read(businessProfileProvider).valueOrNull;
+    _nameCtrl = TextEditingController(text: profile?.businessName ?? '');
+    _panCtrl = TextEditingController(text: profile?.panVatNumber ?? '');
     _phoneCtrl = TextEditingController(text: profile?.phone ?? '');
-    _addressCtrl = TextEditingController(text: profile?.address ?? '');
+    _addressCtrl = TextEditingController(text: profile?.businessAddress ?? '');
   }
 
   @override
@@ -46,25 +47,30 @@ class _ProfileSetupScreenState extends ConsumerState<ProfileSetupScreen> {
   }
 
   Future<void> _saveProfile() async {
-    if (!_formKey.currentState!.validate()) return;
+    if (!_formKey.currentState!.validate()) {
+      return;
+    }
     setState(() => _loading = true);
 
     final userId = ref.read(currentUserProvider)!.id;
-    final profile = UserProfile(
+    final profile = BusinessProfile(
       id: '',
       userId: userId,
-      pasalName: _nameCtrl.text.trim(),
-      panNumber: _panCtrl.text.trim().isEmpty ? null : _panCtrl.text.trim(),
+      businessName: _nameCtrl.text.trim(),
+      panVatNumber: _panCtrl.text.trim().isEmpty ? null : _panCtrl.text.trim(),
       phone: _phoneCtrl.text.trim(),
-      address: _addressCtrl.text.trim(),
+      businessAddress: _addressCtrl.text.trim(),
       createdAt: DateTime.now(),
+      updatedAt: DateTime.now(),
     );
 
-    await ref.read(profileProvider.notifier).saveProfile(profile);
-    if (!mounted) return;
+    await ref.read(businessProfileProvider.notifier).saveProfile(profile);
+    if (!mounted) {
+      return;
+    }
     setState(() => _loading = false);
 
-    final err = ref.read(profileProvider).error;
+    final err = ref.read(businessProfileProvider).error;
     if (err != null) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text(err.toString()), backgroundColor: AppColors.error),

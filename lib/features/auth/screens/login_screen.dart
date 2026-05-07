@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../core/constants/app_constants.dart';
+import '../../../core/services/supabase_service.dart';
 import '../../../core/theme/app_theme.dart';
 import '../../../shared/widgets/app_text_field.dart';
 import '../../../shared/widgets/app_button.dart';
@@ -31,13 +32,17 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
   }
 
   Future<void> _signIn() async {
-    if (!_formKey.currentState!.validate()) return;
+    if (!_formKey.currentState!.validate()) {
+      return;
+    }
     setState(() => _loading = true);
     await ref.read(authNotifierProvider.notifier).signIn(
           email: _emailCtrl.text.trim(),
           password: _passCtrl.text,
         );
-    if (!mounted) return;
+    if (!mounted) {
+      return;
+    }
     setState(() => _loading = false);
     final err = ref.read(authNotifierProvider).error;
     if (err != null) {
@@ -49,14 +54,36 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
       );
       return;
     }
+
+    // Check if email is verified
+    final userId = SupabaseService.instance.currentUserId;
+    if (userId != null) {
+      final profileJson = await SupabaseService.instance.getUserProfile(userId);
+      final emailVerified = profileJson?['email_verified'] as bool? ?? false;
+
+      if (!emailVerified) {
+        if (!mounted) {
+          return;
+        }
+        // Redirect to email verification screen
+        context.go(
+          AppConstants.routeEmailVerification,
+          extra: _emailCtrl.text.trim(),
+        );
+        return;
+      }
+    }
+
     // GoRouter's refreshListenable automatically redirects to dashboard
-    // after login succeeds. No manual context.go() needed here.
+    // after login succeeds if email is already verified.
   }
 
   Future<void> _googleSignIn() async {
     setState(() => _loading = true);
     await ref.read(authNotifierProvider.notifier).signInWithGoogle();
-    if (!mounted) return;
+    if (!mounted) {
+      return;
+    }
     setState(() => _loading = false);
   }
 
@@ -88,7 +115,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                         width: 100,
                         height: 100,
                         decoration: BoxDecoration(
-                          color: Colors.white.withOpacity(0.15),
+                          color: Colors.white.withValues(alpha: 0.15),
                           borderRadius: BorderRadius.circular(28),
                         ),
                         child: const Icon(Icons.storefront_rounded,
@@ -108,7 +135,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                               .textTheme
                               .bodyLarge
                               ?.copyWith(
-                                  color: Colors.white.withOpacity(0.7))),
+                                  color: Colors.white.withValues(alpha: 0.7))),
                     ],
                   ),
                 ),
@@ -176,7 +203,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                             Align(
                               alignment: Alignment.centerRight,
                               child: TextButton(
-                                onPressed: () {},
+                                onPressed: () => context.go(AppConstants.routeForgotPassword),
                                 child: const Text('Forgot Password?'),
                               ),
                             ),
@@ -186,6 +213,13 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                               label: 'Sign In',
                               onPressed: _signIn,
                               icon: Icons.login_rounded,
+                            ),
+                            const SizedBox(height: 16),
+
+                            AppButton(
+                              label: 'Login with Email OTP',
+                              onPressed: () => context.go(AppConstants.routeEmailOtp),
+                              icon: Icons.mark_email_read_rounded,
                             ),
                             const SizedBox(height: 16),
 
@@ -227,7 +261,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                                           .bodyMedium),
                                   TextButton(
                                     onPressed: () =>
-                                        context.go(AppConstants.routeSignup),
+                                        context.go(AppConstants.routeSelectProfile),
                                     child: const Text('Sign Up'),
                                   ),
                                 ],

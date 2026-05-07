@@ -89,16 +89,28 @@
   <script src="flutter.js" defer></script>
   <script>
     window.addEventListener('load', function(ev) {
-      _flutter.loader.load({
-        serviceWorkerSettings: {
-          serviceWorkerVersion: "{{flutter_service_worker_version}}",
-        },
+      // Only use service worker in production (when version token is substituted)
+      const swVersion = "{{flutter_service_worker_version}}";
+      const isProduction = swVersion !== "{{flutter_service_worker_version}}" && swVersion.length > 0;
+
+      const loaderConfig = {
         onEntrypointLoaded: async function(engineInitializer) {
-          const appRunner = await engineInitializer.initializeEngine();
-          document.getElementById('splash').style.display = 'none';
-          await appRunner.runApp();
+          try {
+            const appRunner = await engineInitializer.initializeEngine();
+            const splash = document.getElementById('splash');
+            if (splash) splash.style.display = 'none';
+            await appRunner.runApp();
+          } catch(e) {
+            console.error('Flutter engine init failed:', e);
+          }
         }
-      });
+      };
+
+      if (isProduction) {
+        loaderConfig.serviceWorkerSettings = { serviceWorkerVersion: swVersion };
+      }
+
+      _flutter.loader.load(loaderConfig);
     });
   </script>
 </body>

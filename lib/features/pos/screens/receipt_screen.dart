@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 import 'package:printing/printing.dart';
@@ -7,8 +6,7 @@ import 'package:pdf/pdf.dart';
 import 'package:pdf/widgets.dart' as pw;
 
 import '../../../core/theme/app_theme.dart';
-import '../../../features/auth/providers/auth_provider.dart';
-import '../models/sale.dart';
+import '../../../features/auth/providers/profile_provider.dart';
 
 final _fmt = NumberFormat('#,##0.00', 'en_US');
 
@@ -18,7 +16,7 @@ class ReceiptScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final profile = ref.watch(profileProvider).valueOrNull;
+    final profile = ref.watch(businessProfileProvider).valueOrNull;
     final items = (saleData['sale_items'] as List<dynamic>?) ?? [];
 
     return Scaffold(
@@ -56,21 +54,21 @@ class ReceiptScreen extends ConsumerWidget {
                         size: 40, color: AppColors.primary),
                     const SizedBox(height: 8),
                     Text(
-                      profile?.pasalName ?? 'Hamro Pasal',
+                      profile?.businessName ?? 'Hamro Pasal',
                       style: Theme.of(context).textTheme.headlineSmall?.copyWith(
                             fontWeight: FontWeight.w700,
                           ),
                       textAlign: TextAlign.center,
                     ),
-                    if (profile?.address != null)
-                      Text(profile!.address,
+                    if (profile?.businessAddress != null)
+                      Text(profile!.businessAddress!,
                           style: Theme.of(context)
                               .textTheme
                               .bodySmall
                               ?.copyWith(color: AppColors.textSecondary),
                           textAlign: TextAlign.center),
-                    if (profile?.panNumber != null)
-                      Text('PAN: ${profile!.panNumber}',
+                    if (profile?.panVatNumber != null)
+                      Text('PAN: ${profile!.panVatNumber}',
                           style: Theme.of(context)
                               .textTheme
                               .bodySmall
@@ -233,11 +231,11 @@ class ReceiptScreen extends ConsumerWidget {
       build: (_) => pw.Column(
         crossAxisAlignment: pw.CrossAxisAlignment.center,
         children: [
-          pw.Text(profile?.pasalName ?? 'Hamro Pasal',
+          pw.Text(profile?.businessName ?? 'Hamro Pasal',
               style: pw.TextStyle(
                   fontSize: 16, fontWeight: pw.FontWeight.bold)),
           pw.SizedBox(height: 4),
-          pw.Text(profile?.address ?? ''),
+          pw.Text(profile?.businessAddress ?? ''),
           pw.Divider(),
           pw.Row(
             mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,

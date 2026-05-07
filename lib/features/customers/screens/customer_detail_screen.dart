@@ -228,7 +228,9 @@ class CustomerDetailScreen extends ConsumerWidget {
                 ElevatedButton(
                   onPressed: isSaving ? null : () async {
                     final amount = double.tryParse(amountCtrl.text);
-                    if (amount == null || amount <= 0) return;
+                    if (amount == null || amount <= 0) {
+                      return;
+                    }
                     
                     setState(() => isSaving = true);
                     
@@ -247,7 +249,9 @@ class CustomerDetailScreen extends ConsumerWidget {
                     // Invalidate providers to force UI refresh
                     ref.invalidate(ledgerProvider(customerId));
                     
-                    if (ctx.mounted) Navigator.pop(ctx);
+                    if (ctx.mounted) {
+                      Navigator.pop(ctx);
+                    }
                   },
                   style: ElevatedButton.styleFrom(
                       minimumSize: const Size(double.infinity, 48),

@@ -22,7 +22,17 @@ import '../../features/reports/screens/reports_screen.dart';
 import '../../features/expenses/screens/expense_screen.dart';
 import '../../features/suppliers/screens/supplier_screen.dart';
 import '../../features/settings/screens/settings_screen.dart';
-import '../../features/auth/providers/auth_provider.dart';
+import '../../features/auth/screens/select_profile_screen.dart';
+import '../../features/auth/screens/business_signup_screen.dart';
+import '../../features/auth/screens/personal_signup_screen.dart';
+import '../../features/auth/screens/email_otp_screen.dart';
+import '../../features/auth/screens/email_verification_screen.dart';
+import '../../features/auth/screens/forgot_password_screen.dart';
+import '../../features/auth/screens/reset_password_screen.dart';
+import '../../features/auth/providers/profile_provider.dart';
+import '../../features/dashboard/screens/personal_dashboard_screen.dart';
+import '../../features/profile/screens/profile_switcher_screen.dart';
+import '../../features/profile/screens/update_personal_profile_screen.dart';
 import '../constants/app_constants.dart';
 
 final appRouterProvider = Provider<GoRouter>((ref) {
@@ -30,7 +40,7 @@ final appRouterProvider = Provider<GoRouter>((ref) {
   ref.keepAlive();
 
   return GoRouter(
-    initialLocation: AppConstants.routeLogin,
+    initialLocation: AppConstants.routeSplash,
     debugLogDiagnostics: false,
     refreshListenable: GoRouterRefreshStream(
       SupabaseService.instance.authStateChanges,
@@ -40,13 +50,27 @@ final appRouterProvider = Provider<GoRouter>((ref) {
       final loc = state.matchedLocation;
 
       final isAuthPage = loc == AppConstants.routeLogin ||
-          loc == AppConstants.routeSignup;
+          loc == AppConstants.routeSignup ||
+          loc == AppConstants.routeSelectProfile ||
+          loc == AppConstants.routeBusinessSignup ||
+          loc == AppConstants.routePersonalSignup ||
+          loc == AppConstants.routeEmailOtp ||
+          loc == AppConstants.routeEmailVerification ||
+          loc == AppConstants.routeForgotPassword ||
+          loc == AppConstants.routeResetPassword;
 
-      // Not logged in and trying to access protected page → send to login
-      if (!isLoggedIn && !isAuthPage) return AppConstants.routeLogin;
+      if (!isLoggedIn && !isAuthPage && loc != AppConstants.routeSplash) {
+        return AppConstants.routeSelectProfile;
+      }
 
-      // Logged in and on auth page → send to dashboard
-      if (isLoggedIn && isAuthPage) return AppConstants.routeDashboard;
+      // Don't redirect away from email verification
+      if (isLoggedIn && loc == AppConstants.routeEmailVerification) {
+        return null;
+      }
+
+      if (isLoggedIn && isAuthPage) {
+        return AppConstants.routeSplash;
+      }
 
       return null;
     },
@@ -60,6 +84,53 @@ final appRouterProvider = Provider<GoRouter>((ref) {
         path: AppConstants.routeLogin,
         name: 'login',
         builder: (context, state) => const LoginScreen(),
+      ),
+      GoRoute(
+        path: AppConstants.routeSelectProfile,
+        name: 'select-profile',
+        builder: (context, state) => const SelectProfileScreen(),
+      ),
+      GoRoute(
+        path: AppConstants.routeBusinessSignup,
+        name: 'business-signup',
+        builder: (context, state) => const BusinessSignupScreen(),
+      ),
+      GoRoute(
+        path: AppConstants.routePersonalSignup,
+        name: 'personal-signup',
+        builder: (context, state) => const PersonalSignupScreen(),
+      ),
+      GoRoute(
+        path: AppConstants.routeEmailOtp,
+        name: 'email-otp',
+        builder: (context, state) => const EmailOtpScreen(),
+      ),
+      GoRoute(
+        path: AppConstants.routeEmailVerification,
+        name: 'email-verification',
+        builder: (context, state) => EmailVerificationScreen(
+          email: state.extra as String? ?? '',
+        ),
+      ),
+      GoRoute(
+        path: AppConstants.routeForgotPassword,
+        name: 'forgot-password',
+        builder: (context, state) => const ForgotPasswordScreen(),
+      ),
+      GoRoute(
+        path: AppConstants.routeResetPassword,
+        name: 'reset-password',
+        builder: (context, state) => const ResetPasswordScreen(),
+      ),
+      GoRoute(
+        path: AppConstants.routeProfileSwitcher,
+        name: 'profile-switcher',
+        builder: (context, state) => const ProfileSwitcherScreen(),
+      ),
+      GoRoute(
+        path: AppConstants.routeUpdatePersonalProfile,
+        name: 'update-personal-profile',
+        builder: (context, state) => const UpdatePersonalProfileScreen(),
       ),
       GoRoute(
         path: AppConstants.routeSignup,
@@ -83,6 +154,11 @@ final appRouterProvider = Provider<GoRouter>((ref) {
             path: AppConstants.routeDashboard,
             name: 'dashboard',
             builder: (context, state) => const DashboardScreen(),
+          ),
+          GoRoute(
+            path: AppConstants.routePersonalDashboard,
+            name: 'personal-dashboard',
+            builder: (context, state) => const PersonalDashboardScreen(),
           ),
           GoRoute(
             path: AppConstants.routeInventory,
@@ -172,7 +248,7 @@ class MainShell extends ConsumerStatefulWidget {
 class _MainShellState extends ConsumerState<MainShell> {
   int _selectedIndex = 0;
 
-  final List<_NavItem> _navItems = const [
+  final List<_NavItem> _businessNavItems = const [
     _NavItem(icon: Icons.dashboard_rounded, label: 'Dashboard', path: '/dashboard'),
     _NavItem(icon: Icons.inventory_2_rounded, label: 'Inventory', path: '/inventory'),
     _NavItem(icon: Icons.people_rounded, label: 'Customers', path: '/customers'),
@@ -180,31 +256,40 @@ class _MainShellState extends ConsumerState<MainShell> {
     _NavItem(icon: Icons.settings_rounded, label: 'Settings', path: '/settings'),
   ];
 
-  void _onNavTap(BuildContext context, int i) {
+  final List<_NavItem> _personalNavItems = const [
+    _NavItem(icon: Icons.account_balance_wallet_rounded, label: 'Home', path: '/personal-dashboard'),
+    _NavItem(icon: Icons.receipt_long_rounded, label: 'Expenses', path: '/expenses'),
+    _NavItem(icon: Icons.settings_rounded, label: 'Settings', path: '/settings'),
+  ];
+
+  void _onNavTap(BuildContext context, int i, List<_NavItem> navItems) {
     setState(() => _selectedIndex = i);
-    context.go(_navItems[i].path);
+    context.go(navItems[i].path);
     
-    // Invalidate providers to ensure data is fresh when navigating to tabs
-    if (i == 0) {
-      // Keep dashboard fresh
+    // Invalidate providers to ensure data is fresh
+    if (navItems[i].path == AppConstants.routeDashboard) {
       ref.invalidate(dashboardStatsProvider);
-    } else if (i == 2) {
-      // Keep customer list fresh
+    } else if (navItems[i].path == AppConstants.routeCustomers) {
       ref.invalidate(customersProvider);
-    } else if (i == 1) {
-      // Keep inventory fresh
+    } else if (navItems[i].path == AppConstants.routeInventory) {
       ref.invalidate(inventoryProvider);
     }
   }
 
   @override
   Widget build(BuildContext context) {
+    final activeProfile = ref.watch(activeProfileProvider).valueOrNull;
+    final isBusiness = activeProfile?.activeProfileType != 'personal';
+    final navItems = isBusiness ? _businessNavItems : _personalNavItems;
+
     // Keep selectedIndex in sync with actual route
     final location = GoRouterState.of(context).matchedLocation;
-    final idx = _navItems.indexWhere((n) => location.startsWith(n.path));
+    final idx = navItems.indexWhere((n) => location.startsWith(n.path));
     if (idx != -1 && idx != _selectedIndex) {
       WidgetsBinding.instance.addPostFrameCallback((_) {
-        if (mounted) setState(() => _selectedIndex = idx);
+        if (mounted) {
+          setState(() => _selectedIndex = idx);
+        }
       });
     }
 
@@ -216,9 +301,9 @@ class _MainShellState extends ConsumerState<MainShell> {
               children: [
                 NavigationRail(
                   selectedIndex: _selectedIndex,
-                  onDestinationSelected: (i) => _onNavTap(context, i),
+                  onDestinationSelected: (i) => _onNavTap(context, i, navItems),
                   labelType: NavigationRailLabelType.all,
-                  destinations: _navItems
+                  destinations: navItems
                       .map((e) => NavigationRailDestination(
                             icon: Icon(e.icon),
                             label: Text(e.label),
@@ -234,8 +319,9 @@ class _MainShellState extends ConsumerState<MainShell> {
             body: widget.child,
             bottomNavigationBar: BottomNavigationBar(
               currentIndex: _selectedIndex,
-              onTap: (i) => _onNavTap(context, i),
-              items: _navItems
+              onTap: (i) => _onNavTap(context, i, navItems),
+              type: BottomNavigationBarType.fixed,
+              items: navItems
                   .map((e) => BottomNavigationBarItem(
                         icon: Icon(e.icon),
                         label: e.label,
@@ -245,12 +331,10 @@ class _MainShellState extends ConsumerState<MainShell> {
           );
 
     return PopScope(
-      // If on Dashboard tab, allow OS to handle pop (minimize app)
-      // Otherwise, intercept and navigate back to Dashboard
       canPop: _selectedIndex == 0,
       onPopInvokedWithResult: (didPop, _) {
         if (!didPop) {
-          context.go(AppConstants.routeDashboard);
+          context.go(navItems[0].path);
           setState(() => _selectedIndex = 0);
         }
       },

@@ -50,7 +50,9 @@ class _AddEditProductScreenState
   }
 
   Future<void> _save() async {
-    if (!_formKey.currentState!.validate()) return;
+    if (!_formKey.currentState!.validate()) {
+      return;
+    }
     setState(() => _loading = true);
     try {
       final data = {
@@ -67,14 +69,18 @@ class _AddEditProductScreenState
       } else {
         await SupabaseService.instance.insertProduct(data);
       }
-      if (mounted) context.pop();
+      if (mounted) {
+        context.pop();
+      }
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text('Error: $e'), backgroundColor: AppColors.error));
       }
     } finally {
-      if (mounted) setState(() => _loading = false);
+      if (mounted) {
+        setState(() => _loading = false);
+      }
     }
   }
 

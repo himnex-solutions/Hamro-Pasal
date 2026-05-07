@@ -205,7 +205,9 @@ class ExpenseScreen extends ConsumerWidget {
                 ElevatedButton(
                   onPressed: () async {
                     final amount = double.tryParse(amountCtrl.text);
-                    if (titleCtrl.text.isEmpty || amount == null) return;
+                    if (titleCtrl.text.isEmpty || amount == null) {
+                      return;
+                    }
                     final today = DateTime.now();
                     final dateStr =
                         '${today.year}-${today.month.toString().padLeft(2, '0')}-${today.day.toString().padLeft(2, '0')}';
@@ -217,7 +219,9 @@ class ExpenseScreen extends ConsumerWidget {
                       'ad_date': dateStr,
                     });
                     await ref.read(expensesProvider.notifier).load();
-                    if (ctx.mounted) Navigator.pop(ctx);
+                    if (ctx.mounted) {
+                      Navigator.pop(ctx);
+                    }
                   },
                   style: ElevatedButton.styleFrom(
                       minimumSize: const Size(double.infinity, 48)),

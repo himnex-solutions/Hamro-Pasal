@@ -71,7 +71,9 @@ class _CustomerListScreenState extends ConsumerState<CustomerListScreen> {
               data: (customers) {
                 final q = _query.trim().toLowerCase();
                 final filtered = customers.where((c) {
-                  if (q.isEmpty) return true;
+                  if (q.isEmpty) {
+                    return true;
+                  }
                   final matchName = c.name.toLowerCase().contains(q);
                   final matchPhone = (c.phone ?? '').toLowerCase().contains(q);
                   return matchName || matchPhone;
@@ -189,7 +191,9 @@ class _CustomerListScreenState extends ConsumerState<CustomerListScreen> {
               const SizedBox(height: 20),
               ElevatedButton(
                 onPressed: () async {
-                  if (nameCtrl.text.trim().isEmpty) return;
+                  if (nameCtrl.text.trim().isEmpty) {
+                    return;
+                  }
                   final data = {
                     'user_id': SupabaseService.instance.currentUserId!,
                     'name': nameCtrl.text.trim(),
@@ -199,7 +203,9 @@ class _CustomerListScreenState extends ConsumerState<CustomerListScreen> {
                   };
                   await SupabaseService.instance.insertCustomer(data);
                   await ref.read(customersProvider.notifier).load();
-                  if (sheetContext.mounted) Navigator.pop(sheetContext);
+                  if (sheetContext.mounted) {
+                    Navigator.pop(sheetContext);
+                  }
                 },
                 style: ElevatedButton.styleFrom(
                     minimumSize: const Size(double.infinity, 48)),

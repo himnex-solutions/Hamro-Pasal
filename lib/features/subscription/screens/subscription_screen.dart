@@ -4,7 +4,6 @@ import 'package:go_router/go_router.dart';
 
 import '../../../core/constants/app_constants.dart';
 import '../../../core/theme/app_theme.dart';
-import '../../../shared/widgets/app_button.dart';
 import '../providers/subscription_provider.dart';
 import '../models/subscription.dart';
 
@@ -13,8 +12,6 @@ class SubscriptionScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final subAsync = ref.watch(subscriptionProvider);
-
     return Scaffold(
       appBar: context.canPop() ? AppBar(title: const Text('Subscription Plans')) : null,
       body: SafeArea(
@@ -189,7 +186,7 @@ class _PlanCard extends StatelessWidget {
                   Container(
                     padding: const EdgeInsets.all(10),
                     decoration: BoxDecoration(
-                      color: color.withOpacity(0.12),
+                      color: color.withValues(alpha: 0.12),
                       borderRadius: BorderRadius.circular(12),
                     ),
                     child: Icon(icon, color: color, size: 28),
@@ -250,7 +247,7 @@ class _PlanCard extends StatelessWidget {
                 child: ElevatedButton(
                   onPressed: onTap,
                   style: ElevatedButton.styleFrom(backgroundColor: color),
-                  child: Text('Get Started'),
+                  child: const Text('Get Started'),
                 ),
               ),
             ],
@@ -267,8 +264,8 @@ class _PlanCard extends StatelessWidget {
                 color: color,
                 borderRadius: BorderRadius.circular(20),
               ),
-              child: Text('RECOMMENDED',
-                  style: const TextStyle(
+              child: const Text('RECOMMENDED',
+                  style: TextStyle(
                       color: Colors.white,
                       fontSize: 10,
                       fontWeight: FontWeight.w700)),

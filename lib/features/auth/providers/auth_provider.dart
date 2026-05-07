@@ -2,7 +2,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../../../core/services/supabase_service.dart';
-import '../models/user_profile.dart';
+import 'profile_provider.dart';
 
 // ─── Auth State Provider ──────────────────────────────────────────────────────
 
@@ -13,49 +13,6 @@ final authStateProvider = StreamProvider<AuthState>((ref) {
 final currentUserProvider = Provider<User?>((ref) {
   return SupabaseService.instance.currentUser;
 });
-
-// ─── Profile Provider ─────────────────────────────────────────────────────────
-
-final profileProvider =
-    StateNotifierProvider<ProfileNotifier, AsyncValue<UserProfile?>>((ref) {
-  // Watch auth state so profile reloads on login/logout automatically
-  ref.watch(authStateProvider);
-  return ProfileNotifier();
-});
-
-class ProfileNotifier extends StateNotifier<AsyncValue<UserProfile?>> {
-  // Start as data(null) — avoids a loading spinner on cold start
-  ProfileNotifier() : super(const AsyncValue.data(null)) {
-    loadProfile();
-  }
-
-  Future<void> loadProfile() async {
-    final userId = SupabaseService.instance.currentUserId;
-    if (userId == null) {
-      state = const AsyncValue.data(null);
-      return;
-    }
-    // Show loading only when we actually have a user to fetch for
-    state = const AsyncValue.loading();
-    try {
-      final json = await SupabaseService.instance.getProfile(userId);
-      state = AsyncValue.data(
-          json != null ? UserProfile.fromJson(json) : null);
-    } catch (e, st) {
-      state = AsyncValue.error(e, st);
-    }
-  }
-
-  Future<void> saveProfile(UserProfile profile) async {
-    try {
-      await SupabaseService.instance.upsertProfile(profile.toJson());
-      // Reload from DB to get the server-assigned id/timestamps
-      await loadProfile();
-    } catch (e, st) {
-      state = AsyncValue.error(e, st);
-    }
-  }
-}
 
 // ─── Auth Notifier ────────────────────────────────────────────────────────────
 
@@ -90,7 +47,64 @@ class AuthNotifier extends StateNotifier<AsyncValue<void>> {
     try {
       await SupabaseService.instance
           .signInWithPassword(email: email, password: password);
-      _ref.invalidate(profileProvider);
+      _ref.invalidate(userProfileProvider);
+      _ref.invalidate(activeProfileProvider);
+      state = const AsyncValue.data(null);
+    } catch (e, st) {
+      state = AsyncValue.error(e, st);
+    }
+  }
+
+  Future<void> signInWithOtp({
+    required String email,
+  }) async {
+    state = const AsyncValue.loading();
+    try {
+      await SupabaseService.instance.signInWithOtp(email: email);
+      state = const AsyncValue.data(null);
+    } catch (e, st) {
+      state = AsyncValue.error(e, st);
+    }
+  }
+
+  Future<void> verifyOtp({
+    required String email,
+    required String token,
+  }) async {
+    state = const AsyncValue.loading();
+    try {
+      await SupabaseService.instance.verifyOtp(email: email, token: token);
+      _ref.invalidate(userProfileProvider);
+      _ref.invalidate(activeProfileProvider);
+      state = const AsyncValue.data(null);
+    } catch (e, st) {
+      state = AsyncValue.error(e, st);
+    }
+  }
+
+  /// Send OTP for email verification after first login
+  Future<void> sendVerificationOtp({
+    required String email,
+  }) async {
+    state = const AsyncValue.loading();
+    try {
+      await SupabaseService.instance.sendVerificationOtp(email: email);
+      state = const AsyncValue.data(null);
+    } catch (e, st) {
+      state = AsyncValue.error(e, st);
+    }
+  }
+
+  /// Verify the email OTP code for email verification
+  Future<void> verifyEmailOtp({
+    required String email,
+    required String token,
+  }) async {
+    state = const AsyncValue.loading();
+    try {
+      await SupabaseService.instance.verifyEmailOtp(email: email, token: token);
+      _ref.invalidate(userProfileProvider);
+      _ref.invalidate(activeProfileProvider);
       state = const AsyncValue.data(null);
     } catch (e, st) {
       state = AsyncValue.error(e, st);
@@ -101,7 +115,8 @@ class AuthNotifier extends StateNotifier<AsyncValue<void>> {
     state = const AsyncValue.loading();
     try {
       await SupabaseService.instance.signInWithGoogle();
-      _ref.invalidate(profileProvider);
+      _ref.invalidate(userProfileProvider);
+      _ref.invalidate(activeProfileProvider);
       state = const AsyncValue.data(null);
     } catch (e, st) {
       state = AsyncValue.error(e, st);
@@ -110,6 +125,7 @@ class AuthNotifier extends StateNotifier<AsyncValue<void>> {
 
   Future<void> signOut() async {
     await SupabaseService.instance.signOut();
-    _ref.invalidate(profileProvider);
+    _ref.invalidate(userProfileProvider);
+    _ref.invalidate(activeProfileProvider);
   }
 }

@@ -6,16 +6,54 @@
 -- Enable UUID extension
 CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
 
--- ─── PROFILES ────────────────────────────────────────────────
-CREATE TABLE IF NOT EXISTS profiles (
+-- ─── USER PROFILES ─────────────────────────────────────────────
+CREATE TABLE IF NOT EXISTS user_profiles (
+  id              UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  user_id         UUID REFERENCES auth.users(id) ON DELETE CASCADE NOT NULL UNIQUE,
+  profile_type    TEXT NOT NULL CHECK (profile_type IN ('business', 'personal', 'both')),
+  full_name       TEXT,
+  email           TEXT,
+  phone           TEXT,
+  is_first_login  BOOLEAN DEFAULT true,
+  email_verified  BOOLEAN DEFAULT false,
+  created_at      TIMESTAMPTZ DEFAULT NOW(),
+  updated_at      TIMESTAMPTZ DEFAULT NOW()
+);
+
+-- ─── BUSINESS PROFILES ───────────────────────────────────────
+CREATE TABLE IF NOT EXISTS business_profiles (
+  id                 UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  user_id            UUID REFERENCES auth.users(id) ON DELETE CASCADE NOT NULL,
+  business_name      TEXT NOT NULL,
+  owner_name         TEXT,
+  business_category  TEXT,
+  pan_vat_number     TEXT,
+  business_address   TEXT,
+  company_logo_url   TEXT,
+  phone              TEXT,
+  email              TEXT,
+  created_at         TIMESTAMPTZ DEFAULT NOW(),
+  updated_at         TIMESTAMPTZ DEFAULT NOW()
+);
+
+-- ─── PERSONAL PROFILES ───────────────────────────────────────
+CREATE TABLE IF NOT EXISTS personal_profiles (
   id          UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-  user_id     UUID REFERENCES auth.users(id) ON DELETE CASCADE NOT NULL UNIQUE,
-  pasal_name  TEXT NOT NULL,
-  pan_number  TEXT,
-  phone       TEXT NOT NULL,
-  address     TEXT NOT NULL,
-  logo_url    TEXT,
-  created_at  TIMESTAMPTZ DEFAULT NOW()
+  user_id     UUID REFERENCES auth.users(id) ON DELETE CASCADE NOT NULL,
+  full_name   TEXT NOT NULL,
+  phone       TEXT,
+  email       TEXT,
+  created_at  TIMESTAMPTZ DEFAULT NOW(),
+  updated_at  TIMESTAMPTZ DEFAULT NOW()
+);
+
+-- ─── ACTIVE PROFILES ─────────────────────────────────────────
+CREATE TABLE IF NOT EXISTS active_profiles (
+  id                   UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  user_id              UUID REFERENCES auth.users(id) ON DELETE CASCADE NOT NULL UNIQUE,
+  active_profile_id    UUID NOT NULL,
+  active_profile_type  TEXT NOT NULL CHECK (active_profile_type IN ('business', 'personal')),
+  updated_at           TIMESTAMPTZ DEFAULT NOW()
 );
 
 -- ─── SUBSCRIPTIONS ───────────────────────────────────────────
@@ -231,7 +269,10 @@ FOR EACH ROW EXECUTE FUNCTION increase_stock_on_purchase();
 -- ROW LEVEL SECURITY (RLS)
 -- ============================================================
 
-ALTER TABLE profiles            ENABLE ROW LEVEL SECURITY;
+ALTER TABLE user_profiles       ENABLE ROW LEVEL SECURITY;
+ALTER TABLE business_profiles   ENABLE ROW LEVEL SECURITY;
+ALTER TABLE personal_profiles   ENABLE ROW LEVEL SECURITY;
+ALTER TABLE active_profiles     ENABLE ROW LEVEL SECURITY;
 ALTER TABLE subscriptions       ENABLE ROW LEVEL SECURITY;
 ALTER TABLE products            ENABLE ROW LEVEL SECURITY;
 ALTER TABLE customers           ENABLE ROW LEVEL SECURITY;
@@ -252,14 +293,44 @@ RETURNS BOOLEAN AS $$
 $$ LANGUAGE sql STABLE SECURITY DEFINER;
 
 -- ─── PROFILES policies ───────────────────────────────────────
-CREATE POLICY "Users can view own profile"
-  ON profiles FOR SELECT USING (auth.uid() = user_id);
+CREATE POLICY "Users can view own user_profile"
+  ON user_profiles FOR SELECT USING (auth.uid() = user_id);
 
-CREATE POLICY "Users can insert own profile"
-  ON profiles FOR INSERT WITH CHECK (auth.uid() = user_id);
+CREATE POLICY "Users can insert own user_profile"
+  ON user_profiles FOR INSERT WITH CHECK (auth.uid() = user_id);
 
-CREATE POLICY "Users can update own profile"
-  ON profiles FOR UPDATE USING (auth.uid() = user_id);
+CREATE POLICY "Users can update own user_profile"
+  ON user_profiles FOR UPDATE USING (auth.uid() = user_id);
+
+-- ─── BUSINESS PROFILES policies ──────────────────────────────
+CREATE POLICY "Users can view own business_profile"
+  ON business_profiles FOR SELECT USING (auth.uid() = user_id);
+
+CREATE POLICY "Users can insert own business_profile"
+  ON business_profiles FOR INSERT WITH CHECK (auth.uid() = user_id);
+
+CREATE POLICY "Users can update own business_profile"
+  ON business_profiles FOR UPDATE USING (auth.uid() = user_id);
+
+-- ─── PERSONAL PROFILES policies ──────────────────────────────
+CREATE POLICY "Users can view own personal_profile"
+  ON personal_profiles FOR SELECT USING (auth.uid() = user_id);
+
+CREATE POLICY "Users can insert own personal_profile"
+  ON personal_profiles FOR INSERT WITH CHECK (auth.uid() = user_id);
+
+CREATE POLICY "Users can update own personal_profile"
+  ON personal_profiles FOR UPDATE USING (auth.uid() = user_id);
+
+-- ─── ACTIVE PROFILES policies ────────────────────────────────
+CREATE POLICY "Users can view own active_profile"
+  ON active_profiles FOR SELECT USING (auth.uid() = user_id);
+
+CREATE POLICY "Users can insert own active_profile"
+  ON active_profiles FOR INSERT WITH CHECK (auth.uid() = user_id);
+
+CREATE POLICY "Users can update own active_profile"
+  ON active_profiles FOR UPDATE USING (auth.uid() = user_id);
 
 -- ─── SUBSCRIPTIONS policies ──────────────────────────────────
 CREATE POLICY "Users can view own subscription"

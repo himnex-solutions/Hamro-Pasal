@@ -18,22 +18,30 @@ Future<void> main() async {
   // Disable runtime font fetching — fonts are bundled, no CDN stall needed
   GoogleFonts.config.allowRuntimeFetching = false;
 
-  // Run independent startup tasks in parallel for faster boot
-  await Future.wait([
-    Hive.initFlutter(),
-    // Orientation lock is only relevant on mobile; skip on web
-    if (!kIsWeb)
+  // Hive doesn't work well on web — skip it there
+  if (!kIsWeb) {
+    await Future.wait([
+      Hive.initFlutter(),
       SystemChrome.setPreferredOrientations([
         DeviceOrientation.portraitUp,
         DeviceOrientation.landscapeLeft,
         DeviceOrientation.landscapeRight,
       ]),
-  ]);
+    ]);
+  }
+
+  // Guard against empty keys (happens if --dart-define-from-file is not passed)
+  const url = AppConstants.supabaseUrl;
+  const key = AppConstants.supabaseAnonKey;
+  if (url.isEmpty || key.isEmpty) {
+    debugPrint(
+        '⚠️  Supabase keys are empty! Run with: flutter run --dart-define-from-file=.env.local');
+  }
 
   // Initialize Supabase
   await Supabase.initialize(
-    url: AppConstants.supabaseUrl,
-    anonKey: AppConstants.supabaseAnonKey,
+    url: url,
+    anonKey: key,
   );
 
   runApp(
