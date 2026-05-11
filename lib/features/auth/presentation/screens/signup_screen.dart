@@ -44,7 +44,13 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
     if (!mounted) return;
     setState(() => _isLoading = false);
     if (success) {
-      context.go(AppRoutes.businessSetup);
+      AppSnackbar.show(
+        context,
+        '✅ Account created! Please sign in to continue.',
+        isSuccess: true,
+        duration: const Duration(seconds: 4),
+      );
+      context.go(AppRoutes.login);
     } else {
       final error = ref.read(authProvider).errorMessage ?? 'Registration failed';
       AppSnackbar.show(context, error, isError: true);

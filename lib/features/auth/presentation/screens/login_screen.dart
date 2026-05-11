@@ -33,18 +33,33 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
   Future<void> _login() async {
     if (!_formKey.currentState!.validate()) return;
     setState(() => _isLoading = true);
+
     final success = await ref.read(authProvider.notifier).signIn(
-      email: _emailCtrl.text.trim(),
-      password: _passwordCtrl.text,
-    );
+          email: _emailCtrl.text.trim(),
+          password: _passwordCtrl.text,
+        );
+
     if (!mounted) return;
     setState(() => _isLoading = false);
+
     if (success) {
       final authState = ref.read(authProvider);
-      if (authState.status == AuthStatus.needsBusinessSetup) {
-        context.go(AppRoutes.businessSetup);
-      } else {
-        context.go(AppRoutes.dashboard);
+      switch (authState.status) {
+        case AuthStatus.needsOtpVerification:
+          // First-time login → go to OTP verification screen
+          context.push(
+            AppRoutes.otpVerification,
+            extra: authState.pendingEmail ?? _emailCtrl.text.trim(),
+          );
+          break;
+        case AuthStatus.needsBusinessSetup:
+          context.go(AppRoutes.businessSetup);
+          break;
+        case AuthStatus.authenticated:
+          context.go(AppRoutes.dashboard);
+          break;
+        default:
+          break;
       }
     } else {
       final error = ref.read(authProvider).errorMessage ?? 'Login failed';
@@ -57,7 +72,14 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
     final success = await ref.read(authProvider.notifier).signInWithGoogle();
     if (!mounted) return;
     setState(() => _isLoading = false);
-    if (success) context.go(AppRoutes.dashboard);
+    if (success) {
+      final authState = ref.read(authProvider);
+      if (authState.status == AuthStatus.needsBusinessSetup) {
+        context.go(AppRoutes.businessSetup);
+      } else {
+        context.go(AppRoutes.dashboard);
+      }
+    }
   }
 
   @override
@@ -72,34 +94,50 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 const SizedBox(height: 32),
+
                 // Brand header
                 Row(
                   children: [
                     Container(
-                      width: 48, height: 48,
+                      width: 48,
+                      height: 48,
                       decoration: BoxDecoration(
                         color: AppTheme.primaryColor,
                         borderRadius: BorderRadius.circular(14),
                       ),
-                      child: const Icon(Icons.store_rounded, color: Colors.white, size: 28),
+                      child: const Icon(Icons.store_rounded,
+                          color: Colors.white, size: 28),
                     ),
                     const SizedBox(width: 12),
-                    Text('Hamro Pasal',
-                        style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                              color: AppTheme.primaryColor, fontWeight: FontWeight.w800)),
+                    Text(
+                      'Hamro Pasal',
+                      style: Theme.of(context)
+                          .textTheme
+                          .headlineSmall
+                          ?.copyWith(
+                            color: AppTheme.primaryColor,
+                            fontWeight: FontWeight.w800,
+                          ),
+                    ),
                   ],
                 ).animate().fadeIn().slideX(begin: -0.1, end: 0),
 
                 const SizedBox(height: 40),
 
                 Text('Welcome Back 👋',
-                    style: Theme.of(context).textTheme.headlineMedium)
-                    .animate(delay: 100.ms).fadeIn().slideY(begin: 0.2, end: 0),
+                        style: Theme.of(context).textTheme.headlineMedium)
+                    .animate(delay: 100.ms)
+                    .fadeIn()
+                    .slideY(begin: 0.2, end: 0),
+
                 const SizedBox(height: 8),
-                Text('Sign in to continue managing your business.',
-                    style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                          color: AppTheme.lightTextSecondary))
-                    .animate(delay: 150.ms).fadeIn(),
+
+                Text(
+                  'Sign in to continue managing your business.',
+                  style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                        color: AppTheme.lightTextSecondary,
+                      ),
+                ).animate(delay: 150.ms).fadeIn(),
 
                 const SizedBox(height: 32),
 
@@ -128,12 +166,17 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                   textInputAction: TextInputAction.done,
                   onSubmitted: (_) => _login(),
                   suffixIcon: IconButton(
-                    onPressed: () => setState(() => _obscurePassword = !_obscurePassword),
-                    icon: Icon(_obscurePassword ? Icons.visibility_outlined : Icons.visibility_off_outlined),
+                    onPressed: () =>
+                        setState(() => _obscurePassword = !_obscurePassword),
+                    icon: Icon(_obscurePassword
+                        ? Icons.visibility_outlined
+                        : Icons.visibility_off_outlined),
                   ),
                   validator: (v) {
                     if (v == null || v.isEmpty) return 'Password is required';
-                    if (v.length < 6) return 'Password must be at least 6 characters';
+                    if (v.length < 6) {
+                      return 'Password must be at least 6 characters';
+                    }
                     return null;
                   },
                 ).animate(delay: 250.ms).fadeIn(),
@@ -164,7 +207,8 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                     const Expanded(child: Divider()),
                     Padding(
                       padding: const EdgeInsets.symmetric(horizontal: 12),
-                      child: Text('OR', style: Theme.of(context).textTheme.bodySmall),
+                      child: Text('OR',
+                          style: Theme.of(context).textTheme.bodySmall),
                     ),
                     const Expanded(child: Divider()),
                   ],
@@ -178,7 +222,8 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                   label: const Text('Continue with Google'),
                   style: OutlinedButton.styleFrom(
                     minimumSize: const Size(double.infinity, 52),
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                    shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12)),
                   ),
                 ).animate(delay: 450.ms).fadeIn(),
 
@@ -191,9 +236,13 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                         style: Theme.of(context).textTheme.bodyMedium),
                     GestureDetector(
                       onTap: () => context.push(AppRoutes.signup),
-                      child: Text('Sign Up',
-                          style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                                color: AppTheme.primaryColor, fontWeight: FontWeight.w700)),
+                      child: Text(
+                        'Sign Up',
+                        style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                              color: AppTheme.primaryColor,
+                              fontWeight: FontWeight.w700,
+                            ),
+                      ),
                     ),
                   ],
                 ).animate(delay: 500.ms).fadeIn(),

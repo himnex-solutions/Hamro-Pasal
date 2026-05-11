@@ -7,9 +7,11 @@ import 'package:hamro_pasal/features/auth/presentation/screens/splash_screen.dar
 import 'package:hamro_pasal/features/auth/presentation/screens/login_screen.dart';
 import 'package:hamro_pasal/features/auth/presentation/screens/signup_screen.dart';
 import 'package:hamro_pasal/features/auth/presentation/screens/forgot_password_screen.dart';
+import 'package:hamro_pasal/features/auth/presentation/screens/otp_verification_screen.dart';
 import 'package:hamro_pasal/features/auth/presentation/screens/business_setup_screen.dart';
 import 'package:hamro_pasal/features/auth/presentation/screens/onboarding_screen.dart';
-import 'package:hamro_pasal/features/auth/presentation/providers/auth_provider.dart';
+
+
 
 import 'package:hamro_pasal/features/dashboard/presentation/screens/dashboard_screen.dart';
 import 'package:hamro_pasal/features/parties/presentation/screens/parties_screen.dart';
@@ -39,6 +41,7 @@ class AppRoutes {
   static const String login = '/login';
   static const String signup = '/signup';
   static const String forgotPassword = '/forgot-password';
+  static const String otpVerification = '/otp-verification';
   static const String businessSetup = '/business-setup';
 
   static const String home = '/home';
@@ -64,7 +67,11 @@ class AppRoutes {
 
 // ── Router Provider ───────────────────────────────────────────
 final appRouterProvider = Provider<GoRouter>((ref) {
-  ref.watch(authProvider);
+  // NOTE: Do NOT watch authProvider here.
+  // Watching it would recreate the GoRouter on every auth state change,
+  // which resets the navigator stack and prevents OTP/setup screens from
+  // being pushed. All routing after auth events is handled explicitly
+  // in each screen via context.push / context.go.
 
   return GoRouter(
     initialLocation: AppRoutes.splash,
@@ -72,28 +79,58 @@ final appRouterProvider = Provider<GoRouter>((ref) {
     redirect: (context, state) {
       final session = Supabase.instance.client.auth.currentSession;
       final location = state.uri.path;
-      final isAuthRoute = [
-        AppRoutes.login, AppRoutes.signup,
-        AppRoutes.forgotPassword, AppRoutes.splash,
-      ].contains(location);
 
-      if (session == null && !isAuthRoute) return AppRoutes.login;
-      if (session != null && isAuthRoute && location != AppRoutes.splash) return null;
+      // Routes that never require a session
+      const publicRoutes = [
+        AppRoutes.login,
+        AppRoutes.signup,
+        AppRoutes.forgotPassword,
+        AppRoutes.splash,
+        AppRoutes.otpVerification,
+      ];
+
+      final isPublic = publicRoutes.contains(location);
+
+      // No session & trying to access a protected route → go to login
+      if (session == null && !isPublic) return AppRoutes.login;
+
       return null;
     },
     routes: [
-      // Auth routes
+      // ── Public / Auth routes ──────────────────────────────
       GoRoute(path: AppRoutes.splash, builder: (_, __) => const SplashScreen()),
-      GoRoute(path: AppRoutes.onboarding, builder: (_, __) => const OnboardingScreen()),
+      GoRoute(
+          path: AppRoutes.onboarding,
+          builder: (_, __) => const OnboardingScreen()),
       GoRoute(path: AppRoutes.login, builder: (_, __) => const LoginScreen()),
       GoRoute(path: AppRoutes.signup, builder: (_, __) => const SignupScreen()),
-      GoRoute(path: AppRoutes.forgotPassword, builder: (_, __) => const ForgotPasswordScreen()),
-      GoRoute(path: AppRoutes.businessSetup, builder: (_, __) => const BusinessSetupScreen()),
-      GoRoute(path: AppRoutes.trialExpired, builder: (_, __) => const TrialExpiredScreen()),
-      GoRoute(path: AppRoutes.subscription, builder: (_, __) => const SubscriptionScreen()),
-      GoRoute(path: AppRoutes.settings, builder: (_, __) => const SettingsScreen()),
+      GoRoute(
+          path: AppRoutes.forgotPassword,
+          builder: (_, __) => const ForgotPasswordScreen()),
 
-      // Shell routes (with bottom nav / rail / sidebar)
+      // OTP verification — receives email via GoRouter `extra`
+      GoRoute(
+        path: AppRoutes.otpVerification,
+        builder: (_, state) {
+          final email = state.extra as String? ?? '';
+          return OtpVerificationScreen(email: email);
+        },
+      ),
+
+      GoRoute(
+          path: AppRoutes.businessSetup,
+          builder: (_, __) => const BusinessSetupScreen()),
+      GoRoute(
+          path: AppRoutes.trialExpired,
+          builder: (_, __) => const TrialExpiredScreen()),
+      GoRoute(
+          path: AppRoutes.subscription,
+          builder: (_, __) => const SubscriptionScreen()),
+      GoRoute(
+          path: AppRoutes.settings,
+          builder: (_, __) => const SettingsScreen()),
+
+      // ── Shell routes (bottom nav / rail / sidebar) ────────
       ShellRoute(
         builder: (context, state, child) => MainShellScreen(child: child),
         routes: [
@@ -110,7 +147,8 @@ final appRouterProvider = Provider<GoRouter>((ref) {
               GoRoute(path: 'add', builder: (_, __) => const AddPartyScreen()),
               GoRoute(
                 path: ':id',
-                builder: (_, state) => PartyDetailScreen(partyId: state.pathParameters['id']!),
+                builder: (_, state) => PartyDetailScreen(
+                    partyId: state.pathParameters['id']!),
               ),
             ],
           ),
@@ -120,10 +158,12 @@ final appRouterProvider = Provider<GoRouter>((ref) {
             path: AppRoutes.inventory,
             builder: (_, __) => const InventoryScreen(),
             routes: [
-              GoRoute(path: 'add', builder: (_, __) => const AddProductScreen()),
+              GoRoute(
+                  path: 'add', builder: (_, __) => const AddProductScreen()),
               GoRoute(
                 path: ':id',
-                builder: (_, state) => ProductDetailScreen(productId: state.pathParameters['id']!),
+                builder: (_, state) => ProductDetailScreen(
+                    productId: state.pathParameters['id']!),
               ),
             ],
           ),
@@ -133,10 +173,13 @@ final appRouterProvider = Provider<GoRouter>((ref) {
             path: AppRoutes.transactions,
             builder: (_, __) => const TransactionsScreen(),
             routes: [
-              GoRoute(path: 'add', builder: (_, __) => const AddTransactionScreen()),
+              GoRoute(
+                  path: 'add',
+                  builder: (_, __) => const AddTransactionScreen()),
               GoRoute(
                 path: ':id',
-                builder: (_, state) => TransactionDetailScreen(transactionId: state.pathParameters['id']!),
+                builder: (_, state) => TransactionDetailScreen(
+                    transactionId: state.pathParameters['id']!),
               ),
             ],
           ),
@@ -146,10 +189,13 @@ final appRouterProvider = Provider<GoRouter>((ref) {
             path: AppRoutes.invoices,
             builder: (_, __) => const InvoicesScreen(),
             routes: [
-              GoRoute(path: 'create', builder: (_, __) => const CreateInvoiceScreen()),
+              GoRoute(
+                  path: 'create',
+                  builder: (_, __) => const CreateInvoiceScreen()),
               GoRoute(
                 path: ':id',
-                builder: (_, state) => InvoiceDetailScreen(invoiceId: state.pathParameters['id']!),
+                builder: (_, state) => InvoiceDetailScreen(
+                    invoiceId: state.pathParameters['id']!),
               ),
             ],
           ),
@@ -159,14 +205,20 @@ final appRouterProvider = Provider<GoRouter>((ref) {
             path: AppRoutes.expenses,
             builder: (_, __) => const ExpensesScreen(),
             routes: [
-              GoRoute(path: 'add', builder: (_, __) => const AddExpenseScreen()),
+              GoRoute(
+                  path: 'add', builder: (_, __) => const AddExpenseScreen()),
             ],
           ),
 
           // Other shell routes
-          GoRoute(path: AppRoutes.reports, builder: (_, __) => const ReportsScreen()),
-          GoRoute(path: AppRoutes.staff, builder: (_, __) => const StaffScreen()),
-          GoRoute(path: AppRoutes.accounts, builder: (_, __) => const AccountsScreen()),
+          GoRoute(
+              path: AppRoutes.reports,
+              builder: (_, __) => const ReportsScreen()),
+          GoRoute(
+              path: AppRoutes.staff, builder: (_, __) => const StaffScreen()),
+          GoRoute(
+              path: AppRoutes.accounts,
+              builder: (_, __) => const AccountsScreen()),
         ],
       ),
     ],

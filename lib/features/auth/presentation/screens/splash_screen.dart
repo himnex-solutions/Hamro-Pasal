@@ -33,6 +33,10 @@ class _SplashScreenState extends ConsumerState<SplashScreen> {
       case AuthStatus.needsBusinessSetup:
         context.go(AppRoutes.businessSetup);
         break;
+      case AuthStatus.needsOtpVerification:
+        // OTP pending — go to login to re-trigger the flow
+        context.go(AppRoutes.login);
+        break;
       case AuthStatus.unauthenticated:
       case AuthStatus.initial:
         context.go(AppRoutes.login);
