@@ -1,0 +1,269 @@
+import 'package:flutter/material.dart';
+import 'package:flutter_animate/flutter_animate.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:intl/intl.dart';
+import 'package:hamro_pasal/core/constants/app_constants.dart';
+import 'package:hamro_pasal/core/theme/app_theme.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
+
+class ReportSummary {
+  final double totalSales;
+  final double totalPurchases;
+  final double totalExpenses;
+  final double netProfit;
+  final List<Map<String, dynamic>> topProducts;
+  const ReportSummary({
+    this.totalSales = 0, this.totalPurchases = 0,
+    this.totalExpenses = 0, this.netProfit = 0,
+    this.topProducts = const [],
+  });
+}
+
+enum ReportPeriod { today, week, month, custom }
+
+final reportProvider =
+    AsyncNotifierProvider.family<ReportNotifier, ReportSummary, ReportPeriod>(() {
+  return ReportNotifier();
+});
+
+class ReportNotifier extends FamilyAsyncNotifier<ReportSummary, ReportPeriod> {
+  @override
+  Future<ReportSummary> build(ReportPeriod arg) => _fetch(arg);
+
+  Future<ReportSummary> _fetch(ReportPeriod period) async {
+    final prefs = await SharedPreferences.getInstance();
+    final businessId = prefs.getString(AppConstants.kSelectedBusinessId);
+    if (businessId == null) return const ReportSummary();
+
+    final now = DateTime.now();
+    DateTime start;
+    switch (period) {
+      case ReportPeriod.today:
+        start = DateTime(now.year, now.month, now.day);
+        break;
+      case ReportPeriod.week:
+        start = now.subtract(const Duration(days: 7));
+        break;
+      case ReportPeriod.month:
+        start = DateTime(now.year, now.month, 1);
+        break;
+      case ReportPeriod.custom:
+        start = DateTime(now.year, now.month, 1);
+        break;
+    }
+
+    final supabase = Supabase.instance.client;
+    final txRes = await supabase
+        .from('transactions')
+        .select('type, amount')
+        .eq('business_id', businessId)
+        .gte('transaction_date', start.toIso8601String());
+
+    double sales = 0, purchases = 0, expenses = 0;
+    for (final tx in txRes as List) {
+      final amount = (tx['amount'] as num).toDouble();
+      switch (tx['type'] as String) {
+        case 'sale': sales += amount; break;
+        case 'purchase': purchases += amount; break;
+        case 'expense': expenses += amount; break;
+      }
+    }
+
+    // Top products by qty sold
+    final itemsRes = await supabase
+        .from('transaction_items')
+        .select('product_name, quantity, total_price')
+        .gte('created_at', start.toIso8601String())
+        .order('quantity', ascending: false)
+        .limit(5);
+    final topProducts = (itemsRes as List).cast<Map<String, dynamic>>();
+
+    return ReportSummary(
+      totalSales: sales,
+      totalPurchases: purchases,
+      totalExpenses: expenses,
+      netProfit: sales - purchases - expenses,
+      topProducts: topProducts,
+    );
+  }
+}
+
+class ReportsScreen extends ConsumerStatefulWidget {
+  const ReportsScreen({super.key});
+  @override
+  ConsumerState<ReportsScreen> createState() => _ReportsScreenState();
+}
+
+class _ReportsScreenState extends ConsumerState<ReportsScreen> {
+  ReportPeriod _period = ReportPeriod.month;
+
+  @override
+  Widget build(BuildContext context) {
+    final reportAsync = ref.watch(reportProvider(_period));
+
+    return Scaffold(
+      appBar: AppBar(title: const Text('Reports')),
+      body: Column(
+        children: [
+          // Period selector
+          Padding(
+            padding: const EdgeInsets.all(16),
+            child: SingleChildScrollView(
+              scrollDirection: Axis.horizontal,
+              child: Row(
+                children: ReportPeriod.values.map((p) {
+                  final labels = {
+                    ReportPeriod.today: 'Today',
+                    ReportPeriod.week: 'This Week',
+                    ReportPeriod.month: 'This Month',
+                    ReportPeriod.custom: 'Custom',
+                  };
+                  final isSelected = p == _period;
+                  return Padding(
+                    padding: const EdgeInsets.only(right: 8),
+                    child: ChoiceChip(
+                      label: Text(labels[p]!),
+                      selected: isSelected,
+                      onSelected: (_) => setState(() => _period = p),
+                      selectedColor: AppTheme.primaryColor,
+                      labelStyle: TextStyle(
+                        color: isSelected ? Colors.white : AppTheme.lightTextSecondary,
+                        fontWeight: isSelected ? FontWeight.w600 : FontWeight.normal,
+                      ),
+                    ),
+                  );
+                }).toList(),
+              ),
+            ),
+          ),
+
+          Expanded(
+            child: reportAsync.when(
+              loading: () => const Center(child: CircularProgressIndicator()),
+              error: (e, _) => Center(child: Text('Error: $e')),
+              data: (report) => SingleChildScrollView(
+                padding: const EdgeInsets.fromLTRB(16, 0, 16, 24),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    // P&L Summary
+                    Text('Profit & Loss', style: Theme.of(context).textTheme.titleLarge)
+                        .animate().fadeIn(),
+                    const SizedBox(height: 12),
+                    GridView.count(
+                      crossAxisCount: 2,
+                      crossAxisSpacing: 12, mainAxisSpacing: 12,
+                      childAspectRatio: 1.6,
+                      shrinkWrap: true,
+                      physics: const NeverScrollableScrollPhysics(),
+                      children: [
+                        _ReportCard('Total Sales', report.totalSales, AppTheme.successColor, Icons.trending_up_rounded),
+                        _ReportCard('Total Purchases', report.totalPurchases, AppTheme.infoColor, Icons.shopping_bag_outlined),
+                        _ReportCard('Total Expenses', report.totalExpenses, AppTheme.errorColor, Icons.wallet_outlined),
+                        _ReportCard('Net Profit', report.netProfit,
+                            report.netProfit >= 0 ? AppTheme.accentColor : AppTheme.errorColor,
+                            report.netProfit >= 0 ? Icons.emoji_events_outlined : Icons.sentiment_dissatisfied_outlined),
+                      ],
+                    ).animate(delay: 50.ms).fadeIn().slideY(begin: 0.1, end: 0),
+
+                    const SizedBox(height: 24),
+
+                    // Top products
+                    if (report.topProducts.isNotEmpty) ...[
+                      Text('Top Selling Products', style: Theme.of(context).textTheme.titleLarge)
+                          .animate(delay: 100.ms).fadeIn(),
+                      const SizedBox(height: 12),
+                      Card(
+                        child: ListView.separated(
+                          shrinkWrap: true,
+                          physics: const NeverScrollableScrollPhysics(),
+                          itemCount: report.topProducts.length,
+                          separatorBuilder: (_, __) => const Divider(height: 1),
+                          itemBuilder: (context, i) {
+                            final p = report.topProducts[i];
+                            return ListTile(
+                              leading: Container(
+                                width: 36, height: 36,
+                                decoration: BoxDecoration(
+                                  color: AppTheme.primaryColor.withValues(alpha: 0.1),
+                                  borderRadius: BorderRadius.circular(8),
+                                ),
+                                child: Center(
+                                  child: Text('${i + 1}',
+                                      style: const TextStyle(
+                                          color: AppTheme.primaryColor, fontWeight: FontWeight.w700)),
+                                ),
+                              ),
+                              title: Text(p['product_name'] as String),
+                              subtitle: Text('Qty: ${p['quantity']}'),
+                              trailing: Text(
+                                '${AppConstants.currencySymbol} ${NumberFormat('#,##,##0').format(p['total_price'])}',
+                                style: const TextStyle(fontWeight: FontWeight.w700, color: AppTheme.successColor),
+                              ),
+                            );
+                          },
+                        ),
+                      ).animate(delay: 150.ms).fadeIn(),
+                    ],
+
+                    const SizedBox(height: 24),
+
+                    // Export buttons
+                    Text('Export Reports', style: Theme.of(context).textTheme.titleLarge)
+                        .animate(delay: 200.ms).fadeIn(),
+                    const SizedBox(height: 12),
+                    Wrap(
+                      spacing: 10, runSpacing: 10,
+                      children: [
+                        OutlinedButton.icon(onPressed: () {}, icon: const Icon(Icons.picture_as_pdf_outlined), label: const Text('Export PDF')),
+                        OutlinedButton.icon(onPressed: () {}, icon: const Icon(Icons.table_chart_outlined), label: const Text('Export Excel')),
+                      ],
+                    ).animate(delay: 250.ms).fadeIn(),
+                  ],
+                ),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _ReportCard extends StatelessWidget {
+  final String title;
+  final double amount;
+  final Color color;
+  final IconData icon;
+  const _ReportCard(this.title, this.amount, this.color, this.icon);
+
+  @override
+  Widget build(BuildContext context) {
+    final isNeg = amount < 0;
+    return Card(
+      child: Padding(
+        padding: const EdgeInsets.all(14),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Icon(icon, color: color, size: 22),
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  '${isNeg ? '-' : ''}${AppConstants.currencySymbol} ${NumberFormat('#,##,##0').format(amount.abs())}',
+                  style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                        color: color, fontWeight: FontWeight.w700),
+                  maxLines: 1, overflow: TextOverflow.ellipsis,
+                ),
+                Text(title, style: Theme.of(context).textTheme.bodySmall, maxLines: 1),
+              ],
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}

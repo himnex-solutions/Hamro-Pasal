@@ -1,0 +1,82 @@
+name: hamro_pasal
+description: "Hamro Pasal - All-in-one Business Management & POS for Nepal"
+publish_to: 'none'
+version: 1.0.0+1
+
+environment:
+  sdk: '>=3.3.0 <4.0.0'
+
+dependencies:
+  flutter:
+    sdk: flutter
+
+  # Backend
+  supabase_flutter: ^2.5.6
+
+  # State Management
+  flutter_riverpod: ^2.5.1
+
+  # Navigation
+  go_router: ^14.2.0
+
+  # Local Storage (offline-first, no code gen needed)
+  path_provider: ^2.1.3
+  shared_preferences: ^2.2.3
+
+  # Networking / Connectivity
+  connectivity_plus: ^6.0.3
+
+  # UI & Animations
+  flutter_animate: ^4.5.0
+  google_fonts: ^6.2.1
+  fl_chart: ^0.68.0
+  shimmer: ^3.0.0
+  cached_network_image: ^3.3.1
+
+  # Image picker & Camera
+  image_picker: ^1.1.2
+
+  # PDF & Excel
+  pdf: ^3.11.1
+  printing: ^5.13.1
+  excel: ^4.0.2
+
+  # Notifications
+  flutter_local_notifications: ^17.2.2
+  timezone: ^0.9.4
+
+  # Utilities
+  intl: ^0.19.0
+  uuid: ^4.4.2
+  url_launcher: ^6.3.0
+  share_plus: ^9.0.0
+
+  cupertino_icons: ^1.0.8
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^4.0.0
+
+flutter:
+  uses-material-design: true
+  assets:
+    - assets/images/
+    - assets/icons/
+    - assets/animations/
+    - assets/fonts/
+
+  fonts:
+    - family: Poppins
+      fonts:
+        - asset: assets/fonts/Poppins-Regular.ttf
+          weight: 400
+        - asset: assets/fonts/Poppins-Medium.ttf
+          weight: 500
+        - asset: assets/fonts/Poppins-SemiBold.ttf
+          weight: 600
+        - asset: assets/fonts/Poppins-Bold.ttf
+          weight: 700
+        - asset: assets/fonts/Poppins-Italic.ttf
+          weight: 400
+          style: italic
