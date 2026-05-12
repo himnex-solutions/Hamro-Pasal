@@ -4,15 +4,24 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 import 'package:hamro_pasal/core/constants/app_constants.dart';
+import 'package:hamro_pasal/core/providers/profile_mode_provider.dart';
 import 'package:hamro_pasal/core/router/app_router.dart';
 import 'package:hamro_pasal/core/theme/app_theme.dart';
 import 'package:hamro_pasal/features/dashboard/presentation/providers/dashboard_provider.dart';
+import 'package:hamro_pasal/features/dashboard/presentation/screens/personal_dashboard_screen.dart';
 
 class DashboardScreen extends ConsumerWidget {
   const DashboardScreen({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final mode = ref.watch(profileModeProvider);
+
+    // Switch between personal and business dashboard
+    if (mode == ProfileMode.personal) {
+      return const PersonalDashboardScreen();
+    }
+
     final dashAsync = ref.watch(dashboardProvider);
 
     return Scaffold(
@@ -168,15 +177,15 @@ class DashboardScreen extends ConsumerWidget {
   }
 }
 
-class _DashboardAppBar extends StatelessWidget {
+class _DashboardAppBar extends ConsumerWidget {
   final DashboardStats stats;
   const _DashboardAppBar({required this.stats});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final greeting = _getGreeting();
     return SliverAppBar(
-      expandedHeight: 120,
+      expandedHeight: 140,
       floating: true,
       pinned: false,
       flexibleSpace: FlexibleSpaceBar(
@@ -199,6 +208,27 @@ class _DashboardAppBar extends StatelessWidget {
                   Text(DateFormat('EEEE, d MMMM yyyy').format(DateTime.now()),
                       style: const TextStyle(color: Colors.white, fontSize: 16,
                           fontWeight: FontWeight.w600)),
+                  const SizedBox(height: 8),
+                  // Active mode pill
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                    decoration: BoxDecoration(
+                      color: Colors.white.withValues(alpha: 0.2),
+                      borderRadius: BorderRadius.circular(20),
+                    ),
+                    child: const Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Icon(Icons.store_rounded, color: Colors.white, size: 14),
+                        SizedBox(width: 4),
+                        Text('Business Mode',
+                            style: TextStyle(
+                                color: Colors.white,
+                                fontSize: 11,
+                                fontWeight: FontWeight.w600)),
+                      ],
+                    ),
+                  ),
                 ],
               ),
             ),

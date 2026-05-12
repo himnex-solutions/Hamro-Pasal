@@ -6,7 +6,10 @@ import 'package:hamro_pasal/core/router/app_router.dart';
 import 'package:hamro_pasal/core/theme/app_theme.dart';
 import 'package:hamro_pasal/core/theme/theme_provider.dart';
 import 'package:hamro_pasal/core/widgets/app_snackbar.dart';
+import 'package:hamro_pasal/core/providers/profile_mode_provider.dart';
 import 'package:hamro_pasal/features/auth/presentation/providers/auth_provider.dart';
+import 'package:hamro_pasal/features/settings/presentation/screens/profile_edit_screen.dart';
+import 'package:hamro_pasal/features/settings/presentation/screens/business_profile_edit_screen.dart';
 
 class SettingsScreen extends ConsumerWidget {
   const SettingsScreen({super.key});
@@ -24,14 +27,23 @@ class SettingsScreen extends ConsumerWidget {
             icon: Icons.person_outline,
             title: 'Profile',
             subtitle: 'Edit your personal information',
-            onTap: () {},
+            onTap: () => Navigator.of(context).push(
+              MaterialPageRoute(
+                builder: (_) => const ProfileEditScreen(),
+              ),
+            ),
           ),
           _SettingsTile(
             icon: Icons.store_outlined,
             title: 'Business Profile',
             subtitle: 'Edit business name, logo, address',
-            onTap: () {},
+            onTap: () => Navigator.of(context).push(
+              MaterialPageRoute(
+                builder: (_) => const BusinessProfileEditScreen(),
+              ),
+            ),
           ),
+          const _SwitchProfileTile(),
 
           const SizedBox(height: 20),
           const _SectionHeader('Preferences'),
@@ -201,6 +213,162 @@ class _SettingsTile extends StatelessWidget {
   }
 }
 
+// ── Switch Profile Tile ─────────────────────────────────────
+class _SwitchProfileTile extends ConsumerWidget {
+  const _SwitchProfileTile();
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final mode = ref.watch(profileModeProvider);
+    final isPersonal = mode == ProfileMode.personal;
+    final accentColor = isPersonal
+        ? const Color(0xFF8E44AD)  // purple for personal
+        : AppTheme.primaryColor;   // brand green for business
+
+    return Card(
+      margin: const EdgeInsets.symmetric(vertical: 4),
+      child: InkWell(
+        borderRadius: BorderRadius.circular(12),
+        onTap: () {
+          ref.read(profileModeProvider.notifier).toggle();
+          AppSnackbar.show(
+            context,
+            isPersonal
+                ? '🏢 Switched to Business Mode'
+                : '👤 Switched to Personal Mode',
+            isSuccess: true,
+          );
+        },
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+          child: Row(
+            children: [
+              // Animated icon container
+              AnimatedContainer(
+                duration: const Duration(milliseconds: 300),
+                width: 40,
+                height: 40,
+                decoration: BoxDecoration(
+                  color: accentColor.withValues(alpha: 0.12),
+                  borderRadius: BorderRadius.circular(10),
+                ),
+                child: AnimatedSwitcher(
+                  duration: const Duration(milliseconds: 300),
+                  child: Icon(
+                    isPersonal
+                        ? Icons.person_rounded
+                        : Icons.store_rounded,
+                    key: ValueKey(isPersonal),
+                    color: accentColor,
+                    size: 20,
+                  ),
+                ),
+              ),
+              const SizedBox(width: 16),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Switch Profile',
+                      style: Theme.of(context).textTheme.titleMedium,
+                    ),
+                    AnimatedSwitcher(
+                      duration: const Duration(milliseconds: 250),
+                      child: Text(
+                        isPersonal
+                            ? 'Currently: Personal View'
+                            : 'Currently: Business View',
+                        key: ValueKey(isPersonal),
+                        style: Theme.of(context)
+                            .textTheme
+                            .bodySmall
+                            ?.copyWith(color: accentColor),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              // Animated segmented toggle
+              AnimatedContainer(
+                duration: const Duration(milliseconds: 300),
+                height: 32,
+                decoration: BoxDecoration(
+                  color: accentColor.withValues(alpha: 0.1),
+                  borderRadius: BorderRadius.circular(20),
+                  border: Border.all(
+                      color: accentColor.withValues(alpha: 0.3)),
+                ),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    _ModeChip(
+                      label: 'Personal',
+                      icon: Icons.person_outline,
+                      isActive: isPersonal,
+                      activeColor: const Color(0xFF8E44AD),
+                    ),
+                    _ModeChip(
+                      label: 'Business',
+                      icon: Icons.store_outlined,
+                      isActive: !isPersonal,
+                      activeColor: AppTheme.primaryColor,
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _ModeChip extends StatelessWidget {
+  final String label;
+  final IconData icon;
+  final bool isActive;
+  final Color activeColor;
+  const _ModeChip({
+    required this.label,
+    required this.icon,
+    required this.isActive,
+    required this.activeColor,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return AnimatedContainer(
+      duration: const Duration(milliseconds: 300),
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+      decoration: BoxDecoration(
+        color: isActive ? activeColor : Colors.transparent,
+        borderRadius: BorderRadius.circular(20),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(icon,
+              size: 13,
+              color: isActive ? Colors.white : AppTheme.lightTextHint),
+          const SizedBox(width: 4),
+          Text(
+            label,
+            style: TextStyle(
+              fontSize: 11,
+              fontWeight:
+                  isActive ? FontWeight.w700 : FontWeight.normal,
+              color: isActive ? Colors.white : AppTheme.lightTextHint,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+// ── Theme Toggle Tile ─────────────────────────────────────────
 class _ThemeToggleTile extends ConsumerWidget {
   const _ThemeToggleTile();
 
