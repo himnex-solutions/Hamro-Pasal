@@ -8,6 +8,51 @@ class AppTheme {
   static const Color primaryColor = Color(0xFF1E6FD9);
   static const Color primaryDark = Color(0xFF1557B0);
   static const Color primaryLight = Color(0xFF4D93E8);
+
+  // ── Gradient Helpers ─────────────────────────────────────────
+  static const LinearGradient primaryGradient = LinearGradient(
+    colors: [Color(0xFF60A5FA), Color(0xFF1E6FD9)],
+    begin: Alignment.topLeft,
+    end: Alignment.bottomRight,
+  );
+
+  static const LinearGradient darkBgGradient = LinearGradient(
+    colors: [Color(0xFF0F172A), Color(0xFF1A3A6E), Color(0xFF1E6FD9)],
+    begin: Alignment.topLeft,
+    end: Alignment.bottomRight,
+  );
+
+  static const LinearGradient successGradient = LinearGradient(
+    colors: [Color(0xFF34D399), Color(0xFF22C55E)],
+    begin: Alignment.topLeft,
+    end: Alignment.bottomRight,
+  );
+
+  static const LinearGradient warningGradient = LinearGradient(
+    colors: [Color(0xFFFBBF24), Color(0xFFF59E0B)],
+    begin: Alignment.topLeft,
+    end: Alignment.bottomRight,
+  );
+
+  // ── Shadow Helpers ───────────────────────────────────────────
+  static List<BoxShadow> cardShadow(Color color, {double opacity = 0.10}) => [
+    BoxShadow(
+      color: color.withValues(alpha: opacity),
+      blurRadius: 16,
+      offset: const Offset(0, 4),
+    ),
+  ];
+
+  static List<BoxShadow> glowShadow(Color color, {double opacity = 0.40}) => [
+    BoxShadow(
+      color: color.withValues(alpha: opacity),
+      blurRadius: 20,
+      spreadRadius: 2,
+      offset: const Offset(0, 4),
+    ),
+  ];
+
+  // Brand Accent Colors
   static const Color accentColor = Color(0xFF00C9A7);
   static const Color accentDark = Color(0xFF00A88A);
 

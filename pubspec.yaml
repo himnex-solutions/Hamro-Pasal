@@ -37,6 +37,12 @@ dependencies:
   shimmer: ^3.0.0
   cached_network_image: ^3.3.1
 
+  # Premium UI Additions
+  loading_animation_widget: ^1.2.1
+  animate_do: ^3.3.4
+  flutter_staggered_animations: ^1.1.1
+  smooth_page_indicator: ^1.2.0
+
   # Image picker & Camera
   image_picker: ^1.1.2
 
