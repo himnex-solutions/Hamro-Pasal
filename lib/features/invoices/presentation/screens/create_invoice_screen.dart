@@ -10,6 +10,7 @@ import 'package:hamro_pasal/core/constants/app_constants.dart';
 import 'package:hamro_pasal/core/theme/app_theme.dart';
 import 'package:hamro_pasal/core/widgets/app_button.dart';
 import 'package:hamro_pasal/core/widgets/app_snackbar.dart';
+import 'package:hamro_pasal/features/invoices/presentation/screens/invoices_screen.dart';
 
 // ── Line Item Model ────────────────────────────────────────────
 class _LineItem {
@@ -170,6 +171,8 @@ class _CreateInvoiceScreenState extends ConsumerState<CreateInvoiceScreen> {
       }
 
       if (mounted) {
+        // Refresh the invoices list so the new invoice appears immediately
+        ref.read(invoicesProvider.notifier).refresh();
         AppSnackbar.show(context, '✅ Invoice $invoiceNumber created!',
             isSuccess: true);
         context.pop();

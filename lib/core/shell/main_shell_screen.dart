@@ -1,11 +1,13 @@
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:hamro_pasal/core/router/app_router.dart';
 import 'package:hamro_pasal/core/theme/app_theme.dart';
 import 'package:hamro_pasal/core/services/sync_service.dart';
+import 'package:hamro_pasal/features/auth/presentation/providers/auth_provider.dart';
 
-class MainShellScreen extends ConsumerWidget {
+class MainShellScreen extends ConsumerStatefulWidget {
   final Widget child;
   const MainShellScreen({super.key, required this.child});
 
@@ -25,15 +27,44 @@ class MainShellScreen extends ConsumerWidget {
     _NavItem(AppRoutes.settings, Icons.settings_outlined, Icons.settings_rounded, 'Settings'),
   ];
 
+  @override
+  ConsumerState<MainShellScreen> createState() => _MainShellScreenState();
+}
+
+class _MainShellScreenState extends ConsumerState<MainShellScreen> {
+  Timer? _heartbeatTimer;
+
+  @override
+  void initState() {
+    super.initState();
+    // Send heartbeat immediately then every 5 minutes to keep session alive
+    _sendHeartbeat();
+    _heartbeatTimer = Timer.periodic(
+      const Duration(minutes: 5),
+      (_) => _sendHeartbeat(),
+    );
+  }
+
+  void _sendHeartbeat() {
+    ref.read(authProvider.notifier).heartbeat();
+  }
+
+  @override
+  void dispose() {
+    _heartbeatTimer?.cancel();
+    super.dispose();
+  }
+
   int _locationIndex(String location) {
-    for (int i = 0; i < _destinations.length; i++) {
-      if (location.startsWith(_destinations[i].route)) return i;
+    const destinations = MainShellScreen._destinations;
+    for (int i = 0; i < destinations.length; i++) {
+      if (location.startsWith(destinations[i].route)) return i;
     }
     return 0;
   }
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  Widget build(BuildContext context) {
     final location = GoRouterState.of(context).uri.path;
     final selectedIndex = _locationIndex(location);
     final screenWidth = MediaQuery.of(context).size.width;
@@ -41,25 +72,25 @@ class MainShellScreen extends ConsumerWidget {
     if (screenWidth >= 1200) {
       return _DesktopShell(
         selectedIndex: selectedIndex,
-        destinations: _destinations,
-        sidebarExtras: _sidebarExtras,
-        onDestinationSelected: (i) => context.go(_destinations[i].route),
-        onExtraSelected: (i) => context.push(_sidebarExtras[i].route),
-        child: child,
+        destinations: MainShellScreen._destinations,
+        sidebarExtras: MainShellScreen._sidebarExtras,
+        onDestinationSelected: (i) => context.go(MainShellScreen._destinations[i].route),
+        onExtraSelected: (i) => context.push(MainShellScreen._sidebarExtras[i].route),
+        child: widget.child,
       );
     } else if (screenWidth >= 600) {
       return _TabletShell(
         selectedIndex: selectedIndex,
-        destinations: _destinations,
-        onDestinationSelected: (i) => context.go(_destinations[i].route),
-        child: child,
+        destinations: MainShellScreen._destinations,
+        onDestinationSelected: (i) => context.go(MainShellScreen._destinations[i].route),
+        child: widget.child,
       );
     } else {
       return _MobileShell(
         selectedIndex: selectedIndex,
-        destinations: _destinations,
-        onDestinationSelected: (i) => context.go(_destinations[i].route),
-        child: child,
+        destinations: MainShellScreen._destinations,
+        onDestinationSelected: (i) => context.go(MainShellScreen._destinations[i].route),
+        child: widget.child,
       );
     }
   }

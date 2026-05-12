@@ -25,6 +25,7 @@ import 'package:hamro_pasal/features/transactions/presentation/screens/add_trans
 import 'package:hamro_pasal/features/transactions/presentation/screens/transaction_detail_screen.dart';
 import 'package:hamro_pasal/features/invoices/presentation/screens/invoices_screen.dart';
 import 'package:hamro_pasal/features/invoices/presentation/screens/create_invoice_screen.dart';
+import 'package:hamro_pasal/features/invoices/presentation/screens/invoice_detail_screen.dart';
 import 'package:hamro_pasal/features/expenses/presentation/screens/expenses_screen.dart';
 
 import 'package:hamro_pasal/features/reports/presentation/screens/reports_screen.dart';

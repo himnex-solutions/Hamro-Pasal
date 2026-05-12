@@ -234,15 +234,3 @@ class _InvoiceCard extends StatelessWidget {
   }
 }
 
-
-class InvoiceDetailScreen extends StatelessWidget {
-  final String invoiceId;
-  const InvoiceDetailScreen({super.key, required this.invoiceId});
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(title: const Text('Invoice')),
-      body: Center(child: Text('Invoice detail for: $invoiceId')),
-    );
-  }
-}

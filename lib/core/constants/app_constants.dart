@@ -18,7 +18,8 @@ class AppConstants {
   static const String kOnboardingDone = 'onboarding_done';
   static const String kThemeMode = 'theme_mode';
   static const String kLastSyncTime = 'last_sync_time';
-  static const String kEmailVerified = 'email_verified'; // OTP verified flag
+  static const String kEmailVerified = 'email_verified'; // legacy (kept for compat)
+  static const String kDeviceId = 'device_id'; // stable per-browser/device UUID
 
   // ── Subscription Statuses ─────────────────────────────────
   static const String statusTrialActive = 'trial_active';
