@@ -7,6 +7,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:uuid/uuid.dart';
 import 'package:hamro_pasal/core/constants/app_constants.dart';
+import 'package:hamro_pasal/core/l10n/app_strings.dart';
 import 'package:hamro_pasal/core/theme/app_theme.dart';
 import 'package:hamro_pasal/core/widgets/app_button.dart';
 import 'package:hamro_pasal/core/widgets/app_snackbar.dart';
@@ -208,7 +209,7 @@ class _CreateInvoiceScreenState extends ConsumerState<CreateInvoiceScreen> {
     final fmt = NumberFormat('#,##,##0.00');
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Create Invoice'),
+        title: Text(context.l10n.createInvoice),
         leading: IconButton(
           icon: const Icon(Icons.arrow_back_ios_rounded),
           onPressed: () => context.pop(),
@@ -217,7 +218,7 @@ class _CreateInvoiceScreenState extends ConsumerState<CreateInvoiceScreen> {
           TextButton.icon(
             onPressed: _isLoading ? null : _saveInvoice,
             icon: const Icon(Icons.check_rounded),
-            label: const Text('Save'),
+            label: Text(context.l10n.save),
             style: TextButton.styleFrom(foregroundColor: AppTheme.primaryColor),
           ),
         ],
@@ -317,7 +318,7 @@ class _CreateInvoiceScreenState extends ConsumerState<CreateInvoiceScreen> {
                       onPressed: () =>
                           setState(() => _items.add(_LineItem())),
                       icon: const Icon(Icons.add, size: 16),
-                      label: const Text('Add Row'),
+                      label: Text(context.l10n.addItem),
                     ),
                     child: Column(
                       children: [

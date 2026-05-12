@@ -7,6 +7,7 @@ import 'package:printing/printing.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:hamro_pasal/core/constants/app_constants.dart';
+import 'package:hamro_pasal/core/l10n/app_strings.dart';
 import 'package:hamro_pasal/core/theme/app_theme.dart';
 import 'package:hamro_pasal/core/widgets/app_snackbar.dart';
 
@@ -75,11 +76,11 @@ class _InvoiceDetailScreenState extends State<InvoiceDetailScreen> {
     final confirm = await showDialog<bool>(
       context: context,
       builder: (_) => AlertDialog(
-        title: const Text('Mark as Paid'),
-        content: const Text('Mark this invoice as fully paid?'),
+        title: Text(context.l10n.markAsPaid),
+        content: Text('${context.l10n.markAsPaid}?'),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(context, false), child: const Text('Cancel')),
-          ElevatedButton(onPressed: () => Navigator.pop(context, true), child: const Text('Confirm')),
+          TextButton(onPressed: () => Navigator.pop(context, false), child: Text(context.l10n.cancel)),
+          ElevatedButton(onPressed: () => Navigator.pop(context, true), child: Text(context.l10n.confirm)),
         ],
       ),
     );
@@ -385,7 +386,7 @@ class _InvoiceDetailScreenState extends State<InvoiceDetailScreen> {
     if (_isLoading) return const Scaffold(body: Center(child: CircularProgressIndicator()));
     if (_invoice == null) {
       return Scaffold(
-        appBar: AppBar(title: const Text('Invoice')),
+        appBar: AppBar(title: Text(context.l10n.invoice)),
         body: const Center(child: Text('Invoice not found')),
       );
     }
@@ -416,7 +417,7 @@ class _InvoiceDetailScreenState extends State<InvoiceDetailScreen> {
             TextButton.icon(
               onPressed: _markAsPaid,
               icon: const Icon(Icons.check_circle_outline),
-              label: const Text('Mark Paid'),
+              label: Text(context.l10n.markAsPaid),
               style: TextButton.styleFrom(foregroundColor: AppTheme.successColor),
             ),
           IconButton(

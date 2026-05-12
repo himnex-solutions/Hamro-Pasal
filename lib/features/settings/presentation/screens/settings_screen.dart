@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:hamro_pasal/core/l10n/app_strings.dart';
+import 'package:hamro_pasal/core/providers/locale_provider.dart';
 import 'package:hamro_pasal/core/router/app_router.dart';
 import 'package:hamro_pasal/core/theme/app_theme.dart';
 import 'package:hamro_pasal/core/theme/theme_provider.dart';
@@ -16,127 +18,131 @@ class SettingsScreen extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final l = context.l10n;
     return Scaffold(
-      appBar: AppBar(title: const Text('Settings')),
+      appBar: AppBar(title: Text(l.settings)),
       body: ListView(
         padding: const EdgeInsets.all(16),
         children: [
-          // Profile section
-          const _SectionHeader('Account'),
+          // ── Account ──────────────────────────────────────
+          _SectionHeader(l.account),
           _SettingsTile(
             icon: Icons.person_outline,
-            title: 'Profile',
-            subtitle: 'Edit your personal information',
+            title: l.profile,
+            subtitle: l.editProfile,
             onTap: () => Navigator.of(context).push(
-              MaterialPageRoute(
-                builder: (_) => const ProfileEditScreen(),
-              ),
+              MaterialPageRoute(builder: (_) => const ProfileEditScreen()),
             ),
           ),
           _SettingsTile(
             icon: Icons.store_outlined,
-            title: 'Business Profile',
-            subtitle: 'Edit business name, logo, address',
+            title: l.businessProfile,
+            subtitle: l.editBusiness,
             onTap: () => Navigator.of(context).push(
-              MaterialPageRoute(
-                builder: (_) => const BusinessProfileEditScreen(),
-              ),
+              MaterialPageRoute(builder: (_) => const BusinessProfileEditScreen()),
             ),
           ),
           const _SwitchProfileTile(),
 
           const SizedBox(height: 20),
-          const _SectionHeader('Preferences'),
+
+          // ── Preferences ───────────────────────────────────
+          _SectionHeader(l.preferences),
           const _ThemeToggleTile(),
-          _SettingsTile(
-            icon: Icons.language_outlined,
-            title: 'Language',
-            subtitle: 'English (Nepali coming soon)',
-            onTap: () {},
-          ),
+          const _LanguageTile(),          // ← working language picker
           _SettingsTile(
             icon: Icons.currency_rupee_outlined,
-            title: 'Currency',
-            subtitle: 'NPR — Nepalese Rupee',
+            title: l.currency2,
+            subtitle: l.currencySubtitle,
             onTap: () {},
           ),
 
           const SizedBox(height: 20),
-          const _SectionHeader('Subscription'),
+
+          // ── Subscription ──────────────────────────────────
+          _SectionHeader(l.subscription),
           _SettingsTile(
             icon: Icons.workspace_premium_outlined,
-            title: 'Manage Subscription',
-            subtitle: 'View plans & payment history',
+            title: l.manageSubscription,
+            subtitle: l.viewPlans,
             color: AppTheme.primaryColor,
             onTap: () => context.push(AppRoutes.subscription),
           ),
 
           const SizedBox(height: 20),
-          const _SectionHeader('Data & Sync'),
+
+          // ── Data & Sync ───────────────────────────────────
+          _SectionHeader(l.dataSync),
           _SettingsTile(
             icon: Icons.sync_outlined,
-            title: 'Sync Now',
-            subtitle: 'Manually sync offline data',
+            title: l.syncNow,
+            subtitle: l.syncSubtitle,
             onTap: () => AppSnackbar.show(context, 'Sync started...'),
           ),
           _SettingsTile(
             icon: Icons.backup_outlined,
-            title: 'Backup Data',
-            subtitle: 'Export all your business data',
+            title: l.backupData,
+            subtitle: l.backupSubtitle,
             onTap: () {},
           ),
 
           const SizedBox(height: 20),
-          const _SectionHeader('Support'),
+
+          // ── Support ───────────────────────────────────────
+          _SectionHeader(l.support),
           _SettingsTile(
             icon: Icons.help_outline_rounded,
-            title: 'Help & FAQ',
-            subtitle: 'Get help with Hamro Pasal',
+            title: l.helpFaq,
+            subtitle: l.helpSubtitle,
             onTap: () {},
           ),
           _SettingsTile(
             icon: Icons.feedback_outlined,
-            title: 'Send Feedback',
-            subtitle: 'Help us improve the app',
+            title: l.sendFeedback,
+            subtitle: l.feedbackSubtitle,
             onTap: () {},
           ),
           _SettingsTile(
             icon: Icons.privacy_tip_outlined,
-            title: 'Privacy Policy',
+            title: l.privacyPolicy,
             onTap: () {},
           ),
           _SettingsTile(
             icon: Icons.description_outlined,
-            title: 'Terms of Service',
+            title: l.termsOfService,
             onTap: () {},
           ),
 
           const SizedBox(height: 24),
-          // App version
+
           Center(
             child: Text(
-              'Hamro Pasal v1.0.0\nMade with ❤️ for Nepal 🇳🇵',
+              l.madeWithLove,
               style: Theme.of(context).textTheme.bodySmall,
               textAlign: TextAlign.center,
             ),
           ),
           const SizedBox(height: 20),
 
-          // Sign out
+          // ── Sign Out ──────────────────────────────────────
           OutlinedButton.icon(
             onPressed: () async {
               final confirmed = await showDialog<bool>(
                 context: context,
                 builder: (ctx) => AlertDialog(
-                  title: const Text('Sign Out'),
-                  content: const Text('Are you sure you want to sign out?'),
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                  title: Text(l.signOut),
+                  content: Text(l.signOutConfirm),
+                  shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(16)),
                   actions: [
-                    TextButton(onPressed: () => Navigator.pop(ctx, false), child: const Text('Cancel')),
+                    TextButton(
+                        onPressed: () => Navigator.pop(ctx, false),
+                        child: Text(l.cancel)),
                     ElevatedButton(
-                      style: ElevatedButton.styleFrom(backgroundColor: AppTheme.errorColor),
+                      style: ElevatedButton.styleFrom(
+                          backgroundColor: AppTheme.errorColor),
                       onPressed: () => Navigator.pop(ctx, true),
-                      child: const Text('Sign Out'),
+                      child: Text(l.signOut),
                     ),
                   ],
                 ),
@@ -152,7 +158,7 @@ class SettingsScreen extends ConsumerWidget {
               minimumSize: const Size(double.infinity, 48),
             ),
             icon: const Icon(Icons.logout_rounded),
-            label: const Text('Sign Out'),
+            label: Text(l.signOut),
           ).animate(delay: 100.ms).fadeIn(),
           const SizedBox(height: 24),
         ],
@@ -161,6 +167,134 @@ class SettingsScreen extends ConsumerWidget {
   }
 }
 
+// ── Language Tile ─────────────────────────────────────────────
+class _LanguageTile extends ConsumerWidget {
+  const _LanguageTile();
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final l = context.l10n;
+    final currentLocale = ref.watch(localeProvider);
+    final isNepali = currentLocale.languageCode == 'ne';
+    final subtitle = isNepali ? 'नेपाली' : 'English';
+
+    return Card(
+      margin: const EdgeInsets.symmetric(vertical: 4),
+      child: ListTile(
+        leading: Container(
+          width: 40,
+          height: 40,
+          decoration: BoxDecoration(
+            color: AppTheme.primaryColor.withValues(alpha: 0.08),
+            borderRadius: BorderRadius.circular(10),
+          ),
+          child: const Icon(Icons.language_outlined,
+              color: AppTheme.lightTextSecondary, size: 20),
+        ),
+        title: Text(l.language,
+            style: Theme.of(context).textTheme.titleMedium),
+        subtitle: Text(subtitle,
+            style: Theme.of(context).textTheme.bodySmall),
+        trailing: const Icon(Icons.chevron_right,
+            color: AppTheme.lightTextHint),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+        onTap: () => _showLanguagePicker(context, ref, currentLocale),
+      ),
+    );
+  }
+
+  Future<void> _showLanguagePicker(
+      BuildContext context, WidgetRef ref, Locale currentLocale) async {
+    final l = context.l10n;
+    await showDialog<void>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: Text(l.selectLanguage),
+        shape:
+            RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+        contentPadding:
+            const EdgeInsets.symmetric(vertical: 16, horizontal: 0),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            _LangOption(
+              flag: '🇬🇧',
+              label: 'English',
+              sublabel: 'English',
+              isSelected: currentLocale.languageCode == 'en',
+              onTap: () async {
+                Navigator.pop(ctx);
+                await ref
+                    .read(localeProvider.notifier)
+                    .setLocale(const Locale('en'));
+                if (context.mounted) {
+                  AppSnackbar.show(context, '🇬🇧 Language changed to English',
+                      isSuccess: true);
+                }
+              },
+            ),
+            const Divider(height: 1, indent: 16, endIndent: 16),
+            _LangOption(
+              flag: '🇳🇵',
+              label: 'नेपाली',
+              sublabel: 'Nepali',
+              isSelected: currentLocale.languageCode == 'ne',
+              onTap: () async {
+                Navigator.pop(ctx);
+                await ref
+                    .read(localeProvider.notifier)
+                    .setLocale(const Locale('ne'));
+                if (context.mounted) {
+                  AppSnackbar.show(context, '🇳🇵 भाषा नेपालीमा परिवर्तन भयो',
+                      isSuccess: true);
+                }
+              },
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _LangOption extends StatelessWidget {
+  final String flag;
+  final String label;
+  final String sublabel;
+  final bool isSelected;
+  final VoidCallback onTap;
+  const _LangOption({
+    required this.flag,
+    required this.label,
+    required this.sublabel,
+    required this.isSelected,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return ListTile(
+      contentPadding:
+          const EdgeInsets.symmetric(horizontal: 20, vertical: 4),
+      leading: Text(flag, style: const TextStyle(fontSize: 28)),
+      title: Text(label,
+          style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                fontWeight:
+                    isSelected ? FontWeight.w700 : FontWeight.normal,
+                color: isSelected ? AppTheme.primaryColor : null,
+              )),
+      subtitle: Text(sublabel,
+          style: Theme.of(context).textTheme.bodySmall),
+      trailing: isSelected
+          ? const Icon(Icons.check_circle_rounded,
+              color: AppTheme.primaryColor, size: 22)
+          : null,
+      onTap: onTap,
+    );
+  }
+}
+
+// ── Section Header ────────────────────────────────────────────
 class _SectionHeader extends StatelessWidget {
   final String title;
   const _SectionHeader(this.title);
@@ -180,13 +314,19 @@ class _SectionHeader extends StatelessWidget {
   }
 }
 
+// ── Settings Tile ─────────────────────────────────────────────
 class _SettingsTile extends StatelessWidget {
   final IconData icon;
   final String title;
   final String? subtitle;
   final VoidCallback? onTap;
   final Color? color;
-  const _SettingsTile({required this.icon, required this.title, this.subtitle, this.onTap, this.color});
+  const _SettingsTile(
+      {required this.icon,
+      required this.title,
+      this.subtitle,
+      this.onTap,
+      this.color});
 
   @override
   Widget build(BuildContext context) {
@@ -194,36 +334,43 @@ class _SettingsTile extends StatelessWidget {
       margin: const EdgeInsets.symmetric(vertical: 4),
       child: ListTile(
         leading: Container(
-          width: 40, height: 40,
+          width: 40,
+          height: 40,
           decoration: BoxDecoration(
             color: (color ?? AppTheme.primaryColor).withValues(alpha: 0.08),
             borderRadius: BorderRadius.circular(10),
           ),
-          child: Icon(icon, color: color ?? AppTheme.lightTextSecondary, size: 20),
+          child: Icon(icon,
+              color: color ?? AppTheme.lightTextSecondary, size: 20),
         ),
-        title: Text(title, style: Theme.of(context).textTheme.titleMedium),
+        title: Text(title,
+            style: Theme.of(context).textTheme.titleMedium),
         subtitle: subtitle != null
-            ? Text(subtitle!, style: Theme.of(context).textTheme.bodySmall)
+            ? Text(subtitle!,
+                style: Theme.of(context).textTheme.bodySmall)
             : null,
-        trailing: const Icon(Icons.chevron_right, color: AppTheme.lightTextHint),
+        trailing: const Icon(Icons.chevron_right,
+            color: AppTheme.lightTextHint),
         onTap: onTap,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+        shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(12)),
       ),
     );
   }
 }
 
-// ── Switch Profile Tile ─────────────────────────────────────
+// ── Switch Profile Tile ───────────────────────────────────────
 class _SwitchProfileTile extends ConsumerWidget {
   const _SwitchProfileTile();
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final l = context.l10n;
     final mode = ref.watch(profileModeProvider);
     final isPersonal = mode == ProfileMode.personal;
     final accentColor = isPersonal
-        ? const Color(0xFF8E44AD)  // purple for personal
-        : AppTheme.primaryColor;   // brand green for business
+        ? const Color(0xFF8E44AD)
+        : AppTheme.primaryColor;
 
     return Card(
       margin: const EdgeInsets.symmetric(vertical: 4),
@@ -233,17 +380,15 @@ class _SwitchProfileTile extends ConsumerWidget {
           ref.read(profileModeProvider.notifier).toggle();
           AppSnackbar.show(
             context,
-            isPersonal
-                ? '🏢 Switched to Business Mode'
-                : '👤 Switched to Personal Mode',
+            isPersonal ? l.switchedToBusiness : l.switchedToPersonal,
             isSuccess: true,
           );
         },
         child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+          padding:
+              const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
           child: Row(
             children: [
-              // Animated icon container
               AnimatedContainer(
                 duration: const Duration(milliseconds: 300),
                 width: 40,
@@ -269,16 +414,14 @@ class _SwitchProfileTile extends ConsumerWidget {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(
-                      'Switch Profile',
-                      style: Theme.of(context).textTheme.titleMedium,
-                    ),
+                    Text(l.switchProfile,
+                        style: Theme.of(context).textTheme.titleMedium),
                     AnimatedSwitcher(
                       duration: const Duration(milliseconds: 250),
                       child: Text(
                         isPersonal
-                            ? 'Currently: Personal View'
-                            : 'Currently: Business View',
+                            ? l.currentlyPersonal
+                            : l.currentlyBusiness,
                         key: ValueKey(isPersonal),
                         style: Theme.of(context)
                             .textTheme
@@ -289,7 +432,6 @@ class _SwitchProfileTile extends ConsumerWidget {
                   ],
                 ),
               ),
-              // Animated segmented toggle
               AnimatedContainer(
                 duration: const Duration(milliseconds: 300),
                 height: 32,
@@ -303,13 +445,13 @@ class _SwitchProfileTile extends ConsumerWidget {
                   mainAxisSize: MainAxisSize.min,
                   children: [
                     _ModeChip(
-                      label: 'Personal',
+                      label: l.personal,
                       icon: Icons.person_outline,
                       isActive: isPersonal,
                       activeColor: const Color(0xFF8E44AD),
                     ),
                     _ModeChip(
-                      label: 'Business',
+                      label: l.business,
                       icon: Icons.store_outlined,
                       isActive: !isPersonal,
                       activeColor: AppTheme.primaryColor,
@@ -374,28 +516,34 @@ class _ThemeToggleTile extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    final l = context.l10n;
     final themeMode = ref.watch(themeModeProvider);
+    final isDark = themeMode == ThemeMode.dark;
     return Card(
       margin: const EdgeInsets.symmetric(vertical: 4),
       child: ListTile(
         leading: Container(
-          width: 40, height: 40,
+          width: 40,
+          height: 40,
           decoration: BoxDecoration(
             color: AppTheme.primaryColor.withValues(alpha: 0.08),
             borderRadius: BorderRadius.circular(10),
           ),
           child: Icon(
-            themeMode == ThemeMode.dark ? Icons.dark_mode_outlined : Icons.light_mode_outlined,
-            color: AppTheme.lightTextSecondary, size: 20,
+            isDark ? Icons.dark_mode_outlined : Icons.light_mode_outlined,
+            color: AppTheme.lightTextSecondary,
+            size: 20,
           ),
         ),
-        title: const Text('Dark Mode'),
-        subtitle: Text(themeMode == ThemeMode.dark ? 'On' : 'Off'),
+        title: Text(l.darkMode),
+        subtitle: Text(isDark ? l.on : l.off),
         trailing: Switch(
-          value: themeMode == ThemeMode.dark,
-          onChanged: (_) => ref.read(themeModeProvider.notifier).toggleTheme(),
+          value: isDark,
+          onChanged: (_) =>
+              ref.read(themeModeProvider.notifier).toggleTheme(),
         ),
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+        shape:
+            RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
       ),
     );
   }

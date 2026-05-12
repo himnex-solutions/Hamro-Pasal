@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 import 'package:hamro_pasal/core/constants/app_constants.dart';
+import 'package:hamro_pasal/core/l10n/app_strings.dart';
 import 'package:hamro_pasal/core/router/app_router.dart';
 import 'package:hamro_pasal/core/theme/app_theme.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -95,7 +96,7 @@ class _InvoicesScreenState extends ConsumerState<InvoicesScreen>
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Invoices'),
+        title: Text(context.l10n.invoices),
         bottom: TabBar(
           controller: _tabCtrl,
           tabs: const [Tab(text: 'All'), Tab(text: 'Unpaid'), Tab(text: 'Paid')],
@@ -127,7 +128,7 @@ class _InvoicesScreenState extends ConsumerState<InvoicesScreen>
       floatingActionButton: FloatingActionButton.extended(
         onPressed: () => context.push(AppRoutes.createInvoice),
         icon: const Icon(Icons.add),
-        label: const Text('Create Invoice'),
+        label: Text(context.l10n.createInvoice),
         backgroundColor: AppTheme.primaryColor,
         foregroundColor: Colors.white,
       ),

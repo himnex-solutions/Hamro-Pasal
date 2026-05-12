@@ -20,6 +20,7 @@ class AppConstants {
   static const String kLastSyncTime = 'last_sync_time';
   static const String kEmailVerified = 'email_verified'; // legacy (kept for compat)
   static const String kDeviceId = 'device_id'; // stable per-browser/device UUID
+  static const String kLocale = 'locale'; // 'en' or 'ne'
 
   // ── Subscription Statuses ─────────────────────────────────
   static const String statusTrialActive = 'trial_active';

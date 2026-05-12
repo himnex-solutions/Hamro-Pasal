@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 import 'package:hamro_pasal/core/constants/app_constants.dart';
+import 'package:hamro_pasal/core/l10n/app_strings.dart';
 import 'package:hamro_pasal/core/router/app_router.dart';
 import 'package:hamro_pasal/core/theme/app_theme.dart';
 import 'package:hamro_pasal/features/inventory/data/models/product_model.dart';
@@ -68,14 +69,15 @@ class _InventoryScreenState extends ConsumerState<InventoryScreen> {
   Widget build(BuildContext context) {
     final inventoryAsync = ref.watch(inventoryProvider);
 
+    final l = context.l10n;
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Inventory'),
+        title: Text(l.inventory),
         actions: [
           IconButton(
             onPressed: () => context.push(AppRoutes.addProduct),
             icon: const Icon(Icons.add_box_outlined),
-            tooltip: 'Add Product',
+            tooltip: l.addProduct,
           ),
         ],
       ),
@@ -90,7 +92,7 @@ class _InventoryScreenState extends ConsumerState<InventoryScreen> {
                   child: TextField(
                     controller: _searchCtrl,
                     decoration: InputDecoration(
-                      hintText: 'Search products...',
+                      hintText: l.searchProducts,
                       prefixIcon: const Icon(Icons.search, size: 20),
                       suffixIcon: _search.isNotEmpty
                           ? IconButton(
@@ -105,7 +107,7 @@ class _InventoryScreenState extends ConsumerState<InventoryScreen> {
                 ),
                 const SizedBox(width: 10),
                 FilterChip(
-                  label: const Text('Low Stock'),
+                  label: Text(l.lowStock),
                   selected: _filter == 'low_stock',
                   onSelected: (v) =>
                       setState(() => _filter = v ? 'low_stock' : 'all'),
@@ -148,7 +150,7 @@ class _InventoryScreenState extends ConsumerState<InventoryScreen> {
                         const SizedBox(height: 16),
                         Text(_filter == 'low_stock'
                             ? 'No low stock items 🎉'
-                            : 'No products found',
+                            : l.noProductsFound,
                             style: Theme.of(context).textTheme.titleMedium),
                         if (_filter == 'all') ...[
                           const SizedBox(height: 8),
@@ -159,7 +161,7 @@ class _InventoryScreenState extends ConsumerState<InventoryScreen> {
                           ElevatedButton.icon(
                             onPressed: () => context.push(AppRoutes.addProduct),
                             icon: const Icon(Icons.add),
-                            label: const Text('Add Product'),
+                            label: Text(l.addProduct),
                           ),
                         ],
                       ],
@@ -191,7 +193,7 @@ class _InventoryScreenState extends ConsumerState<InventoryScreen> {
       floatingActionButton: FloatingActionButton.extended(
         onPressed: () => context.push(AppRoutes.addProduct),
         icon: const Icon(Icons.add),
-        label: const Text('Add Product'),
+        label: Text(l.addProduct),
         backgroundColor: AppTheme.primaryColor,
         foregroundColor: Colors.white,
       ),
@@ -213,12 +215,12 @@ class _InventoryStats extends StatelessWidget {
       padding: const EdgeInsets.fromLTRB(16, 0, 16, 8),
       child: Row(
         children: [
-          _StatChip('${products.length} Products', Icons.inventory_2_outlined, AppTheme.primaryColor),
+          _StatChip('${products.length} ${context.l10n.products}', Icons.inventory_2_outlined, AppTheme.primaryColor),
           const SizedBox(width: 8),
-          _StatChip('Rs. $formatted Value', Icons.monetization_on_outlined, AppTheme.successColor),
+          _StatChip('Rs. $formatted', Icons.monetization_on_outlined, AppTheme.successColor),
           const SizedBox(width: 8),
           if (lowStockCount > 0)
-            _StatChip('$lowStockCount Low Stock', Icons.warning_amber_outlined, AppTheme.warningColor),
+            _StatChip('$lowStockCount ${context.l10n.lowStock}', Icons.warning_amber_outlined, AppTheme.warningColor),
         ],
       ),
     );
@@ -318,7 +320,7 @@ class _ProductCard extends StatelessWidget {
                     const SizedBox(height: 4),
                     Row(
                       children: [
-                        Text('Stock: ',
+                        Text('${context.l10n.stock}: ',
                             style: Theme.of(context).textTheme.bodySmall),
                         Text(
                           '${product.stockQuantity.toStringAsFixed(product.stockQuantity % 1 == 0 ? 0 : 2)} ${product.unit ?? ''}',

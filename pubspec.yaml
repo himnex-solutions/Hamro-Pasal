@@ -11,6 +11,8 @@ dependencies:
     sdk: flutter
   flutter_web_plugins:
     sdk: flutter
+  flutter_localizations:
+    sdk: flutter
 
   # Backend
   supabase_flutter: ^2.5.6
@@ -48,7 +50,7 @@ dependencies:
   timezone: ^0.9.4
 
   # Utilities
-  intl: ^0.19.0
+  intl: ^0.20.2
   uuid: ^4.4.2
   url_launcher: ^6.3.0
   share_plus: ^9.0.0

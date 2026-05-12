@@ -2,6 +2,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:hamro_pasal/core/l10n/app_strings.dart';
 import 'package:hamro_pasal/core/router/app_router.dart';
 import 'package:hamro_pasal/core/theme/app_theme.dart';
 import 'package:hamro_pasal/core/services/sync_service.dart';
@@ -11,20 +12,30 @@ class MainShellScreen extends ConsumerStatefulWidget {
   final Widget child;
   const MainShellScreen({super.key, required this.child});
 
-  static const _destinations = [
-    _NavItem(AppRoutes.dashboard, Icons.dashboard_outlined, Icons.dashboard_rounded, 'Dashboard'),
-    _NavItem(AppRoutes.transactions, Icons.receipt_long_outlined, Icons.receipt_long_rounded, 'Transactions'),
-    _NavItem(AppRoutes.parties, Icons.people_outline, Icons.people_rounded, 'Parties'),
-    _NavItem(AppRoutes.inventory, Icons.inventory_2_outlined, Icons.inventory_2_rounded, 'Inventory'),
-    _NavItem(AppRoutes.expenses, Icons.wallet_outlined, Icons.wallet_rounded, 'Expenses'),
+  // Routes are stable constants — labels come from l10n in build()
+  static const _routes = [
+    AppRoutes.dashboard, AppRoutes.transactions, AppRoutes.parties,
+    AppRoutes.inventory, AppRoutes.expenses,
   ];
-
-  static const _sidebarExtras = [
-    _NavItem(AppRoutes.invoices, Icons.description_outlined, Icons.description_rounded, 'Invoices'),
-    _NavItem(AppRoutes.reports, Icons.bar_chart_outlined, Icons.bar_chart_rounded, 'Reports'),
-    _NavItem(AppRoutes.accounts, Icons.account_balance_outlined, Icons.account_balance_rounded, 'Accounts'),
-    _NavItem(AppRoutes.staff, Icons.group_outlined, Icons.group_rounded, 'Staff'),
-    _NavItem(AppRoutes.settings, Icons.settings_outlined, Icons.settings_rounded, 'Settings'),
+  static const _icons = [
+    Icons.dashboard_outlined, Icons.receipt_long_outlined, Icons.people_outline,
+    Icons.inventory_2_outlined, Icons.wallet_outlined,
+  ];
+  static const _activeIcons = [
+    Icons.dashboard_rounded, Icons.receipt_long_rounded, Icons.people_rounded,
+    Icons.inventory_2_rounded, Icons.wallet_rounded,
+  ];
+  static const _extraRoutes = [
+    AppRoutes.invoices, AppRoutes.reports, AppRoutes.accounts,
+    AppRoutes.staff, AppRoutes.settings,
+  ];
+  static const _extraIcons = [
+    Icons.description_outlined, Icons.bar_chart_outlined,
+    Icons.account_balance_outlined, Icons.group_outlined, Icons.settings_outlined,
+  ];
+  static const _extraActiveIcons = [
+    Icons.description_rounded, Icons.bar_chart_rounded,
+    Icons.account_balance_rounded, Icons.group_rounded, Icons.settings_rounded,
   ];
 
   @override
@@ -56,40 +67,57 @@ class _MainShellScreenState extends ConsumerState<MainShellScreen> {
   }
 
   int _locationIndex(String location) {
-    const destinations = MainShellScreen._destinations;
-    for (int i = 0; i < destinations.length; i++) {
-      if (location.startsWith(destinations[i].route)) return i;
+    for (int i = 0; i < MainShellScreen._routes.length; i++) {
+      if (location.startsWith(MainShellScreen._routes[i])) return i;
     }
     return 0;
   }
 
   @override
   Widget build(BuildContext context) {
+    final l = context.l10n;
     final location = GoRouterState.of(context).uri.path;
     final selectedIndex = _locationIndex(location);
     final screenWidth = MediaQuery.of(context).size.width;
 
+    // Build localized nav items
+    final labels = [l.dashboard, l.transactions, l.parties, l.inventory, l.expenses];
+    final extraLabels = [l.invoices, l.reports, l.accounts, l.staff, l.settings];
+
+    final destinations = List.generate(MainShellScreen._routes.length, (i) => _NavItem(
+      MainShellScreen._routes[i],
+      MainShellScreen._icons[i],
+      MainShellScreen._activeIcons[i],
+      labels[i],
+    ));
+    final sidebarExtras = List.generate(MainShellScreen._extraRoutes.length, (i) => _NavItem(
+      MainShellScreen._extraRoutes[i],
+      MainShellScreen._extraIcons[i],
+      MainShellScreen._extraActiveIcons[i],
+      extraLabels[i],
+    ));
+
     if (screenWidth >= 1200) {
       return _DesktopShell(
         selectedIndex: selectedIndex,
-        destinations: MainShellScreen._destinations,
-        sidebarExtras: MainShellScreen._sidebarExtras,
-        onDestinationSelected: (i) => context.go(MainShellScreen._destinations[i].route),
-        onExtraSelected: (i) => context.push(MainShellScreen._sidebarExtras[i].route),
+        destinations: destinations,
+        sidebarExtras: sidebarExtras,
+        onDestinationSelected: (i) => context.go(destinations[i].route),
+        onExtraSelected: (i) => context.push(sidebarExtras[i].route),
         child: widget.child,
       );
     } else if (screenWidth >= 600) {
       return _TabletShell(
         selectedIndex: selectedIndex,
-        destinations: MainShellScreen._destinations,
-        onDestinationSelected: (i) => context.go(MainShellScreen._destinations[i].route),
+        destinations: destinations,
+        onDestinationSelected: (i) => context.go(destinations[i].route),
         child: widget.child,
       );
     } else {
       return _MobileShell(
         selectedIndex: selectedIndex,
-        destinations: MainShellScreen._destinations,
-        onDestinationSelected: (i) => context.go(MainShellScreen._destinations[i].route),
+        destinations: destinations,
+        onDestinationSelected: (i) => context.go(destinations[i].route),
         child: widget.child,
       );
     }

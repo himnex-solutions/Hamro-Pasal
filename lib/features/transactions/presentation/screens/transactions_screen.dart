@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 import 'package:hamro_pasal/core/constants/app_constants.dart';
+import 'package:hamro_pasal/core/l10n/app_strings.dart';
 import 'package:hamro_pasal/core/router/app_router.dart';
 import 'package:hamro_pasal/core/theme/app_theme.dart';
 import 'package:hamro_pasal/features/transactions/data/models/transaction_model.dart';
@@ -83,17 +84,18 @@ class _TransactionsScreenState extends ConsumerState<TransactionsScreen>
   Widget build(BuildContext context) {
     final txAsync = ref.watch(transactionsProvider);
 
+    final l = context.l10n;
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Transactions'),
+        title: Text(l.transactions),
         bottom: TabBar(
           controller: _tabCtrl,
           isScrollable: true,
-          tabs: const [
-            Tab(text: 'All'),
-            Tab(text: 'Sales'),
-            Tab(text: 'Purchases'),
-            Tab(text: 'Expenses'),
+          tabs: [
+            Tab(text: l.all),
+            Tab(text: l.sale),
+            Tab(text: l.purchase),
+            Tab(text: l.expenses),
           ],
         ),
         actions: [
@@ -110,7 +112,7 @@ class _TransactionsScreenState extends ConsumerState<TransactionsScreen>
             child: TextField(
               controller: _searchCtrl,
               decoration: InputDecoration(
-                hintText: 'Search transactions...',
+                hintText: l.searchTransactions,
                 prefixIcon: const Icon(Icons.search, size: 20),
                 suffixIcon: _search.isNotEmpty
                     ? IconButton(
@@ -143,7 +145,7 @@ class _TransactionsScreenState extends ConsumerState<TransactionsScreen>
       floatingActionButton: FloatingActionButton.extended(
         onPressed: () => context.push(AppRoutes.addTransaction),
         icon: const Icon(Icons.add),
-        label: const Text('New Transaction'),
+        label: Text(l.addTransaction),
         backgroundColor: AppTheme.primaryColor,
         foregroundColor: Colors.white,
       ),
@@ -164,7 +166,7 @@ class _TxList extends StatelessWidget {
           children: [
             const Icon(Icons.receipt_long_outlined, size: 56, color: AppTheme.lightTextHint),
             const SizedBox(height: 16),
-            Text('No transactions found', style: Theme.of(context).textTheme.titleMedium),
+            Text(context.l10n.noTransactionsFound, style: Theme.of(context).textTheme.titleMedium),
           ],
         ),
       );

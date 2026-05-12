@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 import 'package:hamro_pasal/core/constants/app_constants.dart';
+import 'package:hamro_pasal/core/l10n/app_strings.dart';
 import 'package:hamro_pasal/core/router/app_router.dart';
 import 'package:hamro_pasal/core/theme/app_theme.dart';
 
@@ -82,22 +83,23 @@ class _PartiesScreenState extends ConsumerState<PartiesScreen>
   Widget build(BuildContext context) {
     final partiesAsync = ref.watch(partiesProvider);
 
+    final l = context.l10n;
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Parties'),
+        title: Text(l.parties),
         bottom: TabBar(
           controller: _tabController,
-          tabs: const [
-            Tab(text: 'All'),
-            Tab(text: 'Customers'),
-            Tab(text: 'Suppliers'),
+          tabs: [
+            Tab(text: l.all),
+            Tab(text: l.customers),
+            Tab(text: l.suppliers),
           ],
         ),
         actions: [
           IconButton(
             onPressed: () => context.push(AppRoutes.addParty),
             icon: const Icon(Icons.person_add_outlined),
-            tooltip: 'Add Party',
+            tooltip: l.addParty,
           ),
         ],
       ),
@@ -109,7 +111,7 @@ class _PartiesScreenState extends ConsumerState<PartiesScreen>
             child: TextField(
               controller: _searchCtrl,
               decoration: InputDecoration(
-                hintText: 'Search parties...',
+                hintText: l.searchParties,
                 prefixIcon: const Icon(Icons.search, size: 20),
                 suffixIcon: _search.isNotEmpty
                     ? IconButton(
@@ -143,7 +145,7 @@ class _PartiesScreenState extends ConsumerState<PartiesScreen>
       floatingActionButton: FloatingActionButton.extended(
         onPressed: () => context.push(AppRoutes.addParty),
         icon: const Icon(Icons.person_add_rounded),
-        label: const Text('Add Party'),
+        label: Text(l.addParty),
         backgroundColor: AppTheme.primaryColor,
         foregroundColor: Colors.white,
       ),
@@ -164,7 +166,7 @@ class _PartyList extends StatelessWidget {
           children: [
             const Icon(Icons.people_outline, size: 56, color: AppTheme.lightTextHint),
             const SizedBox(height: 16),
-            Text('No parties found', style: Theme.of(context).textTheme.titleMedium),
+            Text(context.l10n.noPartiesFound, style: Theme.of(context).textTheme.titleMedium),
             const SizedBox(height: 8),
             Text('Add customers and suppliers to track their ledger.',
                 style: Theme.of(context).textTheme.bodySmall,
@@ -279,17 +281,17 @@ class _PartyCard extends StatelessWidget {
                           ),
                     ),
                   if (isReceivable)
-                    Text('To Receive',
+                    Text(context.l10n.toReceive,
                         style: Theme.of(context).textTheme.bodySmall?.copyWith(
                               color: AppTheme.successColor,
                             ))
                   else if (isPayable)
-                    Text('To Pay',
+                    Text(context.l10n.toPay,
                         style: Theme.of(context).textTheme.bodySmall?.copyWith(
                               color: AppTheme.errorColor,
                             ))
                   else
-                    Text('Settled',
+                    Text(context.l10n.completed,
                         style: Theme.of(context).textTheme.bodySmall?.copyWith(
                               color: AppTheme.lightTextSecondary,
                             )),

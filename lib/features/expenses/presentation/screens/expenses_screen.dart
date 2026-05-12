@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 import 'package:hamro_pasal/core/constants/app_constants.dart';
+import 'package:hamro_pasal/core/l10n/app_strings.dart';
 import 'package:hamro_pasal/core/router/app_router.dart';
 import 'package:hamro_pasal/core/theme/app_theme.dart';
 import 'package:hamro_pasal/core/widgets/app_button.dart';
@@ -78,9 +79,10 @@ class ExpensesScreen extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final expAsync = ref.watch(expensesProvider);
 
+    final l = context.l10n;
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Expenses'),
+        title: Text(l.expenses),
         actions: [
           IconButton(
             onPressed: () => context.push(AppRoutes.addExpense),
@@ -99,13 +101,16 @@ class ExpensesScreen extends ConsumerWidget {
                 children: [
                   const Icon(Icons.wallet_outlined, size: 56, color: AppTheme.lightTextHint),
                   const SizedBox(height: 16),
-                  Text('No expenses recorded', style: Theme.of(context).textTheme.titleMedium),
+                  Text(context.l10n.noExpensesFound,
+                      style: Theme.of(context).textTheme.titleMedium),
                   const SizedBox(height: 8),
-                  Text('Track your business expenses here.', style: Theme.of(context).textTheme.bodySmall),
+                  Text(context.l10n.trackExpensesHere,
+                      style: Theme.of(context).textTheme.bodySmall),
                   const SizedBox(height: 16),
                   ElevatedButton.icon(
                     onPressed: () => context.push(AppRoutes.addExpense),
-                    icon: const Icon(Icons.add), label: const Text('Add Expense'),
+                    icon: const Icon(Icons.add),
+                    label: Text(l.addExpense),
                   ),
                 ],
               ),
@@ -141,7 +146,8 @@ class ExpensesScreen extends ConsumerWidget {
                           Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              Text('This Month\'s Expenses', style: Theme.of(context).textTheme.bodySmall),
+                              Text('${context.l10n.thisMonth} ${context.l10n.expenses}',
+                                  style: Theme.of(context).textTheme.bodySmall),
                               Text('${AppConstants.currencySymbol} ${NumberFormat('#,##,##0.00').format(thisMonth)}',
                                   style: Theme.of(context).textTheme.titleLarge?.copyWith(
                                         color: AppTheme.errorColor, fontWeight: FontWeight.w700)),
@@ -175,7 +181,7 @@ class ExpensesScreen extends ConsumerWidget {
       floatingActionButton: FloatingActionButton.extended(
         onPressed: () => context.push(AppRoutes.addExpense),
         icon: const Icon(Icons.add),
-        label: const Text('Add Expense'),
+        label: Text(l.addExpense),
         backgroundColor: AppTheme.errorColor,
         foregroundColor: Colors.white,
       ),
@@ -287,13 +293,14 @@ class _AddExpenseScreenState extends ConsumerState<AddExpenseScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Add Expense')),
+      appBar: AppBar(title: Text(context.l10n.addExpense)),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(16),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text('Category', style: Theme.of(context).textTheme.titleMedium),
+            Text(context.l10n.expenseCategory,
+                style: Theme.of(context).textTheme.titleMedium),
             const SizedBox(height: 8),
             Wrap(
               spacing: 8, runSpacing: 8,
@@ -319,13 +326,15 @@ class _AddExpenseScreenState extends ConsumerState<AddExpenseScreen> {
               }).toList(),
             ).animate().fadeIn(),
             const SizedBox(height: 20),
-            Text('Amount (Rs.) *', style: Theme.of(context).textTheme.titleMedium),
+            Text('${context.l10n.amount} (Rs.) *',
+                style: Theme.of(context).textTheme.titleMedium),
             const SizedBox(height: 8),
             AppTextField(controller: _amountCtrl, hint: '0.00',
                 keyboardType: TextInputType.number, prefixIcon: Icons.attach_money_rounded)
                 .animate(delay: 50.ms).fadeIn(),
             const SizedBox(height: 16),
-            Text('Date', style: Theme.of(context).textTheme.titleMedium),
+            Text(context.l10n.date,
+                style: Theme.of(context).textTheme.titleMedium),
             const SizedBox(height: 8),
             InkWell(
               onTap: () async {
@@ -348,13 +357,18 @@ class _AddExpenseScreenState extends ConsumerState<AddExpenseScreen> {
               ),
             ).animate(delay: 100.ms).fadeIn(),
             const SizedBox(height: 16),
-            Text('Note (Optional)', style: Theme.of(context).textTheme.titleMedium),
+            Text('${context.l10n.notes} (${context.l10n.optional})',
+                style: Theme.of(context).textTheme.titleMedium),
             const SizedBox(height: 8),
             AppTextField(controller: _noteCtrl, hint: 'Details about this expense...', maxLines: 3)
                 .animate(delay: 150.ms).fadeIn(),
             const SizedBox(height: 32),
-            AppButton(label: 'Save Expense', onPressed: _save, isLoading: _isLoading,
-                icon: Icons.save_outlined, color: AppTheme.errorColor)
+            AppButton(
+                label: context.l10n.save,
+                onPressed: _save,
+                isLoading: _isLoading,
+                icon: Icons.save_outlined,
+                color: AppTheme.errorColor)
                 .animate(delay: 200.ms).fadeIn(),
             const SizedBox(height: 16),
           ],

@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 import 'package:hamro_pasal/core/constants/app_constants.dart';
+import 'package:hamro_pasal/core/l10n/app_strings.dart';
 import 'package:hamro_pasal/core/providers/profile_mode_provider.dart';
 import 'package:hamro_pasal/core/router/app_router.dart';
 import 'package:hamro_pasal/core/theme/app_theme.dart';
@@ -33,11 +34,11 @@ class DashboardScreen extends ConsumerWidget {
             children: [
               const Icon(Icons.error_outline, size: 48, color: AppTheme.errorColor),
               const SizedBox(height: 16),
-              Text('Failed to load dashboard', style: Theme.of(context).textTheme.titleMedium),
+              Text(context.l10n.dataLoadError, style: Theme.of(context).textTheme.titleMedium),
               const SizedBox(height: 8),
               ElevatedButton(
                 onPressed: () => ref.read(dashboardProvider.notifier).refresh(),
-                child: const Text('Retry'),
+                child: Text(context.l10n.retry),
               ),
             ],
           ),
@@ -63,7 +64,7 @@ class DashboardScreen extends ConsumerWidget {
                     const SizedBox(height: 4),
 
                     // Stats grid
-                    Text('Today\'s Overview',
+                    Text(context.l10n.overviewToday,
                         style: Theme.of(context).textTheme.titleLarge)
                         .animate().fadeIn(),
                     const SizedBox(height: 12),
@@ -75,13 +76,13 @@ class DashboardScreen extends ConsumerWidget {
                       shrinkWrap: true,
                       physics: const NeverScrollableScrollPhysics(),
                       children: [
-                        _StatCard('Today\'s Sales', stats.todaySales,
+                        _StatCard(context.l10n.todaySales, stats.todaySales,
                             AppTheme.successColor, Icons.trending_up_rounded, 0),
-                        _StatCard('Today\'s Expenses', stats.todayExpenses,
+                        _StatCard(context.l10n.todayExpenses, stats.todayExpenses,
                             AppTheme.errorColor, Icons.trending_down_rounded, 1),
-                        _StatCard('Receivables', stats.totalReceivables,
+                        _StatCard(context.l10n.receivables, stats.totalReceivables,
                             AppTheme.infoColor, Icons.account_balance_wallet_outlined, 2),
-                        _StatCard('Payables', stats.totalPayables,
+                        _StatCard(context.l10n.payables, stats.totalPayables,
                             AppTheme.warningColor, Icons.payments_outlined, 3),
                       ],
                     ).animate(delay: 50.ms).fadeIn(),
@@ -95,7 +96,7 @@ class DashboardScreen extends ConsumerWidget {
                     const SizedBox(height: 20),
 
                     // Quick actions
-                    Text('Quick Actions',
+                    Text(context.l10n.quickActions,
                         style: Theme.of(context).textTheme.titleLarge)
                         .animate(delay: 200.ms).fadeIn(),
                     const SizedBox(height: 12),
@@ -114,11 +115,11 @@ class DashboardScreen extends ConsumerWidget {
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        Text('Recent Transactions',
+                        Text(context.l10n.recentTransactions,
                             style: Theme.of(context).textTheme.titleLarge),
                         TextButton(
                           onPressed: () => context.push(AppRoutes.transactions),
-                          child: const Text('View All'),
+                          child: Text(context.l10n.viewAll),
                         ),
                       ],
                     ).animate(delay: 350.ms).fadeIn(),
@@ -127,7 +128,7 @@ class DashboardScreen extends ConsumerWidget {
                       Padding(
                         padding: const EdgeInsets.all(16),
                         child: Center(
-                          child: Text('No transactions yet',
+                          child: Text(context.l10n.noRecentTransactions,
                               style: Theme.of(context).textTheme.bodySmall),
                         ),
                       )
@@ -183,7 +184,7 @@ class _DashboardAppBar extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final greeting = _getGreeting();
+    final greeting = _getGreeting(context);
     return SliverAppBar(
       expandedHeight: 140,
       floating: true,
@@ -216,13 +217,13 @@ class _DashboardAppBar extends ConsumerWidget {
                       color: Colors.white.withValues(alpha: 0.2),
                       borderRadius: BorderRadius.circular(20),
                     ),
-                    child: const Row(
+                    child: Row(
                       mainAxisSize: MainAxisSize.min,
                       children: [
-                        Icon(Icons.store_rounded, color: Colors.white, size: 14),
-                        SizedBox(width: 4),
-                        Text('Business Mode',
-                            style: TextStyle(
+                        const Icon(Icons.store_rounded, color: Colors.white, size: 14),
+                        const SizedBox(width: 4),
+                        Text(context.l10n.businessMode,
+                            style: const TextStyle(
                                 color: Colors.white,
                                 fontSize: 11,
                                 fontWeight: FontWeight.w600)),
@@ -248,11 +249,12 @@ class _DashboardAppBar extends ConsumerWidget {
     );
   }
 
-  String _getGreeting() {
+  String _getGreeting(BuildContext context) {
+    final l = context.l10n;
     final hour = DateTime.now().hour;
-    if (hour < 12) return 'Good Morning ☀️';
-    if (hour < 17) return 'Good Afternoon 🌤️';
-    return 'Good Evening 🌙';
+    if (hour < 12) return '${l.goodMorning} ☀️';
+    if (hour < 17) return '${l.goodAfternoon} 🌤️';
+    return '${l.goodEvening} 🌙';
   }
 }
 
@@ -325,7 +327,7 @@ class _ProfitCard extends StatelessWidget {
           Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text("Today's Net Profit", style: Theme.of(context).textTheme.bodySmall),
+              Text(context.l10n.todayNetProfit, style: Theme.of(context).textTheme.bodySmall),
               const SizedBox(height: 4),
               Text(
                 '${isPositive ? '' : '-'}${AppConstants.currencySymbol} ${NumberFormat('#,##,##0.00').format(profit.abs())}',
@@ -345,13 +347,14 @@ class _ProfitCard extends StatelessWidget {
 class _QuickActions extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
+    final l = context.l10n;
     final actions = [
-      const _QA('New Sale', Icons.point_of_sale_rounded, AppTheme.successColor, AppRoutes.addTransaction),
-      const _QA('Add Purchase', Icons.shopping_bag_outlined, AppTheme.infoColor, AppRoutes.addTransaction),
-      const _QA('Add Party', Icons.person_add_outlined, AppTheme.primaryColor, AppRoutes.addParty),
-      const _QA('Add Product', Icons.add_box_outlined, AppTheme.accentColor, AppRoutes.addProduct),
-      const _QA('Add Expense', Icons.wallet_outlined, AppTheme.errorColor, AppRoutes.addExpense),
-      const _QA('Reports', Icons.bar_chart_rounded, AppTheme.warningColor, AppRoutes.reports),
+      _QA(l.newSale, Icons.point_of_sale_rounded, AppTheme.successColor, AppRoutes.addTransaction),
+      _QA(l.addPurchase, Icons.shopping_bag_outlined, AppTheme.infoColor, AppRoutes.addTransaction),
+      _QA(l.addParty, Icons.person_add_outlined, AppTheme.primaryColor, AppRoutes.addParty),
+      _QA(l.addProduct, Icons.add_box_outlined, AppTheme.accentColor, AppRoutes.addProduct),
+      _QA(l.addExpense, Icons.wallet_outlined, AppTheme.errorColor, AppRoutes.addExpense),
+      _QA(l.reports, Icons.bar_chart_rounded, AppTheme.warningColor, AppRoutes.reports),
     ];
     return GridView.count(
       crossAxisCount: 3,
@@ -413,13 +416,13 @@ class _TrialBanner extends StatelessWidget {
           const Icon(Icons.rocket_launch_outlined, color: Colors.white, size: 22),
           const SizedBox(width: 10),
           Expanded(
-            child: Text('$daysLeft days left in your free trial!',
+            child: Text(context.l10n.daysLeftTrial(daysLeft),
                 style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w600)),
           ),
           TextButton(
             onPressed: () => context.push(AppRoutes.subscription),
             style: TextButton.styleFrom(foregroundColor: Colors.white),
-            child: const Text('Subscribe'),
+            child: Text(context.l10n.subscribe),
           ),
         ],
       ),
@@ -442,14 +445,14 @@ class _ExpiredBanner extends StatelessWidget {
         children: [
           const Icon(Icons.timer_off_outlined, color: AppTheme.errorColor, size: 22),
           const SizedBox(width: 10),
-          const Expanded(
-            child: Text('Your free trial has expired.',
-                style: TextStyle(color: AppTheme.errorColor, fontWeight: FontWeight.w600)),
+          Expanded(
+            child: Text(context.l10n.trialExpiredMsg,
+                style: const TextStyle(color: AppTheme.errorColor, fontWeight: FontWeight.w600)),
           ),
           TextButton(
             onPressed: () => context.push(AppRoutes.trialExpired),
             style: TextButton.styleFrom(foregroundColor: AppTheme.errorColor),
-            child: const Text('Subscribe Now'),
+            child: Text(context.l10n.subscribeNow),
           ),
         ],
       ),
@@ -476,13 +479,13 @@ class _LowStockBanner extends StatelessWidget {
           const Icon(Icons.warning_amber_outlined, color: AppTheme.warningColor, size: 22),
           const SizedBox(width: 10),
           Expanded(
-            child: Text('$count product${count > 1 ? 's' : ''} running low on stock.',
+            child: Text(context.l10n.lowStockAlert(count),
                 style: const TextStyle(color: AppTheme.warningColor, fontWeight: FontWeight.w600)),
           ),
           TextButton(
             onPressed: () => context.push(AppRoutes.inventory),
             style: TextButton.styleFrom(foregroundColor: AppTheme.warningColor),
-            child: const Text('View'),
+            child: Text(context.l10n.view),
           ),
         ],
       ),
