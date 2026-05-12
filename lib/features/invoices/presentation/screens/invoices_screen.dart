@@ -234,17 +234,6 @@ class _InvoiceCard extends StatelessWidget {
   }
 }
 
-// Placeholder screens for invoice creation and detail
-class CreateInvoiceScreen extends StatelessWidget {
-  const CreateInvoiceScreen({super.key});
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(title: const Text('Create Invoice')),
-      body: const Center(child: Text('Invoice creation form coming soon')),
-    );
-  }
-}
 
 class InvoiceDetailScreen extends StatelessWidget {
   final String invoiceId;

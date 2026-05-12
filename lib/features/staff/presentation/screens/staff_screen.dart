@@ -37,11 +37,45 @@ class StaffNotifier extends AsyncNotifier<List<StaffMember>> {
     final prefs = await SharedPreferences.getInstance();
     final businessId = prefs.getString(AppConstants.kSelectedBusinessId);
     if (businessId == null) return [];
-    final res = await Supabase.instance.client
+
+    final supabase = Supabase.instance.client;
+
+    // Step 1: fetch members (no join — avoids PostgREST FK resolution error)
+    final membersRes = await supabase
         .from('business_members')
-        .select('*, user_profiles(email, full_name)')
+        .select('id, user_id, role, is_active')
         .eq('business_id', businessId);
-    return (res as List).map((e) => StaffMember.fromJson(e as Map<String, dynamic>)).toList();
+
+    final members = (membersRes as List).cast<Map<String, dynamic>>();
+    if (members.isEmpty) return [];
+
+    // Step 2: fetch profiles for each user_id (RLS allows own profile; others
+    // return null gracefully — no exception thrown)
+    final staffList = <StaffMember>[];
+    for (final m in members) {
+      final userId = m['user_id'] as String;
+      String email = '';
+      String fullName = '';
+      try {
+        final profile = await supabase
+            .from('user_profiles')
+            .select('email, full_name')
+            .eq('id', userId)
+            .maybeSingle();
+        email = profile?['email'] as String? ?? '';
+        fullName = profile?['full_name'] as String? ?? '';
+      } catch (_) {}
+
+      staffList.add(StaffMember(
+        id: m['id'] as String,
+        userId: userId,
+        role: m['role'] as String,
+        email: email,
+        fullName: fullName.isEmpty ? 'Staff Member' : fullName,
+        isActive: m['is_active'] as bool? ?? true,
+      ));
+    }
+    return staffList;
   }
 }
 
