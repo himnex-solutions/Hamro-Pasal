@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_web_plugins/url_strategy.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:hamro_pasal/core/theme/app_theme.dart';
 import 'package:hamro_pasal/core/theme/theme_provider.dart';
@@ -11,6 +12,9 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+
+  // Use clean path-based URLs (e.g. /home/dashboard) instead of hash URLs (/#/home/dashboard)
+  usePathUrlStrategy();
 
   // Disable runtime font fetching — bundle fonts locally instead
   // to avoid SocketException on devices without Google Fonts access.

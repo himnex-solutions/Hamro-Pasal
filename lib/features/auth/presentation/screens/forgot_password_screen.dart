@@ -46,8 +46,8 @@ class _ForgotPasswordScreenState extends ConsumerState<ForgotPasswordScreen> {
   @override
   void dispose() {
     _emailCtrl.dispose();
-    for (final c in _otpCtrls) c.dispose();
-    for (final f in _otpFocus) f.dispose();
+    for (final c in _otpCtrls) { c.dispose(); }
+    for (final f in _otpFocus) { f.dispose(); }
     _pwCtrl.dispose();
     _confirmPwCtrl.dispose();
     _cooldownTimer?.cancel();
@@ -97,7 +97,7 @@ class _ForgotPasswordScreenState extends ConsumerState<ForgotPasswordScreen> {
     } else {
       AppSnackbar.show(context, 'Invalid or expired OTP. Try again.', isError: true);
       // Clear OTP boxes
-      for (final c in _otpCtrls) c.clear();
+      for (final c in _otpCtrls) { c.clear(); }
       _otpFocus[0].requestFocus();
     }
   }
@@ -166,7 +166,7 @@ class _ForgotPasswordScreenState extends ConsumerState<ForgotPasswordScreen> {
           contentPadding: EdgeInsets.zero,
           border: OutlineInputBorder(
             borderRadius: BorderRadius.circular(12),
-            borderSide: BorderSide(color: AppTheme.lightBorder),
+            borderSide: const BorderSide(color: AppTheme.lightBorder),
           ),
           focusedBorder: OutlineInputBorder(
             borderRadius: BorderRadius.circular(12),
