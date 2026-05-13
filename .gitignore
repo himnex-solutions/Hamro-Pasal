@@ -46,3 +46,4 @@ coverage/
 
 # Supabase secrets (NEVER commit)
 .supabase/
+flutter_sdk/

@@ -62,7 +62,7 @@ class _SplashScreenState extends ConsumerState<SplashScreen>
         break;
       case AuthStatus.unauthenticated:
       case AuthStatus.initial:
-        context.go(AppRoutes.login);
+        context.go(AppRoutes.onboarding);
         break;
     }
   }
