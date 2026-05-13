@@ -206,8 +206,11 @@ class _BottomNavItemState extends State<_BottomNavItem> with SingleTickerProvide
   @override
   void didUpdateWidget(_BottomNavItem old) {
     super.didUpdateWidget(old);
-    if (widget.isSelected && !old.isSelected) _ctrl.forward();
-    else if (!widget.isSelected && old.isSelected) _ctrl.reverse();
+    if (widget.isSelected && !old.isSelected) {
+      _ctrl.forward();
+    } else if (!widget.isSelected && old.isSelected) {
+      _ctrl.reverse();
+    }
   }
 
   @override
@@ -444,7 +447,7 @@ class _PremiumSidebar extends ConsumerWidget {
           const SizedBox(height: 16),
 
           // MAIN section
-          _SectionLabel('MAIN'),
+          const _SectionLabel('MAIN'),
           ...destinations.asMap().entries.map((e) => _SidebarTile(
             item: e.value,
             isSelected: e.key == selectedIndex,
@@ -454,7 +457,7 @@ class _PremiumSidebar extends ConsumerWidget {
           const SizedBox(height: 12),
 
           // MORE section
-          _SectionLabel('MORE'),
+          const _SectionLabel('MORE'),
           ...sidebarExtras.asMap().entries.map((e) => _SidebarTile(
             item: e.value,
             isSelected: false,

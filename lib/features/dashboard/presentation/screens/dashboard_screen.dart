@@ -199,7 +199,7 @@ class DashboardScreen extends ConsumerWidget {
               minimumSize: Size.zero,
               tapTargetSize: MaterialTapTargetSize.shrinkWrap,
             ),
-            child: Row(children: const [
+            child: const Row(children: [
               Text('View all'),
               SizedBox(width: 2),
               Icon(Icons.chevron_right_rounded, size: 16),
@@ -426,8 +426,8 @@ class _KpiCard extends StatelessWidget {
           const Spacer(),
           // Value
           Text(value,
-            style: TextStyle(fontSize: 15, fontWeight: FontWeight.w800,
-                color: const Color(0xFF0F172A), letterSpacing: -0.3),
+            style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w800,
+                color: Color(0xFF0F172A), letterSpacing: -0.3),
             maxLines: 1, overflow: TextOverflow.ellipsis),
           const SizedBox(height: 2),
           // Label
@@ -509,12 +509,12 @@ class _QuickActionsGrid extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final actions = [
-      _QA('New Sale', Icons.point_of_sale_rounded, const Color(0xFF10B981), AppRoutes.addTransaction),
-      _QA('Purchase', Icons.shopping_bag_outlined, const Color(0xFF3B82F6), AppRoutes.addTransaction),
-      _QA('Party', Icons.person_add_alt_1_outlined, AppTheme.primaryColor, AppRoutes.addParty),
-      _QA('Product', Icons.inventory_2_outlined, const Color(0xFF8B5CF6), AppRoutes.addProduct),
-      _QA('Expense', Icons.receipt_long_outlined, const Color(0xFFEF4444), AppRoutes.addExpense),
-      _QA('Reports', Icons.bar_chart_rounded, const Color(0xFFF59E0B), AppRoutes.reports),
+      const _QA('New Sale', Icons.point_of_sale_rounded, Color(0xFF10B981), AppRoutes.addTransaction),
+      const _QA('Purchase', Icons.shopping_bag_outlined, Color(0xFF3B82F6), AppRoutes.addTransaction),
+      const _QA('Party', Icons.person_add_alt_1_outlined, AppTheme.primaryColor, AppRoutes.addParty),
+      const _QA('Product', Icons.inventory_2_outlined, Color(0xFF8B5CF6), AppRoutes.addProduct),
+      const _QA('Expense', Icons.receipt_long_outlined, Color(0xFFEF4444), AppRoutes.addExpense),
+      const _QA('Reports', Icons.bar_chart_rounded, Color(0xFFF59E0B), AppRoutes.reports),
     ];
 
     return GridView.count(

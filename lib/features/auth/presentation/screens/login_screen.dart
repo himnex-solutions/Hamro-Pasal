@@ -1,4 +1,3 @@
-import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -196,7 +195,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen>
           ],
 
           // Email
-          _FieldLabel('Email address'),
+          const _FieldLabel('Email address'),
           const SizedBox(height: 6),
           _FormField(
             controller: _emailCtrl,
@@ -214,7 +213,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen>
           const SizedBox(height: 18),
 
           // Password
-          _FieldLabel('Password'),
+          const _FieldLabel('Password'),
           const SizedBox(height: 6),
           _FormField(
             controller: _passwordCtrl,
@@ -245,7 +244,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen>
             alignment: Alignment.centerRight,
             child: GestureDetector(
               onTap: () => context.push(AppRoutes.forgotPassword),
-              child: Text('Forgot password?',
+              child: const Text('Forgot password?',
                 style: TextStyle(fontSize: 13, color: AppTheme.primaryColor, fontWeight: FontWeight.w600)),
             ),
           ),
@@ -288,7 +287,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen>
                     style: TextStyle(fontSize: 13, color: Colors.grey[500])),
                 GestureDetector(
                   onTap: () => context.push(AppRoutes.signup),
-                  child: Text('Create account',
+                  child: const Text('Create account',
                       style: TextStyle(fontSize: 13, color: AppTheme.primaryColor, fontWeight: FontWeight.w700)),
                 ),
               ],
@@ -363,9 +362,9 @@ class _BrandPanel extends StatelessWidget {
                 const SizedBox(height: 40),
 
                 // Feature pills
-                Wrap(
+                const Wrap(
                   spacing: 10, runSpacing: 10,
-                  children: const [
+                  children: [
                     _FeaturePill('📊  Sales Analytics'),
                     _FeaturePill('📦  Inventory'),
                     _FeaturePill('🧾  Invoicing'),
@@ -513,7 +512,7 @@ class _FormFieldState extends State<_FormField> {
           ),
           focusedBorder: OutlineInputBorder(
             borderRadius: BorderRadius.circular(10),
-            borderSide: BorderSide(color: AppTheme.primaryColor, width: 1.5),
+            borderSide: const BorderSide(color: AppTheme.primaryColor, width: 1.5),
           ),
           errorBorder: OutlineInputBorder(
             borderRadius: BorderRadius.circular(10),
