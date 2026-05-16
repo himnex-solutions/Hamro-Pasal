@@ -122,7 +122,8 @@ class TrialExpiredScreen extends StatelessWidget {
                 const SizedBox(height: 24),
 
                 AppButton(
-                  label: '🚀 Subscribe Now',
+                  label: 'Subscribe Now',
+                  icon: Icons.rocket_launch_outlined,
                   onPressed: () => context.push(AppRoutes.subscription),
                 ).animate(delay: 600.ms).fadeIn().slideY(begin: 0.1, end: 0),
 

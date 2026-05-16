@@ -149,7 +149,7 @@ class _InventoryScreenState extends ConsumerState<InventoryScreen> {
                             color: AppTheme.lightTextHint),
                         const SizedBox(height: 16),
                         Text(_filter == 'low_stock'
-                            ? 'No low stock items 🎉'
+                            ? 'No low stock items'
                             : l.noProductsFound,
                             style: Theme.of(context).textTheme.titleMedium),
                         if (_filter == 'all') ...[
@@ -157,12 +157,6 @@ class _InventoryScreenState extends ConsumerState<InventoryScreen> {
                           Text('Add your first product to start tracking inventory.',
                               style: Theme.of(context).textTheme.bodySmall,
                               textAlign: TextAlign.center),
-                          const SizedBox(height: 16),
-                          ElevatedButton.icon(
-                            onPressed: () => context.push(AppRoutes.addProduct),
-                            icon: const Icon(Icons.add),
-                            label: Text(l.addProduct),
-                          ),
                         ],
                       ],
                     ),

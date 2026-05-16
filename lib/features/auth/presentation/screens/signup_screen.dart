@@ -8,11 +8,14 @@ import 'package:hamro_pasal/core/router/app_router.dart';
 import 'package:hamro_pasal/core/widgets/app_snackbar.dart';
 import 'package:hamro_pasal/features/auth/presentation/providers/auth_provider.dart';
 
-const _teal = Color(0xFF0EA5B0);
-const _tealLight = Color(0xFF14C1CC);
-const _dark = Color(0xFF0F172A);
-const _textSecondary = Color(0xFF94A3B8);
-const _borderColor = Color(0xFFE5E7EB);
+// Color tokens (shared with login screen)
+const _teal      = Color(0xFF0D7E8A);
+const _tealLink  = Color(0xFF10B4C3);
+const _dark      = Color(0xFF0F172A);
+const _grey      = Color(0xFF94A3B8);
+const _border    = Color(0xFFE2E8F0);
+const _bgDark1   = Color(0xFF07242B);   // matches login exactly
+const _bgDark2   = Color(0xFF0F4850);   // matches login exactly
 
 class SignupScreen extends ConsumerStatefulWidget {
   const SignupScreen({super.key});
@@ -21,14 +24,14 @@ class SignupScreen extends ConsumerStatefulWidget {
 }
 
 class _SignupScreenState extends ConsumerState<SignupScreen> {
-  final _formKey = GlobalKey<FormState>();
-  final _emailCtrl = TextEditingController();
+  final _formKey      = GlobalKey<FormState>();
+  final _emailCtrl    = TextEditingController();
   final _passwordCtrl = TextEditingController();
-  final _confirmCtrl = TextEditingController();
+  final _confirmCtrl  = TextEditingController();
   bool _obscurePassword = true;
-  bool _obscureConfirm = true;
-  bool _rememberMe = false;
-  bool _isLoading = false;
+  bool _obscureConfirm  = true;
+  bool _rememberMe      = false;
+  bool _isLoading       = false;
 
   @override
   void dispose() {
@@ -49,13 +52,19 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
     if (!mounted) return;
     setState(() => _isLoading = false);
     if (success) {
-      AppSnackbar.show(context, '✅ Account created! Please sign in.',
-          isSuccess: true, duration: const Duration(seconds: 4));
+      AppSnackbar.show(
+        context,
+        'Account created! Please sign in.',
+        isSuccess: true,
+        duration: const Duration(seconds: 4),
+      );
       context.go(AppRoutes.login);
     } else {
-      AppSnackbar.show(context,
-          ref.read(authProvider).errorMessage ?? 'Registration failed',
-          isError: true);
+      AppSnackbar.show(
+        context,
+        ref.read(authProvider).errorMessage ?? 'Registration failed',
+        isError: true,
+      );
     }
   }
 
@@ -75,121 +84,71 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
   @override
   Widget build(BuildContext context) {
     final screenHeight = MediaQuery.of(context).size.height;
-    final topFlex = (screenHeight > 750) ? 38 : 34;
-    final bottomFlex = 100 - topFlex;
+    // Signup has one extra field so keep the logo zone a touch smaller
+    final topSectionHeight = screenHeight * 0.30;
 
     return Scaffold(
-      resizeToAvoidBottomInset: false,
-      backgroundColor: _teal,
+      resizeToAvoidBottomInset: true,
+      backgroundColor: _bgDark1,
       body: Stack(
         children: [
-          // ── Gradient background ───────────────────────────
-          Container(
-            decoration: const BoxDecoration(
-              gradient: LinearGradient(
-                colors: [_tealLight, _teal, Color(0xFF0B8E99)],
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
+          // ── Full-screen gradient + blob background (same as login) ──
+          Positioned.fill(
+            child: Container(
+              decoration: const BoxDecoration(
+                gradient: LinearGradient(
+                  colors: [_bgDark1, _bgDark2],
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                ),
+              ),
+              child: CustomPaint(painter: _AuthBgPainter()),
+            ),
+          ),
+
+          // Logo centered in the top section
+          Positioned(
+            top: 0,
+            left: 0,
+            right: 0,
+            height: topSectionHeight,
+            child: SafeArea(
+              bottom: false,
+              child: Center(
+                child: Image.asset(
+                  'assets/images/logo.png',
+                  width: 80,
+                  height: 80,
+                  fit: BoxFit.contain,
+                  errorBuilder: (_, __, ___) => const _FallbackLogo(),
+                )
+                    .animate()
+                    .fadeIn(duration: 700.ms)
+                    .scale(
+                        begin: const Offset(0.75, 0.75),
+                        curve: Curves.easeOutBack),
               ),
             ),
           ),
 
-          // ── Decorative circles ────────────────────────────
+          // White bottom-sheet form card
           Positioned(
-            top: -50, right: -30,
-            child: _Circle(160, Colors.white.withValues(alpha: 0.07)),
-          ),
-          Positioned(
-            top: 55, right: 40,
-            child: _Circle(80, Colors.white.withValues(alpha: 0.05)),
-          ),
-          Positioned(
-            top: screenHeight * 0.18, left: -20,
-            child: _Circle(100, Colors.white.withValues(alpha: 0.05)),
-          ),
-
-          // ── Shopping-themed watermark icons ───────────────────
-          // Shopping bag — top-right
-          Positioned(
-            top: screenHeight * 0.04, right: 18,
-            child: const Icon(Icons.shopping_bag_outlined,
-                color: Colors.white24, size: 52),
-          ),
-          // Large cart — left side
-          Positioned(
-            top: screenHeight * 0.12, left: -10,
-            child: const Icon(Icons.shopping_cart_outlined,
-                color: Colors.white24, size: 72),
-          ),
-          // Delivery — top-center
-          Positioned(
-            top: screenHeight * 0.02, left: screenHeight * 0.15,
-            child: const Icon(Icons.local_shipping_outlined,
-                color: Colors.white12, size: 30),
-          ),
-          // Discount tag — mid-right
-          Positioned(
-            top: screenHeight * 0.17, right: 12,
-            child: const Icon(Icons.discount_outlined,
-                color: Colors.white12, size: 28),
-          ),
-          // Star/rating — mid-left
-          Positioned(
-            top: screenHeight * 0.20, left: 20,
-            child: const Icon(Icons.star_outline_rounded,
-                color: Colors.white12, size: 24),
-          ),
-
-          // ── Main layout ───────────────────────────────────
-          SafeArea(
-            child: Column(
-              children: [
-                // ── Top: Headline ────────────────────────
-                Expanded(
-                  flex: topFlex,
-                  child: Padding(
-                    padding: const EdgeInsets.fromLTRB(28, 12, 28, 0),
-                    child: Row(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Expanded(
-                          child: const Text(
-                            'Create Your Account\nand Simplify Your\nWorkday',
-                            style: TextStyle(
-                              fontSize: 22,
-                              fontWeight: FontWeight.w800,
-                              color: Colors.white,
-                              height: 1.25,
-                            ),
-                          ).animate().fadeIn(duration: 600.ms).slideX(begin: -0.05, end: 0),
-                        ),
-                        Align(
-                          alignment: Alignment.bottomCenter,
-                          child: _PhoneMockupSignup(),
-                        ).animate(delay: 200.ms).fadeIn(),
-                      ],
-                    ),
-                  ),
-                ),
-
-                // ── Bottom: White form (no scroll) ────────
-                Expanded(
-                  flex: bottomFlex,
-                  child: Container(
-                    width: double.infinity,
-                    decoration: const BoxDecoration(
-                      color: Colors.white,
-                      borderRadius: BorderRadius.vertical(top: Radius.circular(36)),
-                    ),
-                    child: Padding(
-                      padding: const EdgeInsets.fromLTRB(24, 20, 24, 8),
-                      child: _buildForm(),
-                    ),
-                  ).animate(delay: 100.ms).slideY(
-                      begin: 0.1, end: 0, duration: 450.ms, curve: Curves.easeOut),
-                ),
-              ],
-            ),
+            left: 0,
+            right: 0,
+            bottom: 0,
+            top: topSectionHeight - 30,
+            child: Container(
+              decoration: const BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.vertical(top: Radius.circular(36)),
+              ),
+              child: SingleChildScrollView(
+                physics: const BouncingScrollPhysics(),
+                padding: const EdgeInsets.fromLTRB(28, 26, 28, 24),
+                child: _buildForm(),
+              ),
+            ).animate(delay: 150.ms)
+                .slideY(begin: 0.08, end: 0, duration: 500.ms, curve: Curves.easeOut),
           ),
         ],
       ),
@@ -200,36 +159,52 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
     return Form(
       key: _formKey,
       child: Column(
-        crossAxisAlignment: CrossAxisAlignment.center,
+        crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          // ── Centered title ────────────────────────────
+          // Title
           const Text(
-            'Sign up',
+            'Sign Up',
+            textAlign: TextAlign.center,
             style: TextStyle(
-                fontSize: 24, fontWeight: FontWeight.w800, color: _dark),
-          ).animate().fadeIn(delay: 150.ms),
-
-          const SizedBox(height: 8),
-
-          // ── Centered subtitle ─────────────────────────
-          Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              const Text('Already Have An Account ',
-                  style: TextStyle(fontSize: 13, color: _textSecondary)),
-              GestureDetector(
-                onTap: () => context.go(AppRoutes.login),
-                child: const Text('Sign In',
-                    style: TextStyle(
-                        fontSize: 13, color: _teal, fontWeight: FontWeight.w700)),
-              ),
-            ],
+              fontSize: 26,
+              fontWeight: FontWeight.w800,
+              color: _dark,
+              letterSpacing: -0.3,
+            ),
           ).animate().fadeIn(delay: 200.ms),
 
-          const SizedBox(height: 16),
+          const SizedBox(height: 6),
 
-          // ── Email field ───────────────────────────────
-          _AuthTextField(
+          // Subtitle
+          Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const Flexible(
+                child: Text(
+                  'Already Have An Account? ',
+                  style: TextStyle(fontSize: 13.5, color: _grey),
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ),
+              GestureDetector(
+                onTap: () => context.go(AppRoutes.login),
+                child: const Text(
+                  'Sign In',
+                  style: TextStyle(
+                    fontSize: 13.5,
+                    color: _tealLink,
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+              ),
+            ],
+          ).animate().fadeIn(delay: 240.ms),
+
+          const SizedBox(height: 20),
+
+          // Email
+          _AuthField(
             controller: _emailCtrl,
             hint: 'Enter your email address',
             prefixIcon: Icons.mail_outline_rounded,
@@ -240,22 +215,25 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
               if (!v.contains('@')) return 'Enter a valid email';
               return null;
             },
-          ).animate(delay: 220.ms).fadeIn(),
+          ).animate().fadeIn(delay: 270.ms),
 
-          const SizedBox(height: 8),
+          const SizedBox(height: 12),
 
-          // ── Password field ────────────────────────────
-          _AuthTextField(
+          // Password
+          _AuthField(
             controller: _passwordCtrl,
             hint: 'Password',
             prefixIcon: Icons.lock_outline_rounded,
             obscureText: _obscurePassword,
             textInputAction: TextInputAction.next,
-            suffixWidget: GestureDetector(
+            suffix: GestureDetector(
               onTap: () => setState(() => _obscurePassword = !_obscurePassword),
               child: Icon(
-                _obscurePassword ? Icons.visibility_off_outlined : Icons.visibility_outlined,
-                size: 18, color: _textSecondary,
+                _obscurePassword
+                    ? Icons.visibility_off_outlined
+                    : Icons.visibility_outlined,
+                size: 20,
+                color: _grey,
               ),
             ),
             validator: (v) {
@@ -263,23 +241,26 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
               if (v.length < 6) return 'Minimum 6 characters';
               return null;
             },
-          ).animate(delay: 250.ms).fadeIn(),
+          ).animate().fadeIn(delay: 300.ms),
 
-          const SizedBox(height: 8),
+          const SizedBox(height: 12),
 
-          // ── Confirm Password field ────────────────────
-          _AuthTextField(
+          // Confirm Password
+          _AuthField(
             controller: _confirmCtrl,
-            hint: '• • • • • • • • • • • •',
+            hint: 'Confirm Password',
             prefixIcon: Icons.lock_outline_rounded,
             obscureText: _obscureConfirm,
             textInputAction: TextInputAction.done,
             onSubmitted: (_) => _signup(),
-            suffixWidget: GestureDetector(
+            suffix: GestureDetector(
               onTap: () => setState(() => _obscureConfirm = !_obscureConfirm),
               child: Icon(
-                _obscureConfirm ? Icons.visibility_off_outlined : Icons.visibility_outlined,
-                size: 18, color: _textSecondary,
+                _obscureConfirm
+                    ? Icons.visibility_off_outlined
+                    : Icons.visibility_outlined,
+                size: 20,
+                color: _grey,
               ),
             ),
             validator: (v) {
@@ -287,89 +268,102 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
               if (v != _passwordCtrl.text) return 'Passwords do not match';
               return null;
             },
-          ).animate(delay: 280.ms).fadeIn(),
+          ).animate().fadeIn(delay: 330.ms),
 
-          const SizedBox(height: 8),
+          const SizedBox(height: 14),
 
-          // ── Remember me + Forgot ──────────────────────
+          // Remember me + Forgot password
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Row(
                 children: [
                   SizedBox(
-                    width: 20, height: 20,
+                    width: 20,
+                    height: 20,
                     child: Checkbox(
                       value: _rememberMe,
                       onChanged: (v) => setState(() => _rememberMe = v ?? false),
                       activeColor: _teal,
+                      checkColor: Colors.white,
                       shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(4)),
-                      side: const BorderSide(color: _borderColor, width: 1.5),
+                      side: BorderSide(
+                          color: _rememberMe ? _teal : _border, width: 1.5),
                       materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
                     ),
                   ),
-                  const SizedBox(width: 6),
+                  const SizedBox(width: 8),
                   const Text('Remember Me',
-                      style: TextStyle(fontSize: 12, color: _textSecondary)),
+                      style: TextStyle(fontSize: 13, color: _dark)),
                 ],
               ),
               GestureDetector(
                 onTap: () => context.push(AppRoutes.forgotPassword),
-                child: const Text('Forgot Password?',
-                    style: TextStyle(
-                        fontSize: 12, color: _teal, fontWeight: FontWeight.w600)),
+                child: const Text(
+                  'Forgot Password?',
+                  style: TextStyle(
+                      fontSize: 13,
+                      color: _tealLink,
+                      fontWeight: FontWeight.w600),
+                ),
               ),
             ],
-          ).animate(delay: 310.ms).fadeIn(),
+          ).animate().fadeIn(delay: 360.ms),
 
-          const SizedBox(height: 14),
+          const SizedBox(height: 18),
 
-          // ── Signup button ─────────────────────────────
-          _TealButton(
-            label: 'Login',
+          // Sign Up button
+          _PillButton(
+            label: 'Sign Up',
             isLoading: _isLoading,
             onPressed: _signup,
-          ).animate(delay: 350.ms).fadeIn(),
+          ).animate().fadeIn(delay: 390.ms),
 
-          const SizedBox(height: 12),
+          const SizedBox(height: 18),
 
-          // ── Divider ───────────────────────────────────
+          // Divider
           Row(children: [
-            Expanded(child: Divider(color: Colors.grey[200])),
+            Expanded(child: Divider(color: _border, thickness: 1)),
             Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 12),
-              child: Text('Or Continue With',
-                  style: TextStyle(
-                      fontSize: 11,
-                      color: Colors.grey[400],
-                      fontWeight: FontWeight.w500)),
+              padding: const EdgeInsets.symmetric(horizontal: 14),
+              child: Text(
+                'Or Continue With',
+                style: TextStyle(
+                  fontSize: 12,
+                  color: Colors.grey[500],
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
             ),
-            Expanded(child: Divider(color: Colors.grey[200])),
-          ]).animate(delay: 390.ms).fadeIn(),
+            Expanded(child: Divider(color: _border, thickness: 1)),
+          ]).animate().fadeIn(delay: 420.ms),
 
-          const SizedBox(height: 10),
+          const SizedBox(height: 16),
 
-          // ── Social buttons ────────────────────────────
+          // Social buttons
           Row(
             children: [
               Expanded(
-                child: _SocialButton(
-                    label: 'Apple',
-                    icon: const FaIcon(FontAwesomeIcons.apple, size: 18, color: Colors.white),
-                    isDark: true,
-                    onTap: () {}),
+                child: _SocialPillButton(
+                  label: 'Apple',
+                  icon: const FaIcon(
+                      FontAwesomeIcons.apple, size: 20, color: Colors.white),
+                  isDark: true,
+                  onTap: () {},
+                ),
               ),
-              const SizedBox(width: 12),
+              const SizedBox(width: 14),
               Expanded(
-                child: _SocialButton(
-                    label: 'Google',
-                    icon: _GoogleLogo(),
-                    isDark: false,
-                    onTap: _googleSignup),
+                child: _SocialPillButton(
+                  label: 'Google',
+                  icon: _GoogleLogo(),
+                  isDark: false,
+                  onTap: _googleSignup,
+                ),
               ),
             ],
-          ).animate(delay: 430.ms).fadeIn(),
+          ).animate().fadeIn(delay: 450.ms),
         ],
       ),
     );
@@ -377,81 +371,240 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
 }
 
 // ─────────────────────────────────────────────────────────────
-//  Shared private widgets
+//  Shared auth background painter — identical to login screen
 // ─────────────────────────────────────────────────────────────
 
-class _Circle extends StatelessWidget {
-  final double size;
-  final Color color;
-  const _Circle(this.size, this.color);
+class _AuthBgPainter extends CustomPainter {
   @override
-  Widget build(BuildContext context) => Container(
-        width: size, height: size,
-        decoration: BoxDecoration(shape: BoxShape.circle, color: color),
+  void paint(Canvas canvas, Size size) {
+    final W = size.width;
+    final H = size.height;
+
+    // ── 1. Primary hero orb — top-left, large, rich teal ─────
+    _drawOrb(canvas,
+      center: Offset(W * -0.05, H * 0.05),
+      radius: W * 0.80,
+      colors: [
+        const Color(0xFF1FE0F0).withValues(alpha: 0.55),
+        const Color(0xFF0DA8B8).withValues(alpha: 0.22),
+        Colors.transparent,
+      ],
+      stops: const [0.0, 0.45, 1.0],
+    );
+
+    // ── 2. Secondary orb — upper-right, cool cyan ─────────────
+    _drawOrb(canvas,
+      center: Offset(W * 1.05, H * -0.02),
+      radius: W * 0.55,
+      colors: [
+        const Color(0xFF38EAF7).withValues(alpha: 0.38),
+        const Color(0xFF0B7A87).withValues(alpha: 0.14),
+        Colors.transparent,
+      ],
+      stops: const [0.0, 0.50, 1.0],
+    );
+
+    // ── 3. Mid orb — center-left, warm teal-indigo blend ──────
+    _drawOrb(canvas,
+      center: Offset(W * 0.20, H * 0.42),
+      radius: W * 0.50,
+      colors: [
+        const Color(0xFF0CCEDF).withValues(alpha: 0.18),
+        const Color(0xFF0A3D6B).withValues(alpha: 0.08),
+        Colors.transparent,
+      ],
+      stops: const [0.0, 0.55, 1.0],
+    );
+
+    // ── 4. Diagonal aurora / light beam ───────────────────────
+    final beamPath = Path()
+      ..moveTo(W * -0.10, H * 0.30)
+      ..lineTo(W * 0.45, H * 0.00)
+      ..lineTo(W * 0.65, H * 0.00)
+      ..lineTo(W * 0.10, H * 0.30)
+      ..close();
+    canvas.drawPath(
+      beamPath,
+      Paint()
+        ..shader = LinearGradient(
+          colors: [
+            const Color(0xFF1FE0F0).withValues(alpha: 0.22),
+            Colors.transparent,
+          ],
+          begin: Alignment.topCenter,
+          end: Alignment.bottomCenter,
+        ).createShader(Rect.fromLTWH(0, 0, W, H * 0.30)),
+    );
+
+    // ── 5. Upper wave band ─────────────────────────────────────
+    _drawWave(canvas, W, H,
+      y1: 0.16, cp1x: 0.28, cp1y: 0.09,
+      cp2x: 0.65, cp2y: 0.23, y2: 0.20,
+      color: const Color(0xFF0ECFDD).withValues(alpha: 0.13),
+    );
+
+    // ── 6. Second wave band (offset) ──────────────────────────
+    _drawWave(canvas, W, H,
+      y1: 0.24, cp1x: 0.30, cp1y: 0.14,
+      cp2x: 0.68, cp2y: 0.30, y2: 0.28,
+      color: const Color(0xFF0BBAC8).withValues(alpha: 0.09),
+    );
+
+    // ── 7. Bottom dark swoosh ──────────────────────────────────
+    final swoosh = Path()
+      ..moveTo(0, H * 0.70)
+      ..cubicTo(W * 0.25, H * 0.55, W * 0.75, H * 0.78, W, H * 0.62)
+      ..lineTo(W, H)
+      ..lineTo(0, H)
+      ..close();
+    canvas.drawPath(
+      swoosh,
+      Paint()
+        ..shader = LinearGradient(
+          colors: [
+            Colors.black.withValues(alpha: 0.22),
+            Colors.black.withValues(alpha: 0.06),
+          ],
+          begin: Alignment.bottomCenter,
+          end: Alignment.topCenter,
+        ).createShader(Rect.fromLTWH(0, H * 0.60, W, H * 0.40)),
+    );
+
+    // ── 8. Concentric glowing rings — left anchor ─────────────
+    _drawRing(canvas, Offset(W * -0.02, H * 0.14), W * 0.46,
+        const Color(0xFF1DD8E8).withValues(alpha: 0.18), 1.4);
+    _drawRing(canvas, Offset(W * -0.02, H * 0.14), W * 0.62,
+        const Color(0xFF1DD8E8).withValues(alpha: 0.10), 0.9);
+    _drawRing(canvas, Offset(W * -0.02, H * 0.14), W * 0.80,
+        const Color(0xFF1DD8E8).withValues(alpha: 0.05), 0.6);
+
+    // ── 9. Scattered sparkle dots ─────────────────────────────
+    final sparkles = [
+      (W * 0.78, H * 0.05, 2.8),
+      (W * 0.85, H * 0.02, 1.8),
+      (W * 0.91, H * 0.07, 3.2),
+      (W * 0.82, H * 0.11, 1.5),
+      (W * 0.95, H * 0.03, 2.2),
+      (W * 0.88, H * 0.20, 2.0),
+      (W * 0.94, H * 0.25, 1.4),
+      (W * 0.80, H * 0.28, 2.5),
+      (W * 0.12, H * 0.30, 1.6),
+      (W * 0.06, H * 0.34, 2.2),
+      (W * 0.18, H * 0.32, 1.2),
+    ];
+    for (final s in sparkles) {
+      canvas.drawCircle(
+        Offset(s.$1, s.$2), s.$3 * 2.8,
+        Paint()..color = const Color(0xFF1DD8E8).withValues(alpha: 0.10),
       );
-}
+      canvas.drawCircle(
+        Offset(s.$1, s.$2), s.$3,
+        Paint()..color = const Color(0xFF6FF6FF).withValues(alpha: 0.75),
+      );
+    }
 
-class _PhoneMockupSignup extends StatelessWidget {
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      width: 100, height: 85,
-      decoration: BoxDecoration(
-        color: Colors.white.withValues(alpha: 0.15),
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: Colors.white.withValues(alpha: 0.3), width: 1.5),
-      ),
-      padding: const EdgeInsets.all(8),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Container(height: 5, width: 50,
-              decoration: BoxDecoration(color: Colors.white.withValues(alpha: 0.6),
-                  borderRadius: BorderRadius.circular(3))),
-          const SizedBox(height: 5),
-          Container(height: 16,
-              decoration: BoxDecoration(color: Colors.white.withValues(alpha: 0.12),
-                  borderRadius: BorderRadius.circular(5)),
-              padding: const EdgeInsets.symmetric(horizontal: 5),
-              child: Row(children: [
-                const Icon(Icons.person_outline_rounded, color: Colors.white70, size: 10),
-                const SizedBox(width: 3),
-                Container(height: 3, width: 36,
-                    decoration: BoxDecoration(color: Colors.white.withValues(alpha: 0.5),
-                        borderRadius: BorderRadius.circular(2))),
-              ])),
-          const SizedBox(height: 4),
-          Container(height: 16,
-              decoration: BoxDecoration(color: Colors.white.withValues(alpha: 0.12),
-                  borderRadius: BorderRadius.circular(5)),
-              padding: const EdgeInsets.symmetric(horizontal: 5),
-              child: Row(children: [
-                const Icon(Icons.lock_outline_rounded, color: Colors.white70, size: 10),
-                const SizedBox(width: 3),
-                Container(height: 3, width: 28,
-                    decoration: BoxDecoration(color: Colors.white.withValues(alpha: 0.4),
-                        borderRadius: BorderRadius.circular(2))),
-              ])),
-          const SizedBox(height: 4),
-          Container(height: 16,
-              decoration: BoxDecoration(color: Colors.white.withValues(alpha: 0.12),
-                  borderRadius: BorderRadius.circular(5)),
-              padding: const EdgeInsets.symmetric(horizontal: 5),
-              child: Row(children: [
-                const Icon(Icons.lock_outline_rounded, color: Colors.white70, size: 10),
-                const SizedBox(width: 3),
-                Container(height: 3, width: 32,
-                    decoration: BoxDecoration(color: Colors.white.withValues(alpha: 0.4),
-                        borderRadius: BorderRadius.circular(2))),
-              ])),
-        ],
-      ),
+    // ── 10. Subtle horizontal shimmer line ────────────────────
+    canvas.drawLine(
+      Offset(0, H * 0.295),
+      Offset(W, H * 0.295),
+      Paint()
+        ..shader = LinearGradient(
+          colors: [
+            Colors.transparent,
+            const Color(0xFF1DD8E8).withValues(alpha: 0.25),
+            Colors.transparent,
+          ],
+          stops: const [0.0, 0.5, 1.0],
+        ).createShader(Rect.fromLTWH(0, H * 0.295, W, 1))
+        ..strokeWidth = 1.0
+        ..style = PaintingStyle.stroke,
     );
   }
+
+  void _drawOrb(Canvas canvas, {
+    required Offset center,
+    required double radius,
+    required List<Color> colors,
+    required List<double> stops,
+  }) {
+    canvas.drawCircle(
+      center, radius,
+      Paint()
+        ..shader = RadialGradient(colors: colors, stops: stops)
+            .createShader(Rect.fromCircle(center: center, radius: radius)),
+    );
+  }
+
+  void _drawWave(Canvas canvas, double W, double H, {
+    required double y1, required double cp1x, required double cp1y,
+    required double cp2x, required double cp2y, required double y2,
+    required Color color,
+  }) {
+    final path = Path()
+      ..moveTo(0, H * y1)
+      ..cubicTo(W * cp1x, H * cp1y, W * cp2x, H * cp2y, W, H * y2)
+      ..lineTo(W, 0)
+      ..lineTo(0, 0)
+      ..close();
+    canvas.drawPath(path, Paint()..color = color..style = PaintingStyle.fill);
+  }
+
+  void _drawRing(Canvas canvas, Offset c, double r, Color color, double width) {
+    canvas.drawCircle(c, r, Paint()
+      ..color = color
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = width);
+  }
+
+  @override
+  bool shouldRepaint(covariant CustomPainter _) => false;
 }
 
-// ── Auth Text Field ───────────────────────────────────────────
-class _AuthTextField extends StatefulWidget {
+// ─────────────────────────────────────────────────────────────
+//  Fallback Logo
+// ─────────────────────────────────────────────────────────────
+
+class _FallbackLogo extends StatelessWidget {
+  const _FallbackLogo();
+  @override
+  Widget build(BuildContext context) =>
+      CustomPaint(size: const Size(80, 80), painter: _ArrowLogoPainter());
+}
+
+class _ArrowLogoPainter extends CustomPainter {
+  @override
+  void paint(Canvas canvas, Size size) {
+    final paint = Paint()
+      ..color = Colors.white
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 3.5
+      ..strokeCap = StrokeCap.round
+      ..strokeJoin = StrokeJoin.round;
+    final w = size.width;
+    final h = size.height;
+    final outer = Path()
+      ..moveTo(w * 0.5, h * 0.05)
+      ..lineTo(w * 0.95, h * 0.92)
+      ..lineTo(w * 0.05, h * 0.92)
+      ..close();
+    canvas.drawPath(outer, paint);
+    final inner = Path()
+      ..moveTo(w * 0.5, h * 0.30)
+      ..lineTo(w * 0.68, h * 0.68)
+      ..lineTo(w * 0.50, h * 0.55)
+      ..lineTo(w * 0.32, h * 0.68)
+      ..close();
+    canvas.drawPath(inner, paint..style = PaintingStyle.fill);
+  }
+  @override
+  bool shouldRepaint(covariant CustomPainter _) => false;
+}
+
+// ─────────────────────────────────────────────────────────────
+//  Auth Text Field
+// ─────────────────────────────────────────────────────────────
+
+class _AuthField extends StatefulWidget {
   final TextEditingController controller;
   final String hint;
   final IconData prefixIcon;
@@ -460,9 +613,9 @@ class _AuthTextField extends StatefulWidget {
   final TextInputAction? textInputAction;
   final String? Function(String?)? validator;
   final void Function(String)? onSubmitted;
-  final Widget? suffixWidget;
+  final Widget? suffix;
 
-  const _AuthTextField({
+  const _AuthField({
     required this.controller,
     required this.hint,
     required this.prefixIcon,
@@ -471,16 +624,15 @@ class _AuthTextField extends StatefulWidget {
     this.textInputAction,
     this.validator,
     this.onSubmitted,
-    this.suffixWidget,
+    this.suffix,
   });
 
   @override
-  State<_AuthTextField> createState() => _AuthTextFieldState();
+  State<_AuthField> createState() => _AuthFieldState();
 }
 
-class _AuthTextFieldState extends State<_AuthTextField> {
+class _AuthFieldState extends State<_AuthField> {
   bool _focused = false;
-
   @override
   Widget build(BuildContext context) {
     return Focus(
@@ -492,35 +644,44 @@ class _AuthTextFieldState extends State<_AuthTextField> {
         textInputAction: widget.textInputAction,
         validator: widget.validator,
         onFieldSubmitted: widget.onSubmitted,
-        style: const TextStyle(fontSize: 14, color: _dark, fontWeight: FontWeight.w500),
+        style: const TextStyle(
+            fontSize: 14.5, color: _dark, fontWeight: FontWeight.w500),
         decoration: InputDecoration(
           hintText: widget.hint,
-          hintStyle: const TextStyle(color: _textSecondary, fontSize: 14),
+          hintStyle: const TextStyle(
+              color: _grey, fontSize: 14.5, fontWeight: FontWeight.w400),
           prefixIcon: Padding(
-            padding: const EdgeInsets.only(left: 14, right: 10),
-            child: Icon(widget.prefixIcon, size: 19,
-                color: _focused ? _teal : _textSecondary),
+            padding: const EdgeInsets.only(left: 18, right: 10),
+            child: Icon(widget.prefixIcon,
+                size: 20, color: _focused ? _teal : _grey),
           ),
-          prefixIconConstraints: const BoxConstraints(minWidth: 0, minHeight: 0),
-          suffixIcon: widget.suffixWidget != null
-              ? Padding(padding: const EdgeInsets.only(right: 12), child: widget.suffixWidget)
+          prefixIconConstraints:
+              const BoxConstraints(minWidth: 0, minHeight: 0),
+          suffixIcon: widget.suffix != null
+              ? Padding(
+                  padding: const EdgeInsets.only(right: 16),
+                  child: widget.suffix)
               : null,
-          suffixIconConstraints: const BoxConstraints(minWidth: 0, minHeight: 0),
+          suffixIconConstraints:
+              const BoxConstraints(minWidth: 0, minHeight: 0),
           filled: true,
-          fillColor: _focused ? const Color(0xFFF0FFFE) : const Color(0xFFF8FAFC),
-          contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 11),
+          fillColor: Colors.white,
+          contentPadding:
+              const EdgeInsets.symmetric(horizontal: 22, vertical: 15),
           enabledBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(50),
-              borderSide: const BorderSide(color: _borderColor, width: 1)),
+              borderSide: const BorderSide(color: _border, width: 1.2)),
           focusedBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(50),
               borderSide: const BorderSide(color: _teal, width: 1.5)),
           errorBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(50),
-              borderSide: const BorderSide(color: Color(0xFFEF4444), width: 1)),
+              borderSide:
+                  const BorderSide(color: Color(0xFFEF4444), width: 1.2)),
           focusedErrorBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(50),
-              borderSide: const BorderSide(color: Color(0xFFEF4444), width: 1.5)),
+              borderSide:
+                  const BorderSide(color: Color(0xFFEF4444), width: 1.5)),
           border: InputBorder.none,
           errorStyle: const TextStyle(fontSize: 11, color: Color(0xFFEF4444)),
         ),
@@ -529,58 +690,67 @@ class _AuthTextFieldState extends State<_AuthTextField> {
   }
 }
 
-// ── Teal Button ───────────────────────────────────────────────
-class _TealButton extends StatefulWidget {
+// ─────────────────────────────────────────────────────────────
+//  Pill primary button
+// ─────────────────────────────────────────────────────────────
+
+class _PillButton extends StatefulWidget {
   final String label;
   final bool isLoading;
   final VoidCallback onPressed;
-  const _TealButton({required this.label, required this.isLoading, required this.onPressed});
+  const _PillButton(
+      {required this.label, required this.isLoading, required this.onPressed});
   @override
-  State<_TealButton> createState() => _TealButtonState();
+  State<_PillButton> createState() => _PillButtonState();
 }
 
-class _TealButtonState extends State<_TealButton> {
+class _PillButtonState extends State<_PillButton> {
   bool _pressed = false;
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
       onTapDown: (_) => setState(() => _pressed = true),
-      onTapUp: (_) { setState(() => _pressed = false); if (!widget.isLoading) widget.onPressed(); },
+      onTapUp: (_) {
+        setState(() => _pressed = false);
+        if (!widget.isLoading) widget.onPressed();
+      },
       onTapCancel: () => setState(() => _pressed = false),
       child: AnimatedScale(
         scale: _pressed ? 0.97 : 1.0,
         duration: const Duration(milliseconds: 80),
         child: Container(
-          height: 48,
+          height: 52,
           width: double.infinity,
           decoration: BoxDecoration(
-            gradient: LinearGradient(
-              colors: _pressed
-                  ? [const Color(0xFF0B8E99), const Color(0xFF0AABB8)]
-                  : [_teal, _tealLight],
-              begin: Alignment.centerLeft,
-              end: Alignment.centerRight,
-            ),
+            color: _pressed ? const Color(0xFF0A6872) : _teal,
             borderRadius: BorderRadius.circular(50),
-            boxShadow: _pressed ? [] : [
-              BoxShadow(color: _teal.withValues(alpha: 0.35), blurRadius: 14, offset: const Offset(0, 5)),
-            ],
           ),
-          child: Center(
-            child: widget.isLoading
-                ? const SizedBox(width: 20, height: 20,
-                    child: CircularProgressIndicator(strokeWidth: 2.5, color: Colors.white))
-                : Text(widget.label,
-                    style: const TextStyle(color: Colors.white, fontSize: 15,
-                        fontWeight: FontWeight.w700, letterSpacing: 0.3)),
-          ),
+          alignment: Alignment.center,
+          child: widget.isLoading
+              ? const SizedBox(
+                  width: 22,
+                  height: 22,
+                  child: CircularProgressIndicator(
+                      strokeWidth: 2.5, color: Colors.white))
+              : Text(
+                  widget.label,
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontSize: 16,
+                    fontWeight: FontWeight.w700,
+                    letterSpacing: 0.2,
+                  ),
+                ),
         ),
       ),
     );
   }
 }
 
-// ── Google Logo (multicolor inline SVG) ──────────────────────
+// ─────────────────────────────────────────────────────────────
+//  Google logo SVG
+// ─────────────────────────────────────────────────────────────
+
 class _GoogleLogo extends StatelessWidget {
   static const _svg = '''
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48">
@@ -589,43 +759,57 @@ class _GoogleLogo extends StatelessWidget {
   <path fill="#4CAF50" d="M24 44c5.2 0 9.9-2 13.4-5.2l-6.2-5.2C29.2 35.1 26.7 36 24 36c-5.2 0-9.6-3.3-11.3-7.9l-6.5 5C9.5 39.6 16.2 44 24 44z"/>
   <path fill="#1976D2" d="M43.6 20H24v8h11.3c-.8 2.2-2.2 4.2-4.1 5.6l6.2 5.2C41 36 44 30.5 44 24c0-1.3-.2-2.7-.4-4z"/>
 </svg>''';
-
   @override
   Widget build(BuildContext context) =>
-      SvgPicture.string(_svg, width: 20, height: 20);
+      SvgPicture.string(_svg, width: 22, height: 22);
 }
 
-// ── Social Button ─────────────────────────────────────────────
-class _SocialButton extends StatelessWidget {
+// ─────────────────────────────────────────────────────────────
+//  Social pill button
+// ─────────────────────────────────────────────────────────────
+
+class _SocialPillButton extends StatelessWidget {
   final String label;
   final Widget icon;
   final bool isDark;
   final VoidCallback onTap;
-  const _SocialButton({required this.label, required this.icon, required this.isDark, required this.onTap});
+  const _SocialPillButton(
+      {required this.label,
+      required this.icon,
+      required this.isDark,
+      required this.onTap});
 
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
       onTap: onTap,
       child: Container(
-        height: 44,
+        height: 50,
         decoration: BoxDecoration(
           color: isDark ? _dark : Colors.white,
           borderRadius: BorderRadius.circular(50),
-          border: isDark ? null : Border.all(color: _borderColor, width: 1),
-          boxShadow: isDark
-              ? [BoxShadow(color: Colors.black.withValues(alpha: 0.15), blurRadius: 8, offset: const Offset(0, 2))]
-              : [BoxShadow(color: Colors.black.withValues(alpha: 0.06), blurRadius: 8, offset: const Offset(0, 2))],
+          border: isDark ? null : Border.all(color: _border, width: 1.2),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withValues(alpha: isDark ? 0.18 : 0.05),
+              blurRadius: 8,
+              offset: const Offset(0, 2),
+            ),
+          ],
         ),
         child: Row(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             icon,
             const SizedBox(width: 8),
-            Text(label,
-                style: TextStyle(
-                    color: isDark ? Colors.white : _dark,
-                    fontSize: 14, fontWeight: FontWeight.w600)),
+            Text(
+              label,
+              style: TextStyle(
+                color: isDark ? Colors.white : _dark,
+                fontSize: 14.5,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
           ],
         ),
       ),

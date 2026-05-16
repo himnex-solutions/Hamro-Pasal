@@ -4,20 +4,21 @@ import 'package:google_fonts/google_fonts.dart';
 class AppTheme {
   AppTheme._();
 
-  // Brand Colors
-  static const Color primaryColor = Color(0xFF1E6FD9);
-  static const Color primaryDark = Color(0xFF1557B0);
-  static const Color primaryLight = Color(0xFF4D93E8);
+  // ── Brand Colors — Teal palette (matches login/signup) ──────
+  static const Color primaryColor  = Color(0xFF0D7E8A); // _teal
+  static const Color primaryDark   = Color(0xFF086870); // darker teal
+  static const Color primaryLight  = Color(0xFF10B4C3); // _tealLink — brighter
 
   // ── Gradient Helpers ─────────────────────────────────────────
   static const LinearGradient primaryGradient = LinearGradient(
-    colors: [Color(0xFF60A5FA), Color(0xFF1E6FD9)],
+    colors: [Color(0xFF1DD8E8), Color(0xFF0D7E8A)],
     begin: Alignment.topLeft,
     end: Alignment.bottomRight,
   );
 
+  // Matches login/signup full-screen dark background exactly
   static const LinearGradient darkBgGradient = LinearGradient(
-    colors: [Color(0xFF0F172A), Color(0xFF1A3A6E), Color(0xFF1E6FD9)],
+    colors: [Color(0xFF07242B), Color(0xFF0F4850)],
     begin: Alignment.topLeft,
     end: Alignment.bottomRight,
   );
@@ -52,33 +53,33 @@ class AppTheme {
     ),
   ];
 
-  // Brand Accent Colors
-  static const Color accentColor = Color(0xFF00C9A7);
-  static const Color accentDark = Color(0xFF00A88A);
+  // Brand Accent Colors — kept as complementary warm teal
+  static const Color accentColor = Color(0xFF00C9B1);
+  static const Color accentDark  = Color(0xFF00A896);
 
   // Semantic Colors
   static const Color successColor = Color(0xFF22C55E);
   static const Color warningColor = Color(0xFFF59E0B);
-  static const Color errorColor = Color(0xFFEF4444);
-  static const Color infoColor = Color(0xFF3B82F6);
+  static const Color errorColor   = Color(0xFFEF4444);
+  static const Color infoColor    = Color(0xFF10B4C3); // teal instead of blue
 
   // Neutral Light
-  static const Color lightBg = Color(0xFFF8FAFC);
-  static const Color lightSurface = Color(0xFFFFFFFF);
-  static const Color lightCard = Color(0xFFFFFFFF);
-  static const Color lightBorder = Color(0xFFE2E8F0);
-  static const Color lightTextPrimary = Color(0xFF0F172A);
+  static const Color lightBg            = Color(0xFFF0FAFA); // very soft teal tint
+  static const Color lightSurface       = Color(0xFFFFFFFF);
+  static const Color lightCard          = Color(0xFFFFFFFF);
+  static const Color lightBorder        = Color(0xFFE2E8F0);
+  static const Color lightTextPrimary   = Color(0xFF0F172A);
   static const Color lightTextSecondary = Color(0xFF64748B);
-  static const Color lightTextHint = Color(0xFF94A3B8);
+  static const Color lightTextHint      = Color(0xFF94A3B8);
 
-  // Neutral Dark
-  static const Color darkBg = Color(0xFF0F172A);
-  static const Color darkSurface = Color(0xFF1E293B);
-  static const Color darkCard = Color(0xFF1E293B);
-  static const Color darkBorder = Color(0xFF334155);
-  static const Color darkTextPrimary = Color(0xFFF1F5F9);
+  // Neutral Dark — aligned with auth dark teal-navy
+  static const Color darkBg            = Color(0xFF07242B); // _bgDark1
+  static const Color darkSurface       = Color(0xFF0D3A44); // one step lighter
+  static const Color darkCard          = Color(0xFF0F4050);
+  static const Color darkBorder        = Color(0xFF1A5C6A);
+  static const Color darkTextPrimary   = Color(0xFFF1F5F9);
   static const Color darkTextSecondary = Color(0xFF94A3B8);
-  static const Color darkTextHint = Color(0xFF64748B);
+  static const Color darkTextHint      = Color(0xFF64748B);
 
   static ThemeData get lightTheme {
     final base = ThemeData.light(useMaterial3: true);
@@ -159,7 +160,7 @@ class AppTheme {
       ),
       dividerTheme: const DividerThemeData(color: lightBorder, thickness: 1, space: 1),
       chipTheme: ChipThemeData(
-        backgroundColor: const Color(0xFFEFF6FF),
+        backgroundColor: const Color(0xFFE0F7F9), // soft teal tint
         selectedColor: primaryColor,
         labelStyle: GoogleFonts.poppins(fontSize: 13),
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
@@ -222,23 +223,52 @@ class AppTheme {
       ),
       inputDecorationTheme: InputDecorationTheme(
         filled: true,
-        fillColor: const Color(0xFF1E293B),
+        fillColor: darkSurface, // teal-dark surface (0xFF0D3A44)
         contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
         border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide.none),
         enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: const BorderSide(color: darkBorder)),
         focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: const BorderSide(color: primaryLight, width: 2)),
+        errorBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: const BorderSide(color: errorColor, width: 1.5)),
         hintStyle: GoogleFonts.poppins(color: darkTextHint, fontSize: 14),
         labelStyle: GoogleFonts.poppins(color: darkTextSecondary, fontSize: 14),
       ),
       elevatedButtonTheme: ElevatedButtonThemeData(
         style: ElevatedButton.styleFrom(
-          backgroundColor: primaryLight,
+          backgroundColor: primaryColor,
           foregroundColor: Colors.white,
           minimumSize: const Size(double.infinity, 52),
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
           textStyle: GoogleFonts.poppins(fontSize: 16, fontWeight: FontWeight.w600),
           elevation: 0,
         ),
+      ),
+      outlinedButtonTheme: OutlinedButtonThemeData(
+        style: OutlinedButton.styleFrom(
+          foregroundColor: primaryLight,
+          minimumSize: const Size(double.infinity, 52),
+          side: const BorderSide(color: primaryLight, width: 1.5),
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+          textStyle: GoogleFonts.poppins(fontSize: 16, fontWeight: FontWeight.w600),
+        ),
+      ),
+      textButtonTheme: TextButtonThemeData(
+        style: TextButton.styleFrom(
+          foregroundColor: primaryLight,
+          textStyle: GoogleFonts.poppins(fontSize: 14, fontWeight: FontWeight.w600),
+        ),
+      ),
+      dividerTheme: const DividerThemeData(color: darkBorder, thickness: 1, space: 1),
+      chipTheme: ChipThemeData(
+        backgroundColor: const Color(0xFF0D3A44),
+        selectedColor: primaryLight,
+        labelStyle: GoogleFonts.poppins(fontSize: 13, color: darkTextPrimary),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+      ),
+      snackBarTheme: SnackBarThemeData(
+        behavior: SnackBarBehavior.floating,
+        backgroundColor: darkCard,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+        contentTextStyle: GoogleFonts.poppins(fontSize: 14, color: darkTextPrimary),
       ),
       bottomNavigationBarTheme: const BottomNavigationBarThemeData(
         backgroundColor: darkSurface,

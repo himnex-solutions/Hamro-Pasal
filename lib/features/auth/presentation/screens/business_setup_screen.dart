@@ -98,7 +98,7 @@ class _BusinessSetupScreenState extends ConsumerState<BusinessSetupScreen> {
       });
 
       if (mounted) {
-        AppSnackbar.show(context, '🎉 Business created! 14-day trial started.', isSuccess: true);
+        AppSnackbar.show(context, 'Business created! 14-day trial started.', isSuccess: true);
         context.go(AppRoutes.dashboard);
       }
     } catch (e) {
@@ -239,7 +239,8 @@ class _BusinessSetupScreenState extends ConsumerState<BusinessSetupScreen> {
                 const SizedBox(height: 24),
 
                 AppButton(
-                  label: '🚀 Start My Free Trial',
+                  label: 'Start My Free Trial',
+                  icon: Icons.rocket_launch_outlined,
                   onPressed: _createBusiness,
                   isLoading: _isLoading,
                 ).animate(delay: 400.ms).fadeIn(),

@@ -106,12 +106,6 @@ class ExpensesScreen extends ConsumerWidget {
                   const SizedBox(height: 8),
                   Text(context.l10n.trackExpensesHere,
                       style: Theme.of(context).textTheme.bodySmall),
-                  const SizedBox(height: 16),
-                  ElevatedButton.icon(
-                    onPressed: () => context.push(AppRoutes.addExpense),
-                    icon: const Icon(Icons.add),
-                    label: Text(l.addExpense),
-                  ),
                 ],
               ),
             );

@@ -267,10 +267,10 @@ class AppStrings {
   String get business => _s('Business', 'व्यापार');
   String get currentlyPersonal => _s('Currently: Personal View', 'अहिले: व्यक्तिगत दृश्य');
   String get currentlyBusiness => _s('Currently: Business View', 'अहिले: व्यापार दृश्य');
-  String get switchedToPersonal => _s('👤 Switched to Personal Mode', '👤 व्यक्तिगत मोडमा स्विच भयो');
-  String get switchedToBusiness => _s('🏢 Switched to Business Mode', '🏢 व्यापार मोडमा स्विच भयो');
-  String get madeWithLove => _s('Hamro Pasal v1.0.0\nMade with ❤️ for Nepal 🇳🇵',
-      'हाम्रो पसल v1.0.0\nनेपालको लागि ❤️ सँग बनाइएको 🇳🇵');
+  String get switchedToPersonal => _s('Switched to Personal Mode', 'व्यक्तिगत मोडमा स्विच भयो');
+  String get switchedToBusiness => _s('Switched to Business Mode', 'व्यापार मोडमा स्विच भयो');
+  String get madeWithLove => _s('Hamro Pasal v1.0.0\nMade with love for Nepal',
+      'हाम्रो पसल v1.0.0\nनेपालको लागि माया सँग बनाइएको');
   String get selectLanguage => _s('Select Language', 'भाषा छनौट');
   String get languageChanged => _s('Language changed to English', 'भाषा नेपालीमा परिवर्तन भयो');
 

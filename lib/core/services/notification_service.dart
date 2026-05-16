@@ -48,7 +48,7 @@ class NotificationService {
     );
     await _plugin.show(
       2,
-      '🚀 Free Trial Ending Soon',
+      'Free Trial Ending Soon',
       '$daysLeft days left in your free trial. Subscribe to keep your data.',
       details,
     );

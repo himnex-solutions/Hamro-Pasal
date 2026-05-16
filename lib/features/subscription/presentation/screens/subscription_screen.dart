@@ -210,9 +210,14 @@ class _PlanCard extends StatelessWidget {
                 color: AppTheme.primaryColor,
                 borderRadius: BorderRadius.only(topLeft: Radius.circular(18), topRight: Radius.circular(18)),
               ),
-              child: const Center(
-                child: Text('⭐ BEST VALUE — SAVE 25%',
-                    style: TextStyle(color: Colors.white, fontWeight: FontWeight.w700, fontSize: 13)),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  const Icon(Icons.star, color: Colors.white, size: 14),
+                  const SizedBox(width: 4),
+                  const Text('BEST VALUE — SAVE 25%',
+                      style: TextStyle(color: Colors.white, fontWeight: FontWeight.w700, fontSize: 13)),
+                ],
               ),
             ),
           Padding(

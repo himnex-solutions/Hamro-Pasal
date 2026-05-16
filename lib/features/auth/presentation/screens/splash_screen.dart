@@ -217,14 +217,13 @@ class _SplashScreenState extends ConsumerState<SplashScreen>
               bottom: 40,
               left: 0,
               right: 0,
-              child: Text(
-                'Made with ❤️ in Nepal',
-                textAlign: TextAlign.center,
-                style: TextStyle(
-                  color: Colors.white.withValues(alpha: 0.4),
-                  fontSize: 12,
-                  letterSpacing: 0.5,
-                ),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Text('Made with ', style: Theme.of(context).textTheme.bodySmall?.copyWith(color: Colors.white.withValues(alpha: 0.4), letterSpacing: 1)),
+                  const Icon(Icons.favorite, color: Colors.red, size: 14),
+                  Text(' in Nepal', style: Theme.of(context).textTheme.bodySmall?.copyWith(color: Colors.white.withValues(alpha: 0.4), letterSpacing: 1)),
+                ],
               ).animate(delay: 1200.ms).fadeIn(),
             ),
           ],

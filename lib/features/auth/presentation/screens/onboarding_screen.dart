@@ -18,106 +18,64 @@ class _GetStartedScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final screenHeight = MediaQuery.of(context).size.height;
+    final screenWidth = MediaQuery.of(context).size.width;
 
     return Scaffold(
       backgroundColor: const Color(0xFF1AB8C4),
       body: Stack(
         children: [
-          // ── Teal gradient background ──────────────────────
-          Container(
-            decoration: const BoxDecoration(
-              gradient: LinearGradient(
-                colors: [Color(0xFF14C1CC), Color(0xFF0EA5B0)],
-                begin: Alignment.topCenter,
-                end: Alignment.bottomCenter,
-              ),
-            ),
-          ),
-
-          // ── Subtle circular decorations ───────────────────
+          // ── Ultra-Professional Mesh Gradient Background ──────────
+          Container(color: const Color(0xFF0EA5B0)),
+          
+          // Soft ambient glow 1 (Top Left)
           Positioned(
-            top: -60,
-            right: -40,
+            top: -screenHeight * 0.1,
+            left: -screenWidth * 0.2,
             child: Container(
-              width: 200,
-              height: 200,
+              width: screenWidth * 1.2,
+              height: screenWidth * 1.2,
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
-                color: Colors.white.withValues(alpha: 0.07),
+                gradient: RadialGradient(
+                  colors: [
+                    const Color(0xFF14C1CC).withValues(alpha: 0.9),
+                    const Color(0xFF14C1CC).withValues(alpha: 0.0),
+                  ],
+                ),
               ),
-            ),
+            ).animate(onPlay: (controller) => controller.repeat(reverse: true))
+             .scaleXY(begin: 1.0, end: 1.1, duration: 7.seconds, curve: Curves.easeInOut),
           ),
+          
+          // Soft ambient glow 2 (Bottom Right)
           Positioned(
-            top: 80,
-            right: 30,
+            bottom: screenHeight * 0.2,
+            right: -screenWidth * 0.3,
             child: Container(
-              width: 120,
-              height: 120,
+              width: screenWidth * 1.4,
+              height: screenWidth * 1.4,
               decoration: BoxDecoration(
                 shape: BoxShape.circle,
-                color: Colors.white.withValues(alpha: 0.05),
+                gradient: RadialGradient(
+                  colors: [
+                    const Color(0xFF098A94).withValues(alpha: 0.8),
+                    const Color(0xFF098A94).withValues(alpha: 0.0),
+                  ],
+                ),
               ),
-            ),
-          ),
-          Positioned(
-            top: screenHeight * 0.15,
-            left: -30,
-            child: Container(
-              width: 90,
-              height: 90,
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                color: Colors.white.withValues(alpha: 0.06),
-              ),
-            ),
-          ),
-
-          // ── Shopping-themed watermark icons ───────────────────
-          // Storefront — top-right
-          Positioned(
-            top: screenHeight * 0.04, right: 22,
-            child: const Icon(Icons.storefront_outlined,
-                color: Colors.white24, size: 56),
-          ),
-          // Large cart — bottom-left of teal area
-          Positioned(
-            top: screenHeight * 0.28, left: -8,
-            child: const Icon(Icons.shopping_cart_outlined,
-                color: Colors.white24, size: 80),
-          ),
-          // Shopping bag — mid-right
-          Positioned(
-            top: screenHeight * 0.22, right: 14,
-            child: const Icon(Icons.shopping_bag_outlined,
-                color: Colors.white12, size: 34),
-          ),
-          // Price tag — top-center
-          Positioned(
-            top: screenHeight * 0.02, left: screenHeight * 0.16,
-            child: const Icon(Icons.local_offer_outlined,
-                color: Colors.white12, size: 28),
-          ),
-          // Star — mid
-          Positioned(
-            top: screenHeight * 0.18, left: 22,
-            child: const Icon(Icons.star_outline_rounded,
-                color: Colors.white12, size: 26),
+            ).animate(onPlay: (controller) => controller.repeat(reverse: true))
+             .moveX(begin: 0, end: -40, duration: 8.seconds, curve: Curves.easeInOut)
+             .scaleXY(begin: 1.0, end: 1.15, duration: 8.seconds, curve: Curves.easeInOut),
           ),
 
           // ── Main content ──────────────────────────────────
           SafeArea(
             child: Column(
               children: [
-                // ── Illustration area (top teal section) ──
+                // ── Top: Clean Minimalist Space ──────────────────
                 Expanded(
                   flex: 55,
-                  child: Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 24),
-                    child: _IllustrationWidget()
-                        .animate()
-                        .fadeIn(duration: 700.ms)
-                        .slideY(begin: -0.05, end: 0),
-                  ),
+                  child: const SizedBox(),
                 ),
 
                 // ── White bottom card ─────────────────────
