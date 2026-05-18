@@ -14,8 +14,10 @@ class ReportSummary {
   final double netProfit;
   final List<Map<String, dynamic>> topProducts;
   const ReportSummary({
-    this.totalSales = 0, this.totalPurchases = 0,
-    this.totalExpenses = 0, this.netProfit = 0,
+    this.totalSales = 0,
+    this.totalPurchases = 0,
+    this.totalExpenses = 0,
+    this.netProfit = 0,
     this.topProducts = const [],
   });
 }
@@ -23,7 +25,8 @@ class ReportSummary {
 enum ReportPeriod { today, week, month, custom }
 
 final reportProvider =
-    AsyncNotifierProvider.family<ReportNotifier, ReportSummary, ReportPeriod>(() {
+    AsyncNotifierProvider.family<ReportNotifier, ReportSummary, ReportPeriod>(
+        () {
   return ReportNotifier();
 });
 
@@ -64,9 +67,15 @@ class ReportNotifier extends FamilyAsyncNotifier<ReportSummary, ReportPeriod> {
     for (final tx in txRes as List) {
       final amount = (tx['amount'] as num).toDouble();
       switch (tx['type'] as String) {
-        case 'sale': sales += amount; break;
-        case 'purchase': purchases += amount; break;
-        case 'expense': expenses += amount; break;
+        case 'sale':
+          sales += amount;
+          break;
+        case 'purchase':
+          purchases += amount;
+          break;
+        case 'expense':
+          expenses += amount;
+          break;
       }
     }
 
@@ -128,8 +137,11 @@ class _ReportsScreenState extends ConsumerState<ReportsScreen> {
                       onSelected: (_) => setState(() => _period = p),
                       selectedColor: AppTheme.primaryColor,
                       labelStyle: TextStyle(
-                        color: isSelected ? Colors.white : AppTheme.lightTextSecondary,
-                        fontWeight: isSelected ? FontWeight.w600 : FontWeight.normal,
+                        color: isSelected
+                            ? Colors.white
+                            : AppTheme.lightTextSecondary,
+                        fontWeight:
+                            isSelected ? FontWeight.w600 : FontWeight.normal,
                       ),
                     ),
                   );
@@ -148,22 +160,34 @@ class _ReportsScreenState extends ConsumerState<ReportsScreen> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     // P&L Summary
-                    Text('Profit & Loss', style: Theme.of(context).textTheme.titleLarge)
-                        .animate().fadeIn(),
+                    Text('Profit & Loss',
+                            style: Theme.of(context).textTheme.titleLarge)
+                        .animate()
+                        .fadeIn(),
                     const SizedBox(height: 12),
                     GridView.count(
                       crossAxisCount: 2,
-                      crossAxisSpacing: 12, mainAxisSpacing: 12,
+                      crossAxisSpacing: 12,
+                      mainAxisSpacing: 12,
                       childAspectRatio: 1.6,
                       shrinkWrap: true,
                       physics: const NeverScrollableScrollPhysics(),
                       children: [
-                        _ReportCard('Total Sales', report.totalSales, AppTheme.successColor, Icons.trending_up_rounded),
-                        _ReportCard('Total Purchases', report.totalPurchases, AppTheme.infoColor, Icons.shopping_bag_outlined),
-                        _ReportCard('Total Expenses', report.totalExpenses, AppTheme.errorColor, Icons.wallet_outlined),
-                        _ReportCard('Net Profit', report.netProfit,
-                            report.netProfit >= 0 ? AppTheme.accentColor : AppTheme.errorColor,
-                            report.netProfit >= 0 ? Icons.emoji_events_outlined : Icons.sentiment_dissatisfied_outlined),
+                        _ReportCard('Total Sales', report.totalSales,
+                            AppTheme.successColor, Icons.trending_up_rounded),
+                        _ReportCard('Total Purchases', report.totalPurchases,
+                            AppTheme.infoColor, Icons.shopping_bag_outlined),
+                        _ReportCard('Total Expenses', report.totalExpenses,
+                            AppTheme.errorColor, Icons.wallet_outlined),
+                        _ReportCard(
+                            'Net Profit',
+                            report.netProfit,
+                            report.netProfit >= 0
+                                ? AppTheme.accentColor
+                                : AppTheme.errorColor,
+                            report.netProfit >= 0
+                                ? Icons.emoji_events_outlined
+                                : Icons.sentiment_dissatisfied_outlined),
                       ],
                     ).animate(delay: 50.ms).fadeIn().slideY(begin: 0.1, end: 0),
 
@@ -171,38 +195,77 @@ class _ReportsScreenState extends ConsumerState<ReportsScreen> {
 
                     // Top products
                     if (report.topProducts.isNotEmpty) ...[
-                      Text('Top Selling Products', style: Theme.of(context).textTheme.titleLarge)
-                          .animate(delay: 100.ms).fadeIn(),
+                      Text('Top Selling Products',
+                              style: Theme.of(context).textTheme.titleLarge)
+                          .animate(delay: 100.ms)
+                          .fadeIn(),
                       const SizedBox(height: 12),
-                      Card(
-                        child: ListView.separated(
-                          shrinkWrap: true,
-                          physics: const NeverScrollableScrollPhysics(),
-                          itemCount: report.topProducts.length,
-                          separatorBuilder: (_, __) => const Divider(height: 1),
-                          itemBuilder: (context, i) {
-                            final p = report.topProducts[i];
-                            return ListTile(
-                              leading: Container(
-                                width: 36, height: 36,
-                                decoration: BoxDecoration(
-                                  color: AppTheme.primaryColor.withValues(alpha: 0.1),
-                                  borderRadius: BorderRadius.circular(8),
+                      Container(
+                        decoration: BoxDecoration(
+                          color: Theme.of(context).cardTheme.color,
+                          borderRadius: BorderRadius.circular(16),
+                          border: Border.all(
+                              color: Theme.of(context).brightness ==
+                                      Brightness.dark
+                                  ? AppTheme.darkBorder
+                                  : Colors.white,
+                              width: 1.5),
+                          boxShadow: [
+                            BoxShadow(
+                              color:
+                                  AppTheme.primaryColor.withValues(alpha: 0.08),
+                              blurRadius: 16,
+                              offset: const Offset(0, 6),
+                            ),
+                          ],
+                          gradient: LinearGradient(
+                            begin: Alignment.topLeft,
+                            end: Alignment.bottomRight,
+                            colors: [
+                              Theme.of(context).cardTheme.color ?? Colors.white,
+                              (Theme.of(context).cardTheme.color ??
+                                      Colors.white)
+                                  .withValues(alpha: 0.6),
+                            ],
+                          ),
+                        ),
+                        child: ClipRRect(
+                          borderRadius: BorderRadius.circular(16),
+                          child: ListView.separated(
+                            shrinkWrap: true,
+                            physics: const NeverScrollableScrollPhysics(),
+                            itemCount: report.topProducts.length,
+                            separatorBuilder: (_, __) =>
+                                const Divider(height: 1),
+                            itemBuilder: (context, i) {
+                              final p = report.topProducts[i];
+                              return ListTile(
+                                leading: Container(
+                                  width: 36,
+                                  height: 36,
+                                  decoration: BoxDecoration(
+                                    color: AppTheme.primaryColor
+                                        .withValues(alpha: 0.1),
+                                    borderRadius: BorderRadius.circular(8),
+                                  ),
+                                  child: Center(
+                                    child: Text('${i + 1}',
+                                        style: const TextStyle(
+                                            color: AppTheme.primaryColor,
+                                            fontWeight: FontWeight.w700)),
+                                  ),
                                 ),
-                                child: Center(
-                                  child: Text('${i + 1}',
-                                      style: const TextStyle(
-                                          color: AppTheme.primaryColor, fontWeight: FontWeight.w700)),
+                                title: Text(p['product_name'] as String),
+                                subtitle: Text('Qty: ${p['quantity']}'),
+                                trailing: Text(
+                                  '${AppConstants.currencySymbol} ${NumberFormat('#,##,##0').format(p['total_price'])}',
+                                  style: const TextStyle(
+                                      fontWeight: FontWeight.w700,
+                                      color: AppTheme.successColor),
                                 ),
-                              ),
-                              title: Text(p['product_name'] as String),
-                              subtitle: Text('Qty: ${p['quantity']}'),
-                              trailing: Text(
-                                '${AppConstants.currencySymbol} ${NumberFormat('#,##,##0').format(p['total_price'])}',
-                                style: const TextStyle(fontWeight: FontWeight.w700, color: AppTheme.successColor),
-                              ),
-                            );
-                          },
+                              );
+                            },
+                          ),
                         ),
                       ).animate(delay: 150.ms).fadeIn(),
                     ],
@@ -210,14 +273,23 @@ class _ReportsScreenState extends ConsumerState<ReportsScreen> {
                     const SizedBox(height: 24),
 
                     // Export buttons
-                    Text('Export Reports', style: Theme.of(context).textTheme.titleLarge)
-                        .animate(delay: 200.ms).fadeIn(),
+                    Text('Export Reports',
+                            style: Theme.of(context).textTheme.titleLarge)
+                        .animate(delay: 200.ms)
+                        .fadeIn(),
                     const SizedBox(height: 12),
                     Wrap(
-                      spacing: 10, runSpacing: 10,
+                      spacing: 10,
+                      runSpacing: 10,
                       children: [
-                        OutlinedButton.icon(onPressed: () {}, icon: const Icon(Icons.picture_as_pdf_outlined), label: const Text('Export PDF')),
-                        OutlinedButton.icon(onPressed: () {}, icon: const Icon(Icons.table_chart_outlined), label: const Text('Export Excel')),
+                        OutlinedButton.icon(
+                            onPressed: () {},
+                            icon: const Icon(Icons.picture_as_pdf_outlined),
+                            label: const Text('Export PDF')),
+                        OutlinedButton.icon(
+                            onPressed: () {},
+                            icon: const Icon(Icons.table_chart_outlined),
+                            label: const Text('Export Excel')),
                       ],
                     ).animate(delay: 250.ms).fadeIn(),
                   ],
@@ -241,7 +313,32 @@ class _ReportCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final isNeg = amount < 0;
-    return Card(
+    return Container(
+      decoration: BoxDecoration(
+        color: Theme.of(context).cardTheme.color,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(
+            color: Theme.of(context).brightness == Brightness.dark
+                ? AppTheme.darkBorder
+                : Colors.white,
+            width: 1.5),
+        boxShadow: [
+          BoxShadow(
+            color: color.withValues(alpha: 0.12),
+            blurRadius: 16,
+            offset: const Offset(0, 6),
+          ),
+        ],
+        gradient: LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [
+            Theme.of(context).cardTheme.color ?? Colors.white,
+            (Theme.of(context).cardTheme.color ?? Colors.white)
+                .withValues(alpha: 0.6),
+          ],
+        ),
+      ),
       child: Padding(
         padding: const EdgeInsets.all(14),
         child: Column(
@@ -254,11 +351,15 @@ class _ReportCard extends StatelessWidget {
               children: [
                 Text(
                   '${isNeg ? '-' : ''}${AppConstants.currencySymbol} ${NumberFormat('#,##,##0').format(amount.abs())}',
-                  style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                        color: color, fontWeight: FontWeight.w700),
-                  maxLines: 1, overflow: TextOverflow.ellipsis,
+                  style: Theme.of(context)
+                      .textTheme
+                      .titleMedium
+                      ?.copyWith(color: color, fontWeight: FontWeight.w700),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
                 ),
-                Text(title, style: Theme.of(context).textTheme.bodySmall, maxLines: 1),
+                Text(title,
+                    style: Theme.of(context).textTheme.bodySmall, maxLines: 1),
               ],
             ),
           ],

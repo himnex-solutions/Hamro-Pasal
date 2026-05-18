@@ -7,6 +7,7 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:hamro_pasal/core/constants/app_constants.dart';
 import 'package:hamro_pasal/core/router/app_router.dart';
 import 'package:hamro_pasal/core/theme/app_theme.dart';
+import 'package:hamro_pasal/core/widgets/poly_mesh_background.dart';
 
 // ── Personal Stats Model ─────────────────────────────────────
 class PersonalStats {
@@ -128,7 +129,8 @@ class PersonalDashboardNotifier extends AsyncNotifier<PersonalStats> {
       return PersonalStats(
         fullName: profile?['full_name'] as String? ?? '',
         email: profile?['email'] as String? ??
-            supabase.auth.currentUser?.email ?? '',
+            supabase.auth.currentUser?.email ??
+            '',
         phone: profile?['phone'] as String? ?? '',
         businessName: businessName,
         businessType: businessType,
@@ -179,8 +181,7 @@ class PersonalDashboardScreen extends ConsumerWidget {
         ),
       ),
       data: (stats) => RefreshIndicator(
-        onRefresh: () =>
-            ref.read(personalDashboardProvider.notifier).refresh(),
+        onRefresh: () => ref.read(personalDashboardProvider.notifier).refresh(),
         child: CustomScrollView(
           slivers: [
             _PersonalAppBar(stats: stats, ref: ref),
@@ -246,14 +247,7 @@ class _PersonalAppBar extends StatelessWidget {
       floating: true,
       pinned: false,
       flexibleSpace: FlexibleSpaceBar(
-        background: Container(
-          decoration: const BoxDecoration(
-            gradient: LinearGradient(
-              colors: [Color(0xFF6C3483), Color(0xFF9B59B6)],
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
-            ),
-          ),
+        background: PolyMeshBackground(
           child: SafeArea(
             child: Padding(
               padding: const EdgeInsets.fromLTRB(16, 8, 16, 12),
@@ -289,7 +283,9 @@ class _PersonalAppBar extends StatelessWidget {
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Text(
-                              stats.fullName.isEmpty ? 'My Profile' : stats.fullName,
+                              stats.fullName.isEmpty
+                                  ? 'My Profile'
+                                  : stats.fullName,
                               style: const TextStyle(
                                   color: Colors.white,
                                   fontWeight: FontWeight.bold,
@@ -309,7 +305,8 @@ class _PersonalAppBar extends StatelessWidget {
                   const SizedBox(height: 8),
                   // Mode pill
                   Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                     decoration: BoxDecoration(
                       color: Colors.white.withValues(alpha: 0.2),
                       borderRadius: BorderRadius.circular(20),
@@ -351,47 +348,69 @@ class _ProfileCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Card(
-      child: Padding(
-        padding: const EdgeInsets.all(18),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
-              children: [
-                Container(
-                  width: 10,
-                  height: 10,
-                  decoration: const BoxDecoration(
-                    color: Color(0xFF9B59B6),
-                    shape: BoxShape.circle,
-                  ),
-                ),
-                const SizedBox(width: 8),
-                Text('Personal Information',
-                    style: Theme.of(context)
-                        .textTheme
-                        .titleMedium
-                        ?.copyWith(fontWeight: FontWeight.w700)),
-              ],
-            ),
-            const SizedBox(height: 16),
-            _InfoRow(
-                icon: Icons.person_outline,
-                label: 'Full Name',
-                value: stats.fullName.isEmpty ? 'Not set' : stats.fullName),
-            const Divider(height: 20),
-            _InfoRow(
-                icon: Icons.email_outlined,
-                label: 'Email',
-                value: stats.email.isEmpty ? 'Not set' : stats.email),
-            const Divider(height: 20),
-            _InfoRow(
-                icon: Icons.phone_outlined,
-                label: 'Phone',
-                value: stats.phone.isEmpty ? 'Not set' : stats.phone),
+    return Container(
+      padding: const EdgeInsets.all(18),
+      decoration: BoxDecoration(
+        color: Theme.of(context).cardTheme.color,
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(
+            color: Theme.of(context).brightness == Brightness.dark
+                ? AppTheme.darkBorder
+                : Colors.white,
+            width: 1.5),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.04),
+            blurRadius: 20,
+            offset: const Offset(0, 8),
+          ),
+        ],
+        gradient: LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [
+            Theme.of(context).cardTheme.color ?? Colors.white,
+            (Theme.of(context).cardTheme.color ?? Colors.white).withValues(alpha: 0.7),
           ],
         ),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Container(
+                width: 10,
+                height: 10,
+                decoration: const BoxDecoration(
+                  color: Color(0xFF9B59B6),
+                  shape: BoxShape.circle,
+                ),
+              ),
+              const SizedBox(width: 8),
+              Text('Personal Information',
+                  style: Theme.of(context)
+                      .textTheme
+                      .titleMedium
+                      ?.copyWith(fontWeight: FontWeight.w700)),
+            ],
+          ),
+          const SizedBox(height: 16),
+          _InfoRow(
+              icon: Icons.person_outline,
+              label: 'Full Name',
+              value: stats.fullName.isEmpty ? 'Not set' : stats.fullName),
+          const Divider(height: 20),
+          _InfoRow(
+              icon: Icons.email_outlined,
+              label: 'Email',
+              value: stats.email.isEmpty ? 'Not set' : stats.email),
+          const Divider(height: 20),
+          _InfoRow(
+              icon: Icons.phone_outlined,
+              label: 'Phone',
+              value: stats.phone.isEmpty ? 'Not set' : stats.phone),
+        ],
       ),
     ).animate().fadeIn().slideY(begin: 0.1, end: 0);
   }
@@ -437,16 +456,18 @@ class _BusinessSummaryCard extends StatelessWidget {
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
         gradient: const LinearGradient(
-          colors: [AppTheme.primaryColor, AppTheme.primaryDark],
+          colors: [AppTheme.primaryLight, AppTheme.primaryColor],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
         ),
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: BorderRadius.circular(20),
+        border:
+            Border.all(color: Colors.white.withValues(alpha: 0.2), width: 1.5),
         boxShadow: [
           BoxShadow(
-            color: AppTheme.primaryColor.withValues(alpha: 0.25),
-            blurRadius: 12,
-            offset: const Offset(0, 4),
+            color: AppTheme.primaryColor.withValues(alpha: 0.3),
+            blurRadius: 24,
+            offset: const Offset(0, 8),
           ),
         ],
       ),
@@ -459,8 +480,8 @@ class _BusinessSummaryCard extends StatelessWidget {
               color: Colors.white.withValues(alpha: 0.2),
               borderRadius: BorderRadius.circular(12),
             ),
-            child: const Icon(Icons.store_rounded,
-                color: Colors.white, size: 26),
+            child:
+                const Icon(Icons.store_rounded, color: Colors.white, size: 26),
           ),
           const SizedBox(width: 14),
           Expanded(
@@ -501,16 +522,20 @@ class _LifetimeStatsGrid extends StatelessWidget {
       shrinkWrap: true,
       physics: const NeverScrollableScrollPhysics(),
       children: [
-        _StatTile('Total Sales',
+        _StatTile(
+            'Total Sales',
             '${AppConstants.currencySymbol} ${fmt.format(stats.totalBusinessSales)}',
-            AppTheme.successColor, Icons.trending_up_rounded),
-        _StatTile('Total Expenses',
+            AppTheme.successColor,
+            Icons.trending_up_rounded),
+        _StatTile(
+            'Total Expenses',
             '${AppConstants.currencySymbol} ${fmt.format(stats.totalBusinessExpenses)}',
-            AppTheme.errorColor, Icons.trending_down_rounded),
-        _StatTile('Total Parties', '${stats.totalParties}',
-            AppTheme.infoColor, Icons.people_outline),
-        _StatTile('Products', '${stats.totalProducts}',
-            AppTheme.accentColor, Icons.inventory_2_outlined),
+            AppTheme.errorColor,
+            Icons.trending_down_rounded),
+        _StatTile('Total Parties', '${stats.totalParties}', AppTheme.infoColor,
+            Icons.people_outline),
+        _StatTile('Products', '${stats.totalProducts}', AppTheme.accentColor,
+            Icons.inventory_2_outlined),
       ],
     ).animate(delay: 200.ms).fadeIn();
   }
@@ -525,32 +550,53 @@ class _StatTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Card(
-      child: Padding(
-        padding: const EdgeInsets.all(14),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            Icon(icon, color: color, size: 22),
-            Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(value,
-                    style: Theme.of(context)
-                        .textTheme
-                        .titleMedium
-                        ?.copyWith(
-                            color: color, fontWeight: FontWeight.w700),
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis),
-                Text(label,
-                    style: Theme.of(context).textTheme.bodySmall,
-                    maxLines: 1),
-              ],
-            ),
+    return Container(
+      padding: const EdgeInsets.all(14),
+      decoration: BoxDecoration(
+        color: Theme.of(context).cardTheme.color,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(
+            color: Theme.of(context).brightness == Brightness.dark
+                ? AppTheme.darkBorder
+                : Colors.white,
+            width: 1.5),
+        boxShadow: [
+          BoxShadow(
+            color: color.withValues(alpha: 0.12),
+            blurRadius: 16,
+            offset: const Offset(0, 6),
+          ),
+        ],
+        gradient: LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [
+            Theme.of(context).cardTheme.color ?? Colors.white,
+            (Theme.of(context).cardTheme.color ?? Colors.white)
+                .withValues(alpha: 0.6),
           ],
         ),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Icon(icon, color: color, size: 22),
+          Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(value,
+                  style: Theme.of(context)
+                      .textTheme
+                      .titleMedium
+                      ?.copyWith(color: color, fontWeight: FontWeight.w700),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis),
+              Text(label,
+                  style: Theme.of(context).textTheme.bodySmall, maxLines: 1),
+            ],
+          ),
+        ],
       ),
     );
   }
@@ -563,8 +609,7 @@ class _SubscriptionCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final isTrial =
-        stats.subscriptionStatus == AppConstants.statusTrialActive;
+    final isTrial = stats.subscriptionStatus == AppConstants.statusTrialActive;
     final isExpired =
         stats.subscriptionStatus == AppConstants.statusTrialExpired ||
             stats.subscriptionStatus == AppConstants.statusExpired;
@@ -582,9 +627,24 @@ class _SubscriptionCard extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(14),
       decoration: BoxDecoration(
-        color: color.withValues(alpha: 0.08),
-        borderRadius: BorderRadius.circular(14),
-        border: Border.all(color: color.withValues(alpha: 0.3)),
+        color: Theme.of(context).cardTheme.color,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: color.withValues(alpha: 0.3), width: 1.5),
+        boxShadow: [
+          BoxShadow(
+            color: color.withValues(alpha: 0.08),
+            blurRadius: 16,
+            offset: const Offset(0, 6),
+          ),
+        ],
+        gradient: LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [
+            color.withValues(alpha: 0.05),
+            color.withValues(alpha: 0.15),
+          ],
+        ),
       ),
       child: Row(
         children: [
@@ -600,8 +660,7 @@ class _SubscriptionCard extends StatelessWidget {
           const SizedBox(width: 10),
           Expanded(
             child: Text(label,
-                style: TextStyle(
-                    color: color, fontWeight: FontWeight.w600)),
+                style: TextStyle(color: color, fontWeight: FontWeight.w600)),
           ),
           if (isExpired || isTrial)
             TextButton(

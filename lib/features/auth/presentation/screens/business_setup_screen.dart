@@ -17,7 +17,8 @@ class BusinessSetupScreen extends ConsumerStatefulWidget {
   const BusinessSetupScreen({super.key});
 
   @override
-  ConsumerState<BusinessSetupScreen> createState() => _BusinessSetupScreenState();
+  ConsumerState<BusinessSetupScreen> createState() =>
+      _BusinessSetupScreenState();
 }
 
 class _BusinessSetupScreenState extends ConsumerState<BusinessSetupScreen> {
@@ -31,8 +32,10 @@ class _BusinessSetupScreenState extends ConsumerState<BusinessSetupScreen> {
 
   @override
   void dispose() {
-    _nameCtrl.dispose(); _phoneCtrl.dispose();
-    _addressCtrl.dispose(); _panCtrl.dispose();
+    _nameCtrl.dispose();
+    _phoneCtrl.dispose();
+    _addressCtrl.dispose();
+    _panCtrl.dispose();
     super.dispose();
   }
 
@@ -44,7 +47,8 @@ class _BusinessSetupScreenState extends ConsumerState<BusinessSetupScreen> {
       final userId = supabase.auth.currentUser!.id;
       final businessId = const Uuid().v4();
       final now = DateTime.now().toIso8601String();
-      final trialEnd = DateTime.now().add(const Duration(days: AppConstants.trialDays));
+      final trialEnd =
+          DateTime.now().add(const Duration(days: AppConstants.trialDays));
 
       // Create business
       await supabase.from('businesses').insert({
@@ -53,8 +57,10 @@ class _BusinessSetupScreenState extends ConsumerState<BusinessSetupScreen> {
         'name': _nameCtrl.text.trim(),
         'type': _businessType,
         'phone': _phoneCtrl.text.trim().isEmpty ? null : _phoneCtrl.text.trim(),
-        'address': _addressCtrl.text.trim().isEmpty ? null : _addressCtrl.text.trim(),
-        'pan_number': _panCtrl.text.trim().isEmpty ? null : _panCtrl.text.trim(),
+        'address':
+            _addressCtrl.text.trim().isEmpty ? null : _addressCtrl.text.trim(),
+        'pan_number':
+            _panCtrl.text.trim().isEmpty ? null : _panCtrl.text.trim(),
         'currency': AppConstants.currency,
         'created_at': now,
         'updated_at': now,
@@ -98,7 +104,8 @@ class _BusinessSetupScreenState extends ConsumerState<BusinessSetupScreen> {
       });
 
       if (mounted) {
-        AppSnackbar.show(context, 'Business created! 14-day trial started.', isSuccess: true);
+        AppSnackbar.show(context, 'Business created! 14-day trial started.',
+            isSuccess: true);
         context.go(AppRoutes.dashboard);
       }
     } catch (e) {
@@ -132,16 +139,22 @@ class _BusinessSetupScreenState extends ConsumerState<BusinessSetupScreen> {
                   ),
                   child: Row(
                     children: [
-                      const Icon(Icons.store_rounded, color: Colors.white, size: 32),
+                      const Icon(Icons.store_rounded,
+                          color: Colors.white, size: 32),
                       const SizedBox(width: 12),
                       Expanded(
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Text('Setup Your Business',
-                                style: Theme.of(context).textTheme.titleLarge?.copyWith(color: Colors.white)),
+                                style: Theme.of(context)
+                                    .textTheme
+                                    .titleLarge
+                                    ?.copyWith(color: Colors.white)),
                             Text('14-day free trial starts now!',
-                                style: TextStyle(color: Colors.white.withValues(alpha: 0.8), fontSize: 13)),
+                                style: TextStyle(
+                                    color: Colors.white.withValues(alpha: 0.8),
+                                    fontSize: 13)),
                           ],
                         ),
                       ),
@@ -157,7 +170,9 @@ class _BusinessSetupScreenState extends ConsumerState<BusinessSetupScreen> {
                   hint: 'e.g. Ram General Store',
                   prefixIcon: Icons.store_outlined,
                   textCapitalization: TextCapitalization.words,
-                  validator: (v) => (v == null || v.trim().isEmpty) ? 'Business name is required' : null,
+                  validator: (v) => (v == null || v.trim().isEmpty)
+                      ? 'Business name is required'
+                      : null,
                 ).animate(delay: 100.ms).fadeIn(),
 
                 const SizedBox(height: 16),
@@ -174,9 +189,12 @@ class _BusinessSetupScreenState extends ConsumerState<BusinessSetupScreen> {
                       isExpanded: true,
                       padding: const EdgeInsets.symmetric(horizontal: 12),
                       borderRadius: BorderRadius.circular(12),
-                      items: AppConstants.businessTypes.map((t) =>
-                          DropdownMenuItem(value: t, child: Text(t))).toList(),
-                      onChanged: (v) => setState(() => _businessType = v ?? _businessType),
+                      items: AppConstants.businessTypes
+                          .map(
+                              (t) => DropdownMenuItem(value: t, child: Text(t)))
+                          .toList(),
+                      onChanged: (v) =>
+                          setState(() => _businessType = v ?? _businessType),
                     ),
                   ),
                 ).animate(delay: 150.ms).fadeIn(),
@@ -220,16 +238,21 @@ class _BusinessSetupScreenState extends ConsumerState<BusinessSetupScreen> {
                   decoration: BoxDecoration(
                     color: AppTheme.accentColor.withValues(alpha: 0.08),
                     borderRadius: BorderRadius.circular(12),
-                    border: Border.all(color: AppTheme.accentColor.withValues(alpha: 0.3)),
+                    border: Border.all(
+                        color: AppTheme.accentColor.withValues(alpha: 0.3)),
                   ),
                   child: Row(
                     children: [
-                      const Icon(Icons.rocket_launch_outlined, color: AppTheme.accentDark, size: 22),
+                      const Icon(Icons.rocket_launch_outlined,
+                          color: AppTheme.accentDark, size: 22),
                       const SizedBox(width: 10),
                       Expanded(
                         child: Text(
                           'Your 14-day free trial includes all features. No payment required.',
-                          style: Theme.of(context).textTheme.bodySmall?.copyWith(color: AppTheme.accentDark),
+                          style: Theme.of(context)
+                              .textTheme
+                              .bodySmall
+                              ?.copyWith(color: AppTheme.accentDark),
                         ),
                       ),
                     ],

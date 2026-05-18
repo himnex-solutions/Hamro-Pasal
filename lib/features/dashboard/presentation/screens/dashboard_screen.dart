@@ -10,6 +10,7 @@ import 'package:hamro_pasal/core/l10n/app_strings.dart';
 import 'package:hamro_pasal/core/providers/profile_mode_provider.dart';
 import 'package:hamro_pasal/core/router/app_router.dart';
 import 'package:hamro_pasal/core/theme/app_theme.dart';
+import 'package:hamro_pasal/core/widgets/poly_mesh_background.dart';
 import 'package:hamro_pasal/features/dashboard/presentation/providers/dashboard_provider.dart';
 import 'package:hamro_pasal/features/dashboard/presentation/screens/personal_dashboard_screen.dart';
 import 'package:loading_animation_widget/loading_animation_widget.dart';
@@ -23,63 +24,72 @@ class DashboardScreen extends ConsumerWidget {
     if (mode == ProfileMode.personal) return const PersonalDashboardScreen();
 
     return ref.watch(dashboardProvider).when(
-      loading: () => Scaffold(
-        body: Center(
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              LoadingAnimationWidget.fourRotatingDots(
-                  color: AppTheme.primaryColor, size: 48),
-              const SizedBox(height: 16),
-              Text('Loading dashboard…',
-                  style: TextStyle(fontSize: 13, color: Colors.grey[500])),
-            ],
-          ),
-        ),
-      ),
-      error: (e, _) => Scaffold(
-        body: Center(
-          child: Column(mainAxisAlignment: MainAxisAlignment.center, children: [
-            Icon(Icons.cloud_off_rounded, size: 48, color: Colors.grey[300]),
-            const SizedBox(height: 16),
-            Text('Could not load data',
-                style: TextStyle(fontSize: 15, color: Colors.grey[600], fontWeight: FontWeight.w600)),
-            const SizedBox(height: 8),
-            Text('Check your connection and try again',
-                style: TextStyle(fontSize: 13, color: Colors.grey[400])),
-            const SizedBox(height: 24),
-            OutlinedButton.icon(
-              onPressed: () => ref.read(dashboardProvider.notifier).refresh(),
-              icon: const Icon(Icons.refresh_rounded, size: 16),
-              label: const Text('Try again'),
-            ),
-          ]),
-        ),
-      ),
-      data: (stats) => Scaffold(
-        backgroundColor: const Color(0xFFF8FAFC),
-        body: RefreshIndicator(
-          color: AppTheme.primaryColor,
-          onRefresh: () => ref.read(dashboardProvider.notifier).refresh(),
-          child: CustomScrollView(
-            slivers: [
-              _DashAppBar(stats: stats),
-              SliverPadding(
-                padding: const EdgeInsets.fromLTRB(16, 0, 16, 32),
-                sliver: SliverList(
-                  delegate: SliverChildListDelegate(
-                    _buildBody(context, ref, stats),
-                  ),
-                ),
+          loading: () => Scaffold(
+            body: Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  LoadingAnimationWidget.fourRotatingDots(
+                      color: AppTheme.primaryColor, size: 48),
+                  const SizedBox(height: 16),
+                  Text('Loading dashboard…',
+                      style: TextStyle(fontSize: 13, color: Colors.grey[500])),
+                ],
               ),
-            ],
+            ),
           ),
-        ),
-      ),
-    );
+          error: (e, _) => Scaffold(
+            body: Center(
+              child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Icon(Icons.cloud_off_rounded,
+                        size: 48, color: Colors.grey[300]),
+                    const SizedBox(height: 16),
+                    Text('Could not load data',
+                        style: TextStyle(
+                            fontSize: 15,
+                            color: Colors.grey[600],
+                            fontWeight: FontWeight.w600)),
+                    const SizedBox(height: 8),
+                    Text('Check your connection and try again',
+                        style:
+                            TextStyle(fontSize: 13, color: Colors.grey[400])),
+                    const SizedBox(height: 24),
+                    OutlinedButton.icon(
+                      onPressed: () =>
+                          ref.read(dashboardProvider.notifier).refresh(),
+                      icon: const Icon(Icons.refresh_rounded, size: 16),
+                      label: const Text('Try again'),
+                    ),
+                  ]),
+            ),
+          ),
+          data: (stats) => Scaffold(
+            backgroundColor: Theme.of(context).scaffoldBackgroundColor,
+            body: RefreshIndicator(
+              color: AppTheme.primaryColor,
+              onRefresh: () => ref.read(dashboardProvider.notifier).refresh(),
+              child: CustomScrollView(
+                slivers: [
+                  _DashAppBar(stats: stats),
+                  SliverPadding(
+                    padding: const EdgeInsets.fromLTRB(16, 0, 16, 32),
+                    sliver: SliverList(
+                      delegate: SliverChildListDelegate(
+                        _buildBody(context, ref, stats),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        );
   }
 
-  List<Widget> _buildBody(BuildContext ctx, WidgetRef ref, DashboardStats stats) {
+  List<Widget> _buildBody(
+      BuildContext ctx, WidgetRef ref, DashboardStats stats) {
     final l = ctx.l10n;
     final fmt = NumberFormat('#,##,##0');
 
@@ -161,8 +171,7 @@ class DashboardScreen extends ConsumerWidget {
       const SizedBox(height: 20),
 
       // Net Profit bar
-      _NetProfitCard(profit: stats.todayProfit)
-          .animate(delay: 250.ms).fadeIn(),
+      _NetProfitCard(profit: stats.todayProfit).animate(delay: 250.ms).fadeIn(),
 
       const SizedBox(height: 24),
 
@@ -194,7 +203,8 @@ class DashboardScreen extends ConsumerWidget {
             onPressed: () => ctx.push(AppRoutes.transactions),
             style: TextButton.styleFrom(
               foregroundColor: AppTheme.primaryColor,
-              textStyle: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600),
+              textStyle:
+                  const TextStyle(fontSize: 13, fontWeight: FontWeight.w600),
               padding: EdgeInsets.zero,
               minimumSize: Size.zero,
               tapTargetSize: MaterialTapTargetSize.shrinkWrap,
@@ -224,12 +234,15 @@ class DashboardScreen extends ConsumerWidget {
               children: stats.recentTransactions.map((tx) {
                 final type = tx['type'] as String;
                 final amount = (tx['amount'] as num).toDouble();
-                final isIncome = type == AppConstants.txSale || type == AppConstants.txIncome;
+                final isIncome = type == AppConstants.txSale ||
+                    type == AppConstants.txIncome;
                 final date = DateTime.parse(tx['transaction_date'] as String);
                 return _TxTile(
                   name: tx['party_name'] as String? ?? _typeLabel(type),
-                  subtitle: '${_typeLabel(type)} · ${DateFormat('dd MMM, h:mm a').format(date)}',
-                  amount: '${isIncome ? '+' : '-'} Rs. ${NumberFormat('#,##,##0').format(amount)}',
+                  subtitle:
+                      '${_typeLabel(type)} · ${DateFormat('dd MMM, h:mm a').format(date)}',
+                  amount:
+                      '${isIncome ? '+' : '-'} Rs. ${NumberFormat('#,##,##0').format(amount)}',
                   isIncome: isIncome,
                 );
               }).toList(),
@@ -249,11 +262,16 @@ class DashboardScreen extends ConsumerWidget {
 
   String _typeLabel(String type) {
     switch (type) {
-      case 'sale': return 'Sale';
-      case 'purchase': return 'Purchase';
-      case 'expense': return 'Expense';
-      case 'income': return 'Income';
-      default: return type.toUpperCase();
+      case 'sale':
+        return 'Sale';
+      case 'purchase':
+        return 'Purchase';
+      case 'expense':
+        return 'Expense';
+      case 'income':
+        return 'Income';
+      default:
+        return type.toUpperCase();
     }
   }
 }
@@ -267,8 +285,11 @@ class _DashAppBar extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final hour = DateTime.now().hour;
     final l = context.l10n;
-    final greeting = hour < 12 ? l.goodMorning : hour < 17 ? l.goodAfternoon : l.goodEvening;
-
+    final greeting = hour < 12
+        ? l.goodMorning
+        : hour < 17
+            ? l.goodAfternoon
+            : l.goodEvening;
 
     return SliverAppBar(
       expandedHeight: 132,
@@ -280,71 +301,73 @@ class _DashAppBar extends ConsumerWidget {
         IconButton(
           tooltip: 'Settings',
           onPressed: () => context.push(AppRoutes.settings),
-          icon: const Icon(Icons.settings_outlined, size: 20, color: Colors.white70),
+          icon: const Icon(Icons.settings_outlined,
+              size: 20, color: Colors.white70),
         ),
         IconButton(
           tooltip: 'Upgrade',
           onPressed: () => context.push(AppRoutes.subscription),
-          icon: const Icon(Icons.workspace_premium_outlined, size: 20, color: Colors.white70),
+          icon: const Icon(Icons.workspace_premium_outlined,
+              size: 20, color: Colors.white70),
         ),
         const SizedBox(width: 4),
       ],
       flexibleSpace: FlexibleSpaceBar(
-        background: Container(
-          decoration: const BoxDecoration(
-            gradient: LinearGradient(
-              colors: [Color(0xFF0F172A), Color(0xFF1E3A5F)],
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
-            ),
-          ),
-          child: Stack(
-            children: [
-              Positioned(top: -30, right: -20,
-                child: Container(width: 180, height: 180,
-                  decoration: BoxDecoration(
-                    shape: BoxShape.circle,
-                    color: AppTheme.primaryColor.withValues(alpha: 0.08),
-                  ))),
-              SafeArea(
-                child: Padding(
-                  padding: const EdgeInsets.fromLTRB(20, 8, 20, 16),
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.end,
-                    crossAxisAlignment: CrossAxisAlignment.start,
+        background: PolyMeshBackground(
+          child: SafeArea(
+            child: Padding(
+              padding: const EdgeInsets.fromLTRB(20, 8, 20, 16),
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.end,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text('$greeting 👋',
+                      style: TextStyle(
+                          color: Colors.white.withValues(alpha: 0.6),
+                          fontSize: 12,
+                          fontWeight: FontWeight.w500)),
+                  const SizedBox(height: 4),
+                  Row(
                     children: [
-                      Text('$greeting 👋',
-                        style: TextStyle(color: Colors.white.withValues(alpha: 0.6), fontSize: 12, fontWeight: FontWeight.w500)),
-                      const SizedBox(height: 4),
-                      Row(
-                        children: [
-                          Expanded(
-                            child: Text(DateFormat('EEEE, d MMMM').format(DateTime.now()),
-                              style: const TextStyle(color: Colors.white, fontSize: 18,
-                                  fontWeight: FontWeight.w700, letterSpacing: -0.3)),
-                          ),
-                          // Mode badge
+                      Expanded(
+                        child: Text(
+                            DateFormat('EEEE, d MMMM').format(DateTime.now()),
+                            style: const TextStyle(
+                                color: Colors.white,
+                                fontSize: 18,
+                                fontWeight: FontWeight.w700,
+                                letterSpacing: -0.3)),
+                      ),
+                      // Mode badge
+                      Container(
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 10, vertical: 4),
+                        decoration: BoxDecoration(
+                          color: Colors.white.withValues(alpha: 0.10),
+                          borderRadius: BorderRadius.circular(20),
+                          border: Border.all(
+                              color: Colors.white.withValues(alpha: 0.15)),
+                        ),
+                        child: Row(mainAxisSize: MainAxisSize.min, children: [
                           Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                            decoration: BoxDecoration(
-                              color: Colors.white.withValues(alpha: 0.10),
-                              borderRadius: BorderRadius.circular(20),
-                              border: Border.all(color: Colors.white.withValues(alpha: 0.15)),
-                            ),
-                            child: Row(mainAxisSize: MainAxisSize.min, children: [
-                              Container(width: 6, height: 6,
-                                decoration: const BoxDecoration(color: Color(0xFF22C55E), shape: BoxShape.circle)),
-                              const SizedBox(width: 6),
-                              const Text('Business', style: TextStyle(color: Colors.white70, fontSize: 11, fontWeight: FontWeight.w600)),
-                            ]),
-                          ),
-                        ],
+                              width: 6,
+                              height: 6,
+                              decoration: const BoxDecoration(
+                                  color: Color(0xFF22C55E),
+                                  shape: BoxShape.circle)),
+                          const SizedBox(width: 6),
+                          const Text('Business',
+                              style: TextStyle(
+                                  color: Colors.white70,
+                                  fontSize: 11,
+                                  fontWeight: FontWeight.w600)),
+                        ]),
                       ),
                     ],
                   ),
-                ),
+                ],
               ),
-            ],
+            ),
           ),
         ),
       ),
@@ -373,12 +396,28 @@ class _KpiCard extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.fromLTRB(14, 14, 14, 10),
       decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: const Color(0xFFE5E7EB), width: 1),
+        color: Theme.of(context).cardTheme.color,
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(
+            color: Theme.of(context).brightness == Brightness.dark
+                ? AppTheme.darkBorder
+                : Colors.white,
+            width: 1.5),
         boxShadow: [
-          BoxShadow(color: Colors.black.withValues(alpha: 0.04), blurRadius: 12, offset: const Offset(0, 2)),
+          BoxShadow(
+            color: color.withValues(alpha: 0.12),
+            blurRadius: 20,
+            offset: const Offset(0, 8),
+          ),
         ],
+        gradient: LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [
+            Theme.of(context).cardTheme.color ?? Colors.white,
+            (Theme.of(context).cardTheme.color ?? Colors.white).withValues(alpha: 0.7),
+          ],
+        ),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -388,7 +427,8 @@ class _KpiCard extends StatelessWidget {
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Container(
-                width: 34, height: 34,
+                width: 34,
+                height: 34,
                 decoration: BoxDecoration(
                   color: color.withValues(alpha: 0.10),
                   borderRadius: BorderRadius.circular(9),
@@ -397,7 +437,8 @@ class _KpiCard extends StatelessWidget {
               ),
               // Mini sparkline chart
               SizedBox(
-                width: 56, height: 28,
+                width: 56,
+                height: 28,
                 child: LineChart(
                   LineChartData(
                     gridData: const FlGridData(show: false),
@@ -414,7 +455,14 @@ class _KpiCard extends StatelessWidget {
                         dotData: const FlDotData(show: false),
                         belowBarData: BarAreaData(
                           show: true,
-                          color: color.withValues(alpha: 0.08),
+                          gradient: LinearGradient(
+                            begin: Alignment.topCenter,
+                            end: Alignment.bottomCenter,
+                            colors: [
+                              color.withValues(alpha: 0.25),
+                              color.withValues(alpha: 0.0),
+                            ],
+                          ),
                         ),
                       ),
                     ],
@@ -426,14 +474,21 @@ class _KpiCard extends StatelessWidget {
           const Spacer(),
           // Value
           Text(value,
-            style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w800,
-                color: Color(0xFF0F172A), letterSpacing: -0.3),
-            maxLines: 1, overflow: TextOverflow.ellipsis),
+              style: TextStyle(
+                  fontSize: 15,
+                  fontWeight: FontWeight.w800,
+                  color: Theme.of(context).brightness == Brightness.dark ? AppTheme.darkTextPrimary : const Color(0xFF0F172A),
+                  letterSpacing: -0.3),
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis),
           const SizedBox(height: 2),
           // Label
           Text(label,
-            style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w500, color: Color(0xFF9CA3AF)),
-            maxLines: 1),
+              style: TextStyle(
+                  fontSize: 11,
+                  fontWeight: FontWeight.w500,
+                  color: Theme.of(context).brightness == Brightness.dark ? AppTheme.darkTextSecondary : const Color(0xFF9CA3AF)),
+              maxLines: 1),
         ],
       ),
     );
@@ -448,40 +503,68 @@ class _NetProfitCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final isPositive = profit >= 0;
-    final color = isPositive ? const Color(0xFF10B981) : const Color(0xFFEF4444);
+    final color =
+        isPositive ? const Color(0xFF10B981) : const Color(0xFFEF4444);
     final fmt = NumberFormat('#,##,##0.00');
 
     return Container(
       padding: const EdgeInsets.all(18),
       decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: const Color(0xFFE5E7EB)),
+        color: Theme.of(context).cardTheme.color,
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(
+            color: Theme.of(context).brightness == Brightness.dark
+                ? AppTheme.darkBorder
+                : Colors.white,
+            width: 1.5),
         boxShadow: [
-          BoxShadow(color: Colors.black.withValues(alpha: 0.04), blurRadius: 12, offset: const Offset(0, 2)),
+          BoxShadow(
+            color: color.withValues(alpha: 0.12),
+            blurRadius: 24,
+            offset: const Offset(0, 8),
+          ),
         ],
+        gradient: LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [
+            Theme.of(context).cardTheme.color ?? Colors.white,
+            (Theme.of(context).cardTheme.color ?? Colors.white).withValues(alpha: 0.8),
+          ],
+        ),
       ),
       child: Row(
         children: [
           Container(
-            width: 44, height: 44,
+            width: 44,
+            height: 44,
             decoration: BoxDecoration(
               color: color.withValues(alpha: 0.10),
               borderRadius: BorderRadius.circular(12),
             ),
             child: Icon(
-              isPositive ? Icons.arrow_upward_rounded : Icons.arrow_downward_rounded,
-              color: color, size: 22),
+                isPositive
+                    ? Icons.arrow_upward_rounded
+                    : Icons.arrow_downward_rounded,
+                color: color,
+                size: 22),
           ),
           const SizedBox(width: 14),
           Expanded(
-            child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-              const Text('Net Profit Today',
-                style: TextStyle(fontSize: 12, fontWeight: FontWeight.w500, color: Color(0xFF6B7280))),
+            child:
+                Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+              Text('Net Profit Today',
+                  style: TextStyle(
+                      fontSize: 12,
+                      fontWeight: FontWeight.w500,
+                      color: Theme.of(context).brightness == Brightness.dark ? AppTheme.darkTextSecondary : const Color(0xFF6B7280))),
               const SizedBox(height: 3),
               Text('${isPositive ? '+' : '-'} Rs. ${fmt.format(profit.abs())}',
-                style: TextStyle(fontSize: 20, fontWeight: FontWeight.w800,
-                    color: color, letterSpacing: -0.5)),
+                  style: TextStyle(
+                      fontSize: 20,
+                      fontWeight: FontWeight.w800,
+                      color: color,
+                      letterSpacing: -0.5)),
             ]),
           ),
           Container(
@@ -492,7 +575,8 @@ class _NetProfitCard extends StatelessWidget {
             ),
             child: Text(
               isPositive ? 'Profit' : 'Loss',
-              style: TextStyle(fontSize: 11, fontWeight: FontWeight.w700, color: color),
+              style: TextStyle(
+                  fontSize: 11, fontWeight: FontWeight.w700, color: color),
             ),
           ),
         ],
@@ -509,17 +593,24 @@ class _QuickActionsGrid extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final actions = [
-      const _QA('New Sale', Icons.point_of_sale_rounded, Color(0xFF10B981), AppRoutes.addTransaction),
-      const _QA('Purchase', Icons.shopping_bag_outlined, Color(0xFF3B82F6), AppRoutes.addTransaction),
-      const _QA('Party', Icons.person_add_alt_1_outlined, AppTheme.primaryColor, AppRoutes.addParty),
-      const _QA('Product', Icons.inventory_2_outlined, Color(0xFF8B5CF6), AppRoutes.addProduct),
-      const _QA('Expense', Icons.receipt_long_outlined, Color(0xFFEF4444), AppRoutes.addExpense),
-      const _QA('Reports', Icons.bar_chart_rounded, Color(0xFFF59E0B), AppRoutes.reports),
+      const _QA('New Sale', Icons.point_of_sale_rounded, Color(0xFF10B981),
+          AppRoutes.addTransaction),
+      const _QA('Purchase', Icons.shopping_bag_outlined, Color(0xFF3B82F6),
+          AppRoutes.addTransaction),
+      const _QA('Party', Icons.person_add_alt_1_outlined, AppTheme.primaryColor,
+          AppRoutes.addParty),
+      const _QA('Product', Icons.inventory_2_outlined, Color(0xFF8B5CF6),
+          AppRoutes.addProduct),
+      const _QA('Expense', Icons.receipt_long_outlined, Color(0xFFEF4444),
+          AppRoutes.addExpense),
+      const _QA('Reports', Icons.bar_chart_rounded, Color(0xFFF59E0B),
+          AppRoutes.reports),
     ];
 
     return GridView.count(
       crossAxisCount: 3,
-      crossAxisSpacing: 10, mainAxisSpacing: 10,
+      crossAxisSpacing: 10,
+      mainAxisSpacing: 10,
       childAspectRatio: 1.05,
       shrinkWrap: true,
       physics: const NeverScrollableScrollPhysics(),
@@ -542,25 +633,45 @@ class _QACardState extends State<_QACard> {
     final a = widget.action;
     return GestureDetector(
       onTapDown: (_) => setState(() => _pressed = true),
-      onTapUp: (_) { setState(() => _pressed = false); context.push(a.route); },
+      onTapUp: (_) {
+        setState(() => _pressed = false);
+        context.push(a.route);
+      },
       onTapCancel: () => setState(() => _pressed = false),
       child: AnimatedScale(
         scale: _pressed ? 0.93 : 1.0,
         duration: const Duration(milliseconds: 100),
         child: Container(
           decoration: BoxDecoration(
-            color: Colors.white,
-            borderRadius: BorderRadius.circular(14),
-            border: Border.all(color: const Color(0xFFE5E7EB)),
+            color: Theme.of(context).cardTheme.color,
+            borderRadius: BorderRadius.circular(16),
+            border: Border.all(
+                color: Theme.of(context).brightness == Brightness.dark
+                    ? AppTheme.darkBorder
+                    : Colors.white,
+                width: 1.5),
             boxShadow: [
-              BoxShadow(color: Colors.black.withValues(alpha: 0.03), blurRadius: 8, offset: const Offset(0, 2)),
+              BoxShadow(
+                color: a.color.withValues(alpha: 0.12),
+                blurRadius: 16,
+                offset: const Offset(0, 6),
+              ),
             ],
+            gradient: LinearGradient(
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+              colors: [
+                Theme.of(context).cardTheme.color ?? Colors.white,
+                (Theme.of(context).cardTheme.color ?? Colors.white).withValues(alpha: 0.6),
+              ],
+            ),
           ),
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               Container(
-                width: 42, height: 42,
+                width: 42,
+                height: 42,
                 decoration: BoxDecoration(
                   color: a.color.withValues(alpha: 0.10),
                   borderRadius: BorderRadius.circular(12),
@@ -569,8 +680,12 @@ class _QACardState extends State<_QACard> {
               ),
               const SizedBox(height: 8),
               Text(a.label,
-                style: const TextStyle(fontSize: 11.5, fontWeight: FontWeight.w600, color: Color(0xFF374151)),
-                textAlign: TextAlign.center, maxLines: 1),
+                  style: TextStyle(
+                      fontSize: 11.5,
+                      fontWeight: FontWeight.w600,
+                      color: Theme.of(context).brightness == Brightness.dark ? AppTheme.darkTextPrimary : const Color(0xFF374151)),
+                  textAlign: TextAlign.center,
+                  maxLines: 1),
             ],
           ),
         ),
@@ -590,7 +705,11 @@ class _QA {
 class _TxTile extends StatelessWidget {
   final String name, subtitle, amount;
   final bool isIncome;
-  const _TxTile({required this.name, required this.subtitle, required this.amount, required this.isIncome});
+  const _TxTile(
+      {required this.name,
+      required this.subtitle,
+      required this.amount,
+      required this.isIncome});
 
   @override
   Widget build(BuildContext context) {
@@ -599,36 +718,56 @@ class _TxTile extends StatelessWidget {
       margin: const EdgeInsets.only(bottom: 8),
       padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
       decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: const Color(0xFFE5E7EB)),
+        color: Theme.of(context).cardTheme.color,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(
+            color: Theme.of(context).brightness == Brightness.dark
+                ? AppTheme.darkBorder
+                : Colors.white,
+            width: 1.5),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withValues(alpha: 0.03),
+            blurRadius: 10,
+            offset: const Offset(0, 4),
+          ),
+        ],
       ),
       child: Row(
         children: [
           Container(
-            width: 38, height: 38,
+            width: 38,
+            height: 38,
             decoration: BoxDecoration(
               color: color.withValues(alpha: 0.10),
               borderRadius: BorderRadius.circular(10),
             ),
             child: Icon(
-              isIncome ? Icons.south_west_rounded : Icons.north_east_rounded,
-              color: color, size: 17),
+                isIncome ? Icons.south_west_rounded : Icons.north_east_rounded,
+                color: color,
+                size: 17),
           ),
           const SizedBox(width: 12),
           Expanded(
-            child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+            child:
+                Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
               Text(name,
-                style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: Color(0xFF111827)),
-                maxLines: 1, overflow: TextOverflow.ellipsis),
+                  style: TextStyle(
+                      fontSize: 13,
+                      fontWeight: FontWeight.w600,
+                      color: Theme.of(context).brightness == Brightness.dark ? AppTheme.darkTextPrimary : const Color(0xFF111827)),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis),
               const SizedBox(height: 2),
               Text(subtitle,
-                style: const TextStyle(fontSize: 11, color: Color(0xFF9CA3AF)),
-                maxLines: 1),
+                  style:
+                      TextStyle(fontSize: 11, color: Theme.of(context).brightness == Brightness.dark ? AppTheme.darkTextSecondary : const Color(0xFF9CA3AF)),
+                  maxLines: 1),
             ]),
           ),
           Text(amount,
-            style: TextStyle(fontSize: 13, fontWeight: FontWeight.w700, color: color)),
+              style: TextStyle(
+                  fontSize: 13, fontWeight: FontWeight.w700, color: color)),
         ],
       ),
     );
@@ -639,21 +778,25 @@ class _TxTile extends StatelessWidget {
 class _EmptyTransactions extends StatelessWidget {
   @override
   Widget build(BuildContext context) => Container(
-    padding: const EdgeInsets.all(24),
-    decoration: BoxDecoration(
-      color: Colors.white,
-      borderRadius: BorderRadius.circular(12),
-      border: Border.all(color: const Color(0xFFE5E7EB)),
-    ),
-    child: Center(
-      child: Column(children: [
-        Icon(Icons.receipt_long_outlined, size: 36, color: Colors.grey[300]),
-        const SizedBox(height: 10),
-        Text('No transactions today',
-          style: TextStyle(fontSize: 13, color: Colors.grey[500], fontWeight: FontWeight.w500)),
-      ]),
-    ),
-  );
+        padding: const EdgeInsets.all(24),
+        decoration: BoxDecoration(
+          color: Theme.of(context).cardTheme.color,
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(color: Theme.of(context).brightness == Brightness.dark ? AppTheme.darkBorder : const Color(0xFFE5E7EB)),
+        ),
+        child: Center(
+          child: Column(children: [
+            Icon(Icons.receipt_long_outlined,
+                size: 36, color: Colors.grey[300]),
+            const SizedBox(height: 10),
+            Text('No transactions today',
+                style: TextStyle(
+                    fontSize: 13,
+                    color: Colors.grey[500],
+                    fontWeight: FontWeight.w500)),
+          ]),
+        ),
+      );
 }
 
 // ── Alert Banner ──────────────────────────────────────────────
@@ -664,36 +807,44 @@ class _AlertBanner extends StatelessWidget {
   final VoidCallback onAction;
 
   const _AlertBanner({
-    required this.icon, required this.message,
-    required this.action, required this.color, required this.onAction,
+    required this.icon,
+    required this.message,
+    required this.action,
+    required this.color,
+    required this.onAction,
   });
 
   @override
   Widget build(BuildContext context) => Container(
-    margin: const EdgeInsets.only(bottom: 8),
-    padding: const EdgeInsets.fromLTRB(14, 10, 8, 10),
-    decoration: BoxDecoration(
-      color: color.withValues(alpha: 0.07),
-      borderRadius: BorderRadius.circular(12),
-      border: Border.all(color: color.withValues(alpha: 0.25)),
-    ),
-    child: Row(children: [
-      Icon(icon, color: color, size: 18),
-      const SizedBox(width: 10),
-      Expanded(child: Text(message,
-        style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: color))),
-      TextButton(
-        onPressed: onAction,
-        style: TextButton.styleFrom(
-          foregroundColor: color,
-          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-          minimumSize: Size.zero,
-          textStyle: const TextStyle(fontSize: 12, fontWeight: FontWeight.w700),
+        margin: const EdgeInsets.only(bottom: 8),
+        padding: const EdgeInsets.fromLTRB(14, 10, 8, 10),
+        decoration: BoxDecoration(
+          color: color.withValues(alpha: 0.07),
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(color: color.withValues(alpha: 0.25)),
         ),
-        child: Text(action),
-      ),
-    ]),
-  );
+        child: Row(children: [
+          Icon(icon, color: color, size: 18),
+          const SizedBox(width: 10),
+          Expanded(
+              child: Text(message,
+                  style: TextStyle(
+                      fontSize: 13,
+                      fontWeight: FontWeight.w600,
+                      color: color))),
+          TextButton(
+            onPressed: onAction,
+            style: TextButton.styleFrom(
+              foregroundColor: color,
+              padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+              minimumSize: Size.zero,
+              textStyle:
+                  const TextStyle(fontSize: 12, fontWeight: FontWeight.w700),
+            ),
+            child: Text(action),
+          ),
+        ]),
+      );
 }
 
 // ── Section Header ────────────────────────────────────────────
@@ -702,6 +853,9 @@ class _SectionHeader extends StatelessWidget {
   const _SectionHeader({required this.title});
   @override
   Widget build(BuildContext context) => Text(title,
-    style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w700,
-        color: Color(0xFF111827), letterSpacing: -0.2));
+      style: TextStyle(
+          fontSize: 15,
+          fontWeight: FontWeight.w700,
+          color: Theme.of(context).brightness == Brightness.dark ? AppTheme.darkTextPrimary : const Color(0xFF111827),
+          letterSpacing: -0.2));
 }

@@ -128,14 +128,14 @@ class _InventoryScreenState extends ConsumerState<InventoryScreen> {
 
           Expanded(
             child: inventoryAsync.when(
-              loading: () =>
-                  const Center(child: CircularProgressIndicator()),
+              loading: () => const Center(child: CircularProgressIndicator()),
               error: (e, _) => Center(child: Text('Error: $e')),
               data: (products) {
                 var filtered = products.where((p) {
                   final matchSearch = _search.isEmpty ||
                       p.name.toLowerCase().contains(_search.toLowerCase()) ||
-                      (p.sku?.toLowerCase().contains(_search.toLowerCase()) ?? false);
+                      (p.sku?.toLowerCase().contains(_search.toLowerCase()) ??
+                          false);
                   final matchFilter = _filter == 'all' || p.isLowStock;
                   return matchSearch && matchFilter;
                 }).toList();
@@ -145,16 +145,18 @@ class _InventoryScreenState extends ConsumerState<InventoryScreen> {
                     child: Column(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        const Icon(Icons.inventory_2_outlined, size: 56,
-                            color: AppTheme.lightTextHint),
+                        const Icon(Icons.inventory_2_outlined,
+                            size: 56, color: AppTheme.lightTextHint),
                         const SizedBox(height: 16),
-                        Text(_filter == 'low_stock'
-                            ? 'No low stock items'
-                            : l.noProductsFound,
+                        Text(
+                            _filter == 'low_stock'
+                                ? 'No low stock items'
+                                : l.noProductsFound,
                             style: Theme.of(context).textTheme.titleMedium),
                         if (_filter == 'all') ...[
                           const SizedBox(height: 8),
-                          Text('Add your first product to start tracking inventory.',
+                          Text(
+                              'Add your first product to start tracking inventory.',
                               style: Theme.of(context).textTheme.bodySmall,
                               textAlign: TextAlign.center),
                         ],
@@ -172,8 +174,7 @@ class _InventoryScreenState extends ConsumerState<InventoryScreen> {
                     separatorBuilder: (_, __) => const SizedBox(height: 8),
                     itemBuilder: (context, i) {
                       return _ProductCard(product: filtered[i])
-                          .animate(
-                              delay: Duration(milliseconds: i * 40))
+                          .animate(delay: Duration(milliseconds: i * 40))
                           .fadeIn()
                           .slideX(begin: 0.05, end: 0);
                     },
@@ -209,12 +210,15 @@ class _InventoryStats extends StatelessWidget {
       padding: const EdgeInsets.fromLTRB(16, 0, 16, 8),
       child: Row(
         children: [
-          _StatChip('${products.length} ${context.l10n.products}', Icons.inventory_2_outlined, AppTheme.primaryColor),
+          _StatChip('${products.length} ${context.l10n.products}',
+              Icons.inventory_2_outlined, AppTheme.primaryColor),
           const SizedBox(width: 8),
-          _StatChip('Rs. $formatted', Icons.monetization_on_outlined, AppTheme.successColor),
+          _StatChip('Rs. $formatted', Icons.monetization_on_outlined,
+              AppTheme.successColor),
           const SizedBox(width: 8),
           if (lowStockCount > 0)
-            _StatChip('$lowStockCount ${context.l10n.lowStock}', Icons.warning_amber_outlined, AppTheme.warningColor),
+            _StatChip('$lowStockCount ${context.l10n.lowStock}',
+                Icons.warning_amber_outlined, AppTheme.warningColor),
         ],
       ),
     );
@@ -242,7 +246,8 @@ class _StatChip extends StatelessWidget {
           Icon(icon, size: 14, color: color),
           const SizedBox(width: 4),
           Text(label,
-              style: TextStyle(fontSize: 12, color: color, fontWeight: FontWeight.w600)),
+              style: TextStyle(
+                  fontSize: 12, color: color, fontWeight: FontWeight.w600)),
         ],
       ),
     );
@@ -255,98 +260,133 @@ class _ProductCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Card(
-      child: InkWell(
-        onTap: () => context.push('/home/inventory/${product.id}'),
+    return Container(
+      decoration: BoxDecoration(
+        color: Theme.of(context).cardTheme.color,
         borderRadius: BorderRadius.circular(16),
-        child: Padding(
-          padding: const EdgeInsets.all(14),
-          child: Row(
-            children: [
-              // Product image placeholder
-              Container(
-                width: 52, height: 52,
-                decoration: BoxDecoration(
-                  color: AppTheme.primaryColor.withValues(alpha: 0.08),
-                  borderRadius: BorderRadius.circular(12),
-                  border: Border.all(color: AppTheme.lightBorder),
+        border: Border.all(
+            color: Theme.of(context).brightness == Brightness.dark
+                ? AppTheme.darkBorder
+                : Colors.white,
+            width: 1.5),
+        boxShadow: [
+          BoxShadow(
+            color: AppTheme.primaryColor.withValues(alpha: 0.08),
+            blurRadius: 16,
+            offset: const Offset(0, 6),
+          ),
+        ],
+        gradient: LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [
+            Theme.of(context).cardTheme.color ?? Colors.white,
+            (Theme.of(context).cardTheme.color ?? Colors.white)
+                .withValues(alpha: 0.6),
+          ],
+        ),
+      ),
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          onTap: () => context.push('/home/inventory/${product.id}'),
+          borderRadius: BorderRadius.circular(16),
+          child: Padding(
+            padding: const EdgeInsets.all(14),
+            child: Row(
+              children: [
+                // Product image placeholder
+                Container(
+                  width: 52,
+                  height: 52,
+                  decoration: BoxDecoration(
+                    color: AppTheme.primaryColor.withValues(alpha: 0.08),
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(color: AppTheme.lightBorder),
+                  ),
+                  child: product.imageUrl != null
+                      ? ClipRRect(
+                          borderRadius: BorderRadius.circular(12),
+                          child: Image.network(product.imageUrl!,
+                              fit: BoxFit.cover,
+                              errorBuilder: (_, __, ___) => const Icon(
+                                  Icons.image_not_supported_outlined)),
+                        )
+                      : const Icon(Icons.inventory_2_outlined,
+                          color: AppTheme.primaryColor),
                 ),
-                child: product.imageUrl != null
-                    ? ClipRRect(
-                        borderRadius: BorderRadius.circular(12),
-                        child: Image.network(product.imageUrl!, fit: BoxFit.cover,
-                            errorBuilder: (_, __, ___) =>
-                                const Icon(Icons.image_not_supported_outlined)),
-                      )
-                    : const Icon(Icons.inventory_2_outlined, color: AppTheme.primaryColor),
-              ),
-              const SizedBox(width: 14),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Row(
-                      children: [
-                        Expanded(
-                          child: Text(product.name,
-                              style: Theme.of(context).textTheme.titleMedium,
-                              maxLines: 1, overflow: TextOverflow.ellipsis),
-                        ),
-                        if (product.isLowStock)
-                          Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-                            decoration: BoxDecoration(
-                              color: AppTheme.warningColor.withValues(alpha: 0.1),
-                              borderRadius: BorderRadius.circular(6),
-                            ),
-                            child: const Text('Low Stock',
-                                style: TextStyle(
-                                  fontSize: 10,
-                                  color: AppTheme.warningColor,
-                                  fontWeight: FontWeight.w600,
-                                )),
+                const SizedBox(width: 14),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        children: [
+                          Expanded(
+                            child: Text(product.name,
+                                style: Theme.of(context).textTheme.titleMedium,
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis),
                           ),
-                      ],
-                    ),
-                    if (product.sku != null)
-                      Text('SKU: ${product.sku}',
-                          style: Theme.of(context).textTheme.bodySmall),
-                    const SizedBox(height: 4),
-                    Row(
-                      children: [
-                        Text('${context.l10n.stock}: ',
-                            style: Theme.of(context).textTheme.bodySmall),
-                        Text(
-                          '${product.stockQuantity.toStringAsFixed(product.stockQuantity % 1 == 0 ? 0 : 2)} ${product.unit ?? ''}',
-                          style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                                fontWeight: FontWeight.w600,
-                                color: product.isLowStock
-                                    ? AppTheme.warningColor
-                                    : AppTheme.successColor,
+                          if (product.isLowStock)
+                            Container(
+                              padding: const EdgeInsets.symmetric(
+                                  horizontal: 6, vertical: 2),
+                              decoration: BoxDecoration(
+                                color: AppTheme.warningColor
+                                    .withValues(alpha: 0.1),
+                                borderRadius: BorderRadius.circular(6),
                               ),
-                        ),
-                      ],
+                              child: const Text('Low Stock',
+                                  style: TextStyle(
+                                    fontSize: 10,
+                                    color: AppTheme.warningColor,
+                                    fontWeight: FontWeight.w600,
+                                  )),
+                            ),
+                        ],
+                      ),
+                      if (product.sku != null)
+                        Text('SKU: ${product.sku}',
+                            style: Theme.of(context).textTheme.bodySmall),
+                      const SizedBox(height: 4),
+                      Row(
+                        children: [
+                          Text('${context.l10n.stock}: ',
+                              style: Theme.of(context).textTheme.bodySmall),
+                          Text(
+                            '${product.stockQuantity.toStringAsFixed(product.stockQuantity % 1 == 0 ? 0 : 2)} ${product.unit ?? ''}',
+                            style:
+                                Theme.of(context).textTheme.bodySmall?.copyWith(
+                                      fontWeight: FontWeight.w600,
+                                      color: product.isLowStock
+                                          ? AppTheme.warningColor
+                                          : AppTheme.successColor,
+                                    ),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
+                ),
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.end,
+                  children: [
+                    Text(
+                      '${AppConstants.currencySymbol} ${NumberFormat('#,##,##0.00').format(product.sellingPrice)}',
+                      style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                            color: AppTheme.primaryColor,
+                            fontWeight: FontWeight.w700,
+                          ),
+                    ),
+                    Text(
+                      'Cost: ${AppConstants.currencySymbol} ${NumberFormat('#,##,##0.00').format(product.costPrice)}',
+                      style: Theme.of(context).textTheme.bodySmall,
                     ),
                   ],
                 ),
-              ),
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.end,
-                children: [
-                  Text(
-                    '${AppConstants.currencySymbol} ${NumberFormat('#,##,##0.00').format(product.sellingPrice)}',
-                    style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                          color: AppTheme.primaryColor,
-                          fontWeight: FontWeight.w700,
-                        ),
-                  ),
-                  Text(
-                    'Cost: ${AppConstants.currencySymbol} ${NumberFormat('#,##,##0.00').format(product.costPrice)}',
-                    style: Theme.of(context).textTheme.bodySmall,
-                  ),
-                ],
-              ),
-            ],
+              ],
+            ),
           ),
         ),
       ),

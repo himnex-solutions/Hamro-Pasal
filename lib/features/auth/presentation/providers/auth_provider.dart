@@ -285,9 +285,8 @@ class AuthNotifier extends StateNotifier<AuthState> {
       }
 
       final hasBusinessId = await _checkBusinessSetup();
-      state = hasBusinessId
-          ? AuthState.authenticated()
-          : AuthState.needsSetup();
+      state =
+          hasBusinessId ? AuthState.authenticated() : AuthState.needsSetup();
       return true;
     } on AuthException catch (e) {
       state = AuthState.error(e.message);
@@ -339,9 +338,8 @@ class AuthNotifier extends StateNotifier<AuthState> {
       }
 
       final hasBusinessId = await _checkBusinessSetup();
-      state = hasBusinessId
-          ? AuthState.authenticated()
-          : AuthState.needsSetup();
+      state =
+          hasBusinessId ? AuthState.authenticated() : AuthState.needsSetup();
       return true;
     } on AuthException catch (e) {
       state = AuthState.error(e.message);
@@ -445,8 +443,7 @@ class AuthNotifier extends StateNotifier<AuthState> {
 
   // ── Helpers ───────────────────────────────────────────────
   bool get isAuthenticated => state.status == AuthStatus.authenticated;
-  bool get needsBusinessSetup =>
-      state.status == AuthStatus.needsBusinessSetup;
+  bool get needsBusinessSetup => state.status == AuthStatus.needsBusinessSetup;
   bool get needsOtpVerification =>
       state.status == AuthStatus.needsOtpVerification;
 }

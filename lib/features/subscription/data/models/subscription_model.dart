@@ -67,7 +67,9 @@ class Subscription {
   bool get isActive => status == AppConstants.statusActive;
   bool get isTrialActive => status == AppConstants.statusTrialActive;
   bool get isTrialExpired => status == AppConstants.statusTrialExpired;
-  bool get isExpired => status == AppConstants.statusExpired || status == AppConstants.statusTrialExpired;
+  bool get isExpired =>
+      status == AppConstants.statusExpired ||
+      status == AppConstants.statusTrialExpired;
   bool get hasAccess => isActive || isTrialActive;
 
   int get trialDaysLeft {
@@ -102,7 +104,8 @@ class SubscriptionPlan {
     this.isActive = true,
   });
 
-  factory SubscriptionPlan.fromJson(Map<String, dynamic> json) => SubscriptionPlan(
+  factory SubscriptionPlan.fromJson(Map<String, dynamic> json) =>
+      SubscriptionPlan(
         id: json['id'] as String,
         name: json['name'] as String,
         interval: json['interval'] as String,

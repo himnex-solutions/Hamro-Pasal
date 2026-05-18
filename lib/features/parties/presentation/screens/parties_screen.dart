@@ -29,7 +29,9 @@ class PartiesNotifier extends AsyncNotifier<List<Party>> {
         .select()
         .eq('business_id', businessId)
         .order('name');
-    return (res as List).map((e) => Party.fromJson(e as Map<String, dynamic>)).toList();
+    return (res as List)
+        .map((e) => Party.fromJson(e as Map<String, dynamic>))
+        .toList();
   }
 
   Future<void> refresh() async {
@@ -68,7 +70,9 @@ class _PartiesScreenState extends ConsumerState<PartiesScreen>
   List<Party> _filter(List<Party> parties, String type) {
     var filtered = type == 'all'
         ? parties
-        : parties.where((p) => p.type == type || p.type == AppConstants.partyBoth).toList();
+        : parties
+            .where((p) => p.type == type || p.type == AppConstants.partyBoth)
+            .toList();
     if (_search.isNotEmpty) {
       filtered = filtered
           .where((p) =>
@@ -134,8 +138,10 @@ class _PartiesScreenState extends ConsumerState<PartiesScreen>
                 controller: _tabController,
                 children: [
                   _PartyList(parties: _filter(parties, 'all')),
-                  _PartyList(parties: _filter(parties, AppConstants.partyCustomer)),
-                  _PartyList(parties: _filter(parties, AppConstants.partySupplier)),
+                  _PartyList(
+                      parties: _filter(parties, AppConstants.partyCustomer)),
+                  _PartyList(
+                      parties: _filter(parties, AppConstants.partySupplier)),
                 ],
               ),
             ),
@@ -164,9 +170,11 @@ class _PartyList extends StatelessWidget {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            const Icon(Icons.people_outline, size: 56, color: AppTheme.lightTextHint),
+            const Icon(Icons.people_outline,
+                size: 56, color: AppTheme.lightTextHint),
             const SizedBox(height: 16),
-            Text(context.l10n.noPartiesFound, style: Theme.of(context).textTheme.titleMedium),
+            Text(context.l10n.noPartiesFound,
+                style: Theme.of(context).textTheme.titleMedium),
             const SizedBox(height: 8),
             Text('Add customers and suppliers to track their ledger.',
                 style: Theme.of(context).textTheme.bodySmall,
@@ -199,105 +207,156 @@ class _PartyCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final isReceivable = party.currentBalance > 0;
     final isPayable = party.currentBalance < 0;
-    final formatted = NumberFormat('#,##,##0.00').format(party.currentBalance.abs());
-    final initials = party.name.split(' ').take(2).map((w) => w.isNotEmpty ? w[0] : '').join().toUpperCase();
+    final formatted =
+        NumberFormat('#,##,##0.00').format(party.currentBalance.abs());
+    final initials = party.name
+        .split(' ')
+        .take(2)
+        .map((w) => w.isNotEmpty ? w[0] : '')
+        .join()
+        .toUpperCase();
 
-    return Card(
-      child: InkWell(
-        onTap: () => context.push('/home/parties/${party.id}'),
+    return Container(
+      decoration: BoxDecoration(
+        color: Theme.of(context).cardTheme.color,
         borderRadius: BorderRadius.circular(16),
-        child: Padding(
-          padding: const EdgeInsets.all(14),
-          child: Row(
-            children: [
-              // Avatar
-              Container(
-                width: 48, height: 48,
-                decoration: BoxDecoration(
-                  gradient: LinearGradient(
-                    colors: party.type == AppConstants.partyCustomer
-                        ? [AppTheme.primaryColor, AppTheme.primaryLight]
-                        : [AppTheme.accentDark, AppTheme.accentColor],
-                    begin: Alignment.topLeft,
-                    end: Alignment.bottomRight,
-                  ),
-                  borderRadius: BorderRadius.circular(14),
-                ),
-                child: Center(
-                  child: Text(initials,
-                      style: const TextStyle(
-                          color: Colors.white,
-                          fontWeight: FontWeight.w700,
-                          fontSize: 16)),
-                ),
-              ),
-              const SizedBox(width: 14),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Row(
-                      children: [
-                        Text(party.name,
-                            style: Theme.of(context).textTheme.titleMedium),
-                        const SizedBox(width: 6),
-                        Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-                          decoration: BoxDecoration(
-                            color: party.type == AppConstants.partyCustomer
-                                ? AppTheme.primaryColor.withValues(alpha: 0.1)
-                                : AppTheme.accentColor.withValues(alpha: 0.1),
-                            borderRadius: BorderRadius.circular(6),
-                          ),
-                          child: Text(
-                            party.type == AppConstants.partyBoth
-                                ? 'Both'
-                                : party.type.capitalize(),
-                            style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                                  color: party.type == AppConstants.partyCustomer
-                                      ? AppTheme.primaryColor
-                                      : AppTheme.accentDark,
-                                  fontWeight: FontWeight.w600,
-                                ),
-                          ),
-                        ),
-                      ],
+        border: Border.all(
+            color: Theme.of(context).brightness == Brightness.dark
+                ? AppTheme.darkBorder
+                : Colors.white,
+            width: 1.5),
+        boxShadow: [
+          BoxShadow(
+            color: (isReceivable
+                    ? AppTheme.successColor
+                    : isPayable
+                        ? AppTheme.errorColor
+                        : AppTheme.primaryColor)
+                .withValues(alpha: 0.08),
+            blurRadius: 16,
+            offset: const Offset(0, 6),
+          ),
+        ],
+        gradient: LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [
+            Theme.of(context).cardTheme.color ?? Colors.white,
+            (Theme.of(context).cardTheme.color ?? Colors.white)
+                .withValues(alpha: 0.6),
+          ],
+        ),
+      ),
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          onTap: () => context.push('/home/parties/${party.id}'),
+          borderRadius: BorderRadius.circular(16),
+          child: Padding(
+            padding: const EdgeInsets.all(14),
+            child: Row(
+              children: [
+                // Avatar
+                Container(
+                  width: 48,
+                  height: 48,
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient(
+                      colors: party.type == AppConstants.partyCustomer
+                          ? [AppTheme.primaryColor, AppTheme.primaryLight]
+                          : [AppTheme.accentDark, AppTheme.accentColor],
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
                     ),
-                    if (party.phone != null)
-                      Text(party.phone!,
-                          style: Theme.of(context).textTheme.bodySmall),
+                    borderRadius: BorderRadius.circular(14),
+                  ),
+                  child: Center(
+                    child: Text(initials,
+                        style: const TextStyle(
+                            color: Colors.white,
+                            fontWeight: FontWeight.w700,
+                            fontSize: 16)),
+                  ),
+                ),
+                const SizedBox(width: 14),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Row(
+                        children: [
+                          Text(party.name,
+                              style: Theme.of(context).textTheme.titleMedium),
+                          const SizedBox(width: 6),
+                          Container(
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: 6, vertical: 2),
+                            decoration: BoxDecoration(
+                              color: party.type == AppConstants.partyCustomer
+                                  ? AppTheme.primaryColor.withValues(alpha: 0.1)
+                                  : AppTheme.accentColor.withValues(alpha: 0.1),
+                              borderRadius: BorderRadius.circular(6),
+                            ),
+                            child: Text(
+                              party.type == AppConstants.partyBoth
+                                  ? 'Both'
+                                  : party.type.capitalize(),
+                              style: Theme.of(context)
+                                  .textTheme
+                                  .bodySmall
+                                  ?.copyWith(
+                                    color:
+                                        party.type == AppConstants.partyCustomer
+                                            ? AppTheme.primaryColor
+                                            : AppTheme.accentDark,
+                                    fontWeight: FontWeight.w600,
+                                  ),
+                            ),
+                          ),
+                        ],
+                      ),
+                      if (party.phone != null)
+                        Text(party.phone!,
+                            style: Theme.of(context).textTheme.bodySmall),
+                    ],
+                  ),
+                ),
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.end,
+                  children: [
+                    if (party.currentBalance != 0)
+                      Text(
+                        '${AppConstants.currencySymbol} $formatted',
+                        style:
+                            Theme.of(context).textTheme.titleMedium?.copyWith(
+                                  color: isReceivable
+                                      ? AppTheme.successColor
+                                      : AppTheme.errorColor,
+                                  fontWeight: FontWeight.w700,
+                                ),
+                      ),
+                    if (isReceivable)
+                      Text(context.l10n.toReceive,
+                          style:
+                              Theme.of(context).textTheme.bodySmall?.copyWith(
+                                    color: AppTheme.successColor,
+                                  ))
+                    else if (isPayable)
+                      Text(context.l10n.toPay,
+                          style:
+                              Theme.of(context).textTheme.bodySmall?.copyWith(
+                                    color: AppTheme.errorColor,
+                                  ))
+                    else
+                      Text(context.l10n.completed,
+                          style:
+                              Theme.of(context).textTheme.bodySmall?.copyWith(
+                                    color: AppTheme.lightTextSecondary,
+                                  )),
                   ],
                 ),
-              ),
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.end,
-                children: [
-                  if (party.currentBalance != 0)
-                    Text(
-                      '${AppConstants.currencySymbol} $formatted',
-                      style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                            color: isReceivable ? AppTheme.successColor : AppTheme.errorColor,
-                            fontWeight: FontWeight.w700,
-                          ),
-                    ),
-                  if (isReceivable)
-                    Text(context.l10n.toReceive,
-                        style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                              color: AppTheme.successColor,
-                            ))
-                  else if (isPayable)
-                    Text(context.l10n.toPay,
-                        style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                              color: AppTheme.errorColor,
-                            ))
-                  else
-                    Text(context.l10n.completed,
-                        style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                              color: AppTheme.lightTextSecondary,
-                            )),
-                ],
-              ),
-            ],
+              ],
+            ),
           ),
         ),
       ),

@@ -41,6 +41,10 @@ class UserProfile {
   String get initials {
     if (fullName == null || fullName!.isEmpty) return email[0].toUpperCase();
     final parts = fullName!.split(' ');
-    return parts.take(2).map((p) => p.isNotEmpty ? p[0] : '').join().toUpperCase();
+    return parts
+        .take(2)
+        .map((p) => p.isNotEmpty ? p[0] : '')
+        .join()
+        .toUpperCase();
   }
 }

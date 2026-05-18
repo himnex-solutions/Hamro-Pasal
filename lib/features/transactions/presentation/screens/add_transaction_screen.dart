@@ -19,7 +19,8 @@ class AddTransactionScreen extends ConsumerStatefulWidget {
   const AddTransactionScreen({super.key});
 
   @override
-  ConsumerState<AddTransactionScreen> createState() => _AddTransactionScreenState();
+  ConsumerState<AddTransactionScreen> createState() =>
+      _AddTransactionScreenState();
 }
 
 class _AddTransactionScreenState extends ConsumerState<AddTransactionScreen> {
@@ -56,13 +57,26 @@ class _AddTransactionScreenState extends ConsumerState<AddTransactionScreen> {
     final businessId = prefs.getString(AppConstants.kSelectedBusinessId) ?? '';
     final supabase = Supabase.instance.client;
 
-    final partiesRes = await supabase.from('parties').select().eq('business_id', businessId).order('name');
-    final productsRes = await supabase.from('products').select().eq('business_id', businessId).eq('is_active', true).order('name');
+    final partiesRes = await supabase
+        .from('parties')
+        .select()
+        .eq('business_id', businessId)
+        .order('name');
+    final productsRes = await supabase
+        .from('products')
+        .select()
+        .eq('business_id', businessId)
+        .eq('is_active', true)
+        .order('name');
 
     if (mounted) {
       setState(() {
-        _parties = (partiesRes as List).map((e) => Party.fromJson(e as Map<String, dynamic>)).toList();
-        _products = (productsRes as List).map((e) => Product.fromJson(e as Map<String, dynamic>)).toList();
+        _parties = (partiesRes as List)
+            .map((e) => Party.fromJson(e as Map<String, dynamic>))
+            .toList();
+        _products = (productsRes as List)
+            .map((e) => Product.fromJson(e as Map<String, dynamic>))
+            .toList();
       });
     }
   }
@@ -75,7 +89,8 @@ class _AddTransactionScreenState extends ConsumerState<AddTransactionScreen> {
   }
 
   double get _paidAmount => double.tryParse(_paidCtrl.text) ?? _totalAmount;
-  double get _dueAmount => (_totalAmount - _paidAmount).clamp(0, double.infinity);
+  double get _dueAmount =>
+      (_totalAmount - _paidAmount).clamp(0, double.infinity);
 
   Future<void> _save() async {
     if (_useItemizedMode && _cart.isEmpty) {
@@ -90,7 +105,8 @@ class _AddTransactionScreenState extends ConsumerState<AddTransactionScreen> {
     setState(() => _isLoading = true);
     try {
       final prefs = await SharedPreferences.getInstance();
-      final businessId = prefs.getString(AppConstants.kSelectedBusinessId) ?? '';
+      final businessId =
+          prefs.getString(AppConstants.kSelectedBusinessId) ?? '';
       final txId = const Uuid().v4();
       final now = DateTime.now().toIso8601String();
 
@@ -111,21 +127,27 @@ class _AddTransactionScreenState extends ConsumerState<AddTransactionScreen> {
       });
 
       if (_useItemizedMode && _cart.isNotEmpty) {
-        final items = _cart.map((item) => {
-          'id': const Uuid().v4(),
-          'transaction_id': txId,
-          'product_id': item.product.id,
-          'product_name': item.product.name,
-          'quantity': item.quantity,
-          'unit_price': _txType == AppConstants.txSale ? item.product.sellingPrice : item.product.costPrice,
-          'discount': item.discount,
-          'total_price': item.total,
-        }).toList();
+        final items = _cart
+            .map((item) => {
+                  'id': const Uuid().v4(),
+                  'transaction_id': txId,
+                  'product_id': item.product.id,
+                  'product_name': item.product.name,
+                  'quantity': item.quantity,
+                  'unit_price': _txType == AppConstants.txSale
+                      ? item.product.sellingPrice
+                      : item.product.costPrice,
+                  'discount': item.discount,
+                  'total_price': item.total,
+                })
+            .toList();
         await Supabase.instance.client.from('transaction_items').insert(items);
 
         // Update stock
         for (final cartItem in _cart) {
-          final delta = _txType == AppConstants.txSale ? -cartItem.quantity : cartItem.quantity;
+          final delta = _txType == AppConstants.txSale
+              ? -cartItem.quantity
+              : cartItem.quantity;
           await Supabase.instance.client.rpc('update_product_stock', params: {
             'p_product_id': cartItem.product.id,
             'p_delta': delta,
@@ -160,13 +182,37 @@ class _AddTransactionScreenState extends ConsumerState<AddTransactionScreen> {
               scrollDirection: Axis.horizontal,
               child: Row(
                 children: [
-                  _TxTypeChip(AppConstants.txSale, 'Sale', Icons.trending_up_rounded, AppTheme.successColor, _txType, (v) => setState(() => _txType = v)),
+                  _TxTypeChip(
+                      AppConstants.txSale,
+                      'Sale',
+                      Icons.trending_up_rounded,
+                      AppTheme.successColor,
+                      _txType,
+                      (v) => setState(() => _txType = v)),
                   const SizedBox(width: 8),
-                  _TxTypeChip(AppConstants.txPurchase, 'Purchase', Icons.shopping_bag_outlined, AppTheme.infoColor, _txType, (v) => setState(() => _txType = v)),
+                  _TxTypeChip(
+                      AppConstants.txPurchase,
+                      'Purchase',
+                      Icons.shopping_bag_outlined,
+                      AppTheme.infoColor,
+                      _txType,
+                      (v) => setState(() => _txType = v)),
                   const SizedBox(width: 8),
-                  _TxTypeChip(AppConstants.txExpense, 'Expense', Icons.wallet_outlined, AppTheme.errorColor, _txType, (v) => setState(() => _txType = v)),
+                  _TxTypeChip(
+                      AppConstants.txExpense,
+                      'Expense',
+                      Icons.wallet_outlined,
+                      AppTheme.errorColor,
+                      _txType,
+                      (v) => setState(() => _txType = v)),
                   const SizedBox(width: 8),
-                  _TxTypeChip(AppConstants.txIncome, 'Income', Icons.savings_outlined, AppTheme.accentColor, _txType, (v) => setState(() => _txType = v)),
+                  _TxTypeChip(
+                      AppConstants.txIncome,
+                      'Income',
+                      Icons.savings_outlined,
+                      AppTheme.accentColor,
+                      _txType,
+                      (v) => setState(() => _txType = v)),
                 ],
               ),
             ).animate().fadeIn(),
@@ -217,13 +263,26 @@ class _AddTransactionScreenState extends ConsumerState<AddTransactionScreen> {
               scrollDirection: Axis.horizontal,
               child: Row(
                 children: [
-                  _PayChip('Cash', AppConstants.paymentCash, _paymentMethod, (v) => setState(() => _paymentMethod = v)),
+                  _PayChip('Cash', AppConstants.paymentCash, _paymentMethod,
+                      (v) => setState(() => _paymentMethod = v)),
                   const SizedBox(width: 8),
-                  _PayChip('Bank', AppConstants.paymentBank, _paymentMethod, (v) => setState(() => _paymentMethod = v)),
+                  _PayChip('Bank', AppConstants.paymentBank, _paymentMethod,
+                      (v) => setState(() => _paymentMethod = v)),
                   const SizedBox(width: 8),
-                  _PayChip('Credit', AppConstants.paymentCredit, _paymentMethod, (v) => setState(() { _paymentMethod = v; _paidCtrl.text = '0'; })),
+                  _PayChip(
+                      'Credit',
+                      AppConstants.paymentCredit,
+                      _paymentMethod,
+                      (v) => setState(() {
+                            _paymentMethod = v;
+                            _paidCtrl.text = '0';
+                          })),
                   const SizedBox(width: 8),
-                  _PayChip('Partial', AppConstants.paymentPartial, _paymentMethod, (v) => setState(() => _paymentMethod = v)),
+                  _PayChip(
+                      'Partial',
+                      AppConstants.paymentPartial,
+                      _paymentMethod,
+                      (v) => setState(() => _paymentMethod = v)),
                 ],
               ),
             ).animate(delay: 150.ms).fadeIn(),
@@ -253,14 +312,16 @@ class _AddTransactionScreenState extends ConsumerState<AddTransactionScreen> {
                 if (picked != null) setState(() => _txDate = picked);
               },
               child: Container(
-                padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
                 decoration: BoxDecoration(
                   border: Border.all(color: AppTheme.lightBorder),
                   borderRadius: BorderRadius.circular(12),
                 ),
                 child: Row(
                   children: [
-                    const Icon(Icons.calendar_today_outlined, size: 18, color: AppTheme.lightTextSecondary),
+                    const Icon(Icons.calendar_today_outlined,
+                        size: 18, color: AppTheme.lightTextSecondary),
                     const SizedBox(width: 10),
                     Text(DateFormat('dd MMM yyyy').format(_txDate),
                         style: Theme.of(context).textTheme.bodyMedium),
@@ -285,15 +346,20 @@ class _AddTransactionScreenState extends ConsumerState<AddTransactionScreen> {
                 decoration: BoxDecoration(
                   color: AppTheme.primaryColor.withValues(alpha: 0.05),
                   borderRadius: BorderRadius.circular(14),
-                  border: Border.all(color: AppTheme.primaryColor.withValues(alpha: 0.2)),
+                  border: Border.all(
+                      color: AppTheme.primaryColor.withValues(alpha: 0.2)),
                 ),
                 child: Column(
                   children: [
-                    _SummaryRow('Total Amount', '${AppConstants.currencySymbol} ${NumberFormat('#,##,##0.00').format(_totalAmount)}', bold: true),
+                    _SummaryRow('Total Amount',
+                        '${AppConstants.currencySymbol} ${NumberFormat('#,##,##0.00').format(_totalAmount)}',
+                        bold: true),
                     if (_paymentMethod != AppConstants.paymentCredit)
-                      _SummaryRow('Paid Amount', '${AppConstants.currencySymbol} ${NumberFormat('#,##,##0.00').format(_paidAmount)}'),
+                      _SummaryRow('Paid Amount',
+                          '${AppConstants.currencySymbol} ${NumberFormat('#,##,##0.00').format(_paidAmount)}'),
                     if (_dueAmount > 0)
-                      _SummaryRow('Due Amount', '${AppConstants.currencySymbol} ${NumberFormat('#,##,##0.00').format(_dueAmount)}',
+                      _SummaryRow('Due Amount',
+                          '${AppConstants.currencySymbol} ${NumberFormat('#,##,##0.00').format(_dueAmount)}',
                           color: AppTheme.warningColor),
                   ],
                 ),
@@ -332,7 +398,8 @@ class _TxTypeChip extends StatelessWidget {
   final IconData icon;
   final Color color;
   final void Function(String) onTap;
-  const _TxTypeChip(this.value, this.label, this.icon, this.color, this.selected, this.onTap);
+  const _TxTypeChip(
+      this.value, this.label, this.icon, this.color, this.selected, this.onTap);
 
   @override
   Widget build(BuildContext context) {
@@ -345,14 +412,19 @@ class _TxTypeChip extends StatelessWidget {
         decoration: BoxDecoration(
           color: isSelected ? color : color.withValues(alpha: 0.08),
           borderRadius: BorderRadius.circular(10),
-          border: Border.all(color: isSelected ? color : color.withValues(alpha: 0.3)),
+          border: Border.all(
+              color: isSelected ? color : color.withValues(alpha: 0.3)),
         ),
         child: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
             Icon(icon, size: 18, color: isSelected ? Colors.white : color),
             const SizedBox(width: 6),
-            Text(label, style: TextStyle(color: isSelected ? Colors.white : color, fontWeight: FontWeight.w600, fontSize: 14)),
+            Text(label,
+                style: TextStyle(
+                    color: isSelected ? Colors.white : color,
+                    fontWeight: FontWeight.w600,
+                    fontSize: 14)),
           ],
         ),
       ),
@@ -374,9 +446,12 @@ class _PayChip extends StatelessWidget {
         duration: const Duration(milliseconds: 200),
         padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
         decoration: BoxDecoration(
-          color: isSelected ? AppTheme.primaryColor : AppTheme.primaryColor.withValues(alpha: 0.07),
+          color: isSelected
+              ? AppTheme.primaryColor
+              : AppTheme.primaryColor.withValues(alpha: 0.07),
           borderRadius: BorderRadius.circular(8),
-          border: Border.all(color: isSelected ? AppTheme.primaryColor : AppTheme.lightBorder),
+          border: Border.all(
+              color: isSelected ? AppTheme.primaryColor : AppTheme.lightBorder),
         ),
         child: Text(label,
             style: TextStyle(
@@ -393,7 +468,8 @@ class _PartyDropdown extends StatelessWidget {
   final List<Party> parties;
   final Party? selected;
   final void Function(Party?) onChanged;
-  const _PartyDropdown({required this.parties, this.selected, required this.onChanged});
+  const _PartyDropdown(
+      {required this.parties, this.selected, required this.onChanged});
 
   @override
   Widget build(BuildContext context) {
@@ -414,7 +490,8 @@ class _PartyDropdown extends StatelessWidget {
           borderRadius: BorderRadius.circular(12),
           items: [
             const DropdownMenuItem<Party>(value: null, child: Text('No party')),
-            ...parties.map((p) => DropdownMenuItem(value: p, child: Text(p.name))),
+            ...parties
+                .map((p) => DropdownMenuItem(value: p, child: Text(p.name))),
           ],
           onChanged: onChanged,
         ),
@@ -436,7 +513,11 @@ class _ProductSelector extends StatefulWidget {
   final List<_CartItem> cart;
   final String txType;
   final VoidCallback onCartChanged;
-  const _ProductSelector({required this.products, required this.cart, required this.txType, required this.onCartChanged});
+  const _ProductSelector(
+      {required this.products,
+      required this.cart,
+      required this.txType,
+      required this.onCartChanged});
 
   @override
   State<_ProductSelector> createState() => _ProductSelectorState();
@@ -477,7 +558,10 @@ class _ProductSelectorState extends State<_ProductSelector> {
                     isExpanded: true,
                     padding: const EdgeInsets.symmetric(horizontal: 12),
                     borderRadius: BorderRadius.circular(12),
-                    items: widget.products.map((p) => DropdownMenuItem(value: p, child: Text(p.name))).toList(),
+                    items: widget.products
+                        .map((p) =>
+                            DropdownMenuItem(value: p, child: Text(p.name)))
+                        .toList(),
                     onChanged: (p) => setState(() => _selectedProduct = p),
                   ),
                 ),
@@ -489,7 +573,8 @@ class _ProductSelectorState extends State<_ProductSelector> {
               style: ElevatedButton.styleFrom(
                 minimumSize: const Size(52, 52),
                 padding: EdgeInsets.zero,
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12)),
               ),
               child: const Icon(Icons.add),
             ),
@@ -509,8 +594,10 @@ class _ProductSelectorState extends State<_ProductSelector> {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Text(item.product.name, style: Theme.of(context).textTheme.titleMedium),
-                          Text('${AppConstants.currencySymbol} ${item.product.sellingPrice} each',
+                          Text(item.product.name,
+                              style: Theme.of(context).textTheme.titleMedium),
+                          Text(
+                              '${AppConstants.currencySymbol} ${item.product.sellingPrice} each',
                               style: Theme.of(context).textTheme.bodySmall),
                         ],
                       ),
@@ -524,7 +611,8 @@ class _ProductSelectorState extends State<_ProductSelector> {
                               widget.onCartChanged();
                             }
                           },
-                          icon: const Icon(Icons.remove_circle_outline, size: 22),
+                          icon:
+                              const Icon(Icons.remove_circle_outline, size: 22),
                           padding: EdgeInsets.zero,
                         ),
                         SizedBox(
@@ -534,20 +622,31 @@ class _ProductSelectorState extends State<_ProductSelector> {
                               style: Theme.of(context).textTheme.titleMedium),
                         ),
                         IconButton(
-                          onPressed: () { item.quantity++; widget.onCartChanged(); },
-                          icon: const Icon(Icons.add_circle_outline, size: 22, color: AppTheme.primaryColor),
+                          onPressed: () {
+                            item.quantity++;
+                            widget.onCartChanged();
+                          },
+                          icon: const Icon(Icons.add_circle_outline,
+                              size: 22, color: AppTheme.primaryColor),
                           padding: EdgeInsets.zero,
                         ),
                         IconButton(
-                          onPressed: () { widget.cart.removeAt(entry.key); widget.onCartChanged(); },
-                          icon: const Icon(Icons.delete_outline, size: 20, color: AppTheme.errorColor),
+                          onPressed: () {
+                            widget.cart.removeAt(entry.key);
+                            widget.onCartChanged();
+                          },
+                          icon: const Icon(Icons.delete_outline,
+                              size: 20, color: AppTheme.errorColor),
                           padding: EdgeInsets.zero,
                         ),
                       ],
                     ),
                     Text(
                       '${AppConstants.currencySymbol} ${NumberFormat('#,##,##0.00').format(item.total)}',
-                      style: Theme.of(context).textTheme.titleMedium?.copyWith(color: AppTheme.primaryColor),
+                      style: Theme.of(context)
+                          .textTheme
+                          .titleMedium
+                          ?.copyWith(color: AppTheme.primaryColor),
                     ),
                   ],
                 ),

@@ -9,13 +9,13 @@ import 'package:hamro_pasal/core/widgets/app_snackbar.dart';
 import 'package:hamro_pasal/features/auth/presentation/providers/auth_provider.dart';
 
 // Color tokens (shared with login screen)
-const _teal      = Color(0xFF0D7E8A);
-const _tealLink  = Color(0xFF10B4C3);
-const _dark      = Color(0xFF0F172A);
-const _grey      = Color(0xFF94A3B8);
-const _border    = Color(0xFFE2E8F0);
-const _bgDark1   = Color(0xFF07242B);   // matches login exactly
-const _bgDark2   = Color(0xFF0F4850);   // matches login exactly
+const _teal = Color(0xFF0D7E8A);
+const _tealLink = Color(0xFF10B4C3);
+const _dark = Color(0xFF0F172A);
+const _grey = Color(0xFF94A3B8);
+const _border = Color(0xFFE2E8F0);
+const _bgDark1 = Color(0xFF07242B); // matches login exactly
+const _bgDark2 = Color(0xFF0F4850); // matches login exactly
 
 class SignupScreen extends ConsumerStatefulWidget {
   const SignupScreen({super.key});
@@ -24,14 +24,14 @@ class SignupScreen extends ConsumerStatefulWidget {
 }
 
 class _SignupScreenState extends ConsumerState<SignupScreen> {
-  final _formKey      = GlobalKey<FormState>();
-  final _emailCtrl    = TextEditingController();
+  final _formKey = GlobalKey<FormState>();
+  final _emailCtrl = TextEditingController();
   final _passwordCtrl = TextEditingController();
-  final _confirmCtrl  = TextEditingController();
+  final _confirmCtrl = TextEditingController();
   bool _obscurePassword = true;
-  bool _obscureConfirm  = true;
-  bool _rememberMe      = false;
-  bool _isLoading       = false;
+  bool _obscureConfirm = true;
+  bool _rememberMe = false;
+  bool _isLoading = false;
 
   @override
   void dispose() {
@@ -121,12 +121,8 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
                   height: 80,
                   fit: BoxFit.contain,
                   errorBuilder: (_, __, ___) => const _FallbackLogo(),
-                )
-                    .animate()
-                    .fadeIn(duration: 700.ms)
-                    .scale(
-                        begin: const Offset(0.75, 0.75),
-                        curve: Curves.easeOutBack),
+                ).animate().fadeIn(duration: 700.ms).scale(
+                    begin: const Offset(0.75, 0.75), curve: Curves.easeOutBack),
               ),
             ),
           ),
@@ -147,8 +143,8 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
                 padding: const EdgeInsets.fromLTRB(28, 26, 28, 24),
                 child: _buildForm(),
               ),
-            ).animate(delay: 150.ms)
-                .slideY(begin: 0.08, end: 0, duration: 500.ms, curve: Curves.easeOut),
+            ).animate(delay: 150.ms).slideY(
+                begin: 0.08, end: 0, duration: 500.ms, curve: Curves.easeOut),
           ),
         ],
       ),
@@ -283,7 +279,8 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
                     height: 20,
                     child: Checkbox(
                       value: _rememberMe,
-                      onChanged: (v) => setState(() => _rememberMe = v ?? false),
+                      onChanged: (v) =>
+                          setState(() => _rememberMe = v ?? false),
                       activeColor: _teal,
                       checkColor: Colors.white,
                       shape: RoundedRectangleBorder(
@@ -347,8 +344,8 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
               Expanded(
                 child: _SocialPillButton(
                   label: 'Apple',
-                  icon: const FaIcon(
-                      FontAwesomeIcons.apple, size: 20, color: Colors.white),
+                  icon: const FaIcon(FontAwesomeIcons.apple,
+                      size: 20, color: Colors.white),
                   isDark: true,
                   onTap: () {},
                 ),
@@ -381,7 +378,8 @@ class _AuthBgPainter extends CustomPainter {
     final H = size.height;
 
     // ── 1. Primary hero orb — top-left, large, rich teal ─────
-    _drawOrb(canvas,
+    _drawOrb(
+      canvas,
       center: Offset(W * -0.05, H * 0.05),
       radius: W * 0.80,
       colors: [
@@ -393,7 +391,8 @@ class _AuthBgPainter extends CustomPainter {
     );
 
     // ── 2. Secondary orb — upper-right, cool cyan ─────────────
-    _drawOrb(canvas,
+    _drawOrb(
+      canvas,
       center: Offset(W * 1.05, H * -0.02),
       radius: W * 0.55,
       colors: [
@@ -405,7 +404,8 @@ class _AuthBgPainter extends CustomPainter {
     );
 
     // ── 3. Mid orb — center-left, warm teal-indigo blend ──────
-    _drawOrb(canvas,
+    _drawOrb(
+      canvas,
       center: Offset(W * 0.20, H * 0.42),
       radius: W * 0.50,
       colors: [
@@ -437,16 +437,30 @@ class _AuthBgPainter extends CustomPainter {
     );
 
     // ── 5. Upper wave band ─────────────────────────────────────
-    _drawWave(canvas, W, H,
-      y1: 0.16, cp1x: 0.28, cp1y: 0.09,
-      cp2x: 0.65, cp2y: 0.23, y2: 0.20,
+    _drawWave(
+      canvas,
+      W,
+      H,
+      y1: 0.16,
+      cp1x: 0.28,
+      cp1y: 0.09,
+      cp2x: 0.65,
+      cp2y: 0.23,
+      y2: 0.20,
       color: const Color(0xFF0ECFDD).withValues(alpha: 0.13),
     );
 
     // ── 6. Second wave band (offset) ──────────────────────────
-    _drawWave(canvas, W, H,
-      y1: 0.24, cp1x: 0.30, cp1y: 0.14,
-      cp2x: 0.68, cp2y: 0.30, y2: 0.28,
+    _drawWave(
+      canvas,
+      W,
+      H,
+      y1: 0.24,
+      cp1x: 0.30,
+      cp1y: 0.14,
+      cp2x: 0.68,
+      cp2y: 0.30,
+      y2: 0.28,
       color: const Color(0xFF0BBAC8).withValues(alpha: 0.09),
     );
 
@@ -494,11 +508,13 @@ class _AuthBgPainter extends CustomPainter {
     ];
     for (final s in sparkles) {
       canvas.drawCircle(
-        Offset(s.$1, s.$2), s.$3 * 2.8,
+        Offset(s.$1, s.$2),
+        s.$3 * 2.8,
         Paint()..color = const Color(0xFF1DD8E8).withValues(alpha: 0.10),
       );
       canvas.drawCircle(
-        Offset(s.$1, s.$2), s.$3,
+        Offset(s.$1, s.$2),
+        s.$3,
         Paint()..color = const Color(0xFF6FF6FF).withValues(alpha: 0.75),
       );
     }
@@ -521,23 +537,32 @@ class _AuthBgPainter extends CustomPainter {
     );
   }
 
-  void _drawOrb(Canvas canvas, {
+  void _drawOrb(
+    Canvas canvas, {
     required Offset center,
     required double radius,
     required List<Color> colors,
     required List<double> stops,
   }) {
     canvas.drawCircle(
-      center, radius,
+      center,
+      radius,
       Paint()
         ..shader = RadialGradient(colors: colors, stops: stops)
             .createShader(Rect.fromCircle(center: center, radius: radius)),
     );
   }
 
-  void _drawWave(Canvas canvas, double W, double H, {
-    required double y1, required double cp1x, required double cp1y,
-    required double cp2x, required double cp2y, required double y2,
+  void _drawWave(
+    Canvas canvas,
+    double W,
+    double H, {
+    required double y1,
+    required double cp1x,
+    required double cp1y,
+    required double cp2x,
+    required double cp2y,
+    required double y2,
     required Color color,
   }) {
     final path = Path()
@@ -546,14 +571,21 @@ class _AuthBgPainter extends CustomPainter {
       ..lineTo(W, 0)
       ..lineTo(0, 0)
       ..close();
-    canvas.drawPath(path, Paint()..color = color..style = PaintingStyle.fill);
+    canvas.drawPath(
+        path,
+        Paint()
+          ..color = color
+          ..style = PaintingStyle.fill);
   }
 
   void _drawRing(Canvas canvas, Offset c, double r, Color color, double width) {
-    canvas.drawCircle(c, r, Paint()
-      ..color = color
-      ..style = PaintingStyle.stroke
-      ..strokeWidth = width);
+    canvas.drawCircle(
+        c,
+        r,
+        Paint()
+          ..color = color
+          ..style = PaintingStyle.stroke
+          ..strokeWidth = width);
   }
 
   @override
@@ -596,6 +628,7 @@ class _ArrowLogoPainter extends CustomPainter {
       ..close();
     canvas.drawPath(inner, paint..style = PaintingStyle.fill);
   }
+
   @override
   bool shouldRepaint(covariant CustomPainter _) => false;
 }

@@ -67,14 +67,16 @@ class _BusinessProfileEditScreenState
               .maybeSingle();
           _businessId = memberRow?['business_id'] as String?;
           if (_businessId != null) {
-            await prefs.setString(AppConstants.kSelectedBusinessId, _businessId!);
+            await prefs.setString(
+                AppConstants.kSelectedBusinessId, _businessId!);
           }
         }
       }
 
       if (_businessId == null) {
         if (mounted) {
-          AppSnackbar.show(context, 'No business found for your account.', isError: true);
+          AppSnackbar.show(context, 'No business found for your account.',
+              isError: true);
         }
         return;
       }
@@ -110,7 +112,8 @@ class _BusinessProfileEditScreenState
   Future<void> _saveBusiness() async {
     if (!_formKey.currentState!.validate()) return;
     if (_businessId == null) {
-      AppSnackbar.show(context, 'No business linked to your account.', isError: true);
+      AppSnackbar.show(context, 'No business linked to your account.',
+          isError: true);
       return;
     }
 
@@ -129,8 +132,8 @@ class _BusinessProfileEditScreenState
       }).eq('id', _businessId!);
 
       if (mounted) {
-        AppSnackbar.show(
-            context, '✅ Business profile updated!', isSuccess: true);
+        AppSnackbar.show(context, '✅ Business profile updated!',
+            isSuccess: true);
         Navigator.of(context).pop();
       }
     } catch (e) {
@@ -261,8 +264,8 @@ class _BusinessProfileEditScreenState
                                     child: Text(t),
                                   ))
                               .toList(),
-                          onChanged: (v) =>
-                              setState(() => _businessType = v ?? _businessType),
+                          onChanged: (v) => setState(
+                              () => _businessType = v ?? _businessType),
                         ),
                       ),
                     ).animate(delay: 150.ms).fadeIn(),

@@ -15,39 +15,84 @@ class MainShellScreen extends ConsumerWidget {
   });
 
   static const _navItems = [
-    _NavItem(icon: Icons.dashboard_outlined, activeIcon: Icons.dashboard_rounded,
-        label: 'Dashboard', route: AppRoutes.dashboard),
-    _NavItem(icon: Icons.people_outline_rounded, activeIcon: Icons.people_rounded,
-        label: 'Parties', route: AppRoutes.parties),
-    _NavItem(icon: Icons.inventory_2_outlined, activeIcon: Icons.inventory_2_rounded,
-        label: 'Inventory', route: AppRoutes.inventory),
-    _NavItem(icon: Icons.receipt_long_outlined, activeIcon: Icons.receipt_long_rounded,
-        label: 'Transactions', route: AppRoutes.transactions),
-    _NavItem(icon: Icons.bar_chart_outlined, activeIcon: Icons.bar_chart_rounded,
-        label: 'Reports', route: AppRoutes.reports),
+    _NavItem(
+        icon: Icons.dashboard_outlined,
+        activeIcon: Icons.dashboard_rounded,
+        label: 'Dashboard',
+        route: AppRoutes.dashboard),
+    _NavItem(
+        icon: Icons.people_outline_rounded,
+        activeIcon: Icons.people_rounded,
+        label: 'Parties',
+        route: AppRoutes.parties),
+    _NavItem(
+        icon: Icons.inventory_2_outlined,
+        activeIcon: Icons.inventory_2_rounded,
+        label: 'Inventory',
+        route: AppRoutes.inventory),
+    _NavItem(
+        icon: Icons.receipt_long_outlined,
+        activeIcon: Icons.receipt_long_rounded,
+        label: 'Transactions',
+        route: AppRoutes.transactions),
+    _NavItem(
+        icon: Icons.bar_chart_outlined,
+        activeIcon: Icons.bar_chart_rounded,
+        label: 'Reports',
+        route: AppRoutes.reports),
   ];
 
   static const _sidebarItems = [
-    _NavItem(icon: Icons.dashboard_outlined, activeIcon: Icons.dashboard_rounded,
-        label: 'Dashboard', route: AppRoutes.dashboard),
-    _NavItem(icon: Icons.people_outline_rounded, activeIcon: Icons.people_rounded,
-        label: 'Parties', route: AppRoutes.parties),
-    _NavItem(icon: Icons.inventory_2_outlined, activeIcon: Icons.inventory_2_rounded,
-        label: 'Inventory', route: AppRoutes.inventory),
-    _NavItem(icon: Icons.receipt_long_outlined, activeIcon: Icons.receipt_long_rounded,
-        label: 'Transactions', route: AppRoutes.transactions),
-    _NavItem(icon: Icons.description_outlined, activeIcon: Icons.description_rounded,
-        label: 'Invoices', route: AppRoutes.invoices),
-    _NavItem(icon: Icons.wallet_outlined, activeIcon: Icons.wallet_rounded,
-        label: 'Expenses', route: AppRoutes.expenses),
-    _NavItem(icon: Icons.bar_chart_outlined, activeIcon: Icons.bar_chart_rounded,
-        label: 'Reports', route: AppRoutes.reports),
-    _NavItem(icon: Icons.group_outlined, activeIcon: Icons.group_rounded,
-        label: 'Staff', route: AppRoutes.staff),
-    _NavItem(icon: Icons.account_balance_outlined, activeIcon: Icons.account_balance_rounded,
-        label: 'Accounts', route: AppRoutes.accounts),
-    _NavItem(icon: Icons.settings_outlined, activeIcon: Icons.settings_rounded,
-        label: 'Settings', route: AppRoutes.settings),
+    _NavItem(
+        icon: Icons.dashboard_outlined,
+        activeIcon: Icons.dashboard_rounded,
+        label: 'Dashboard',
+        route: AppRoutes.dashboard),
+    _NavItem(
+        icon: Icons.people_outline_rounded,
+        activeIcon: Icons.people_rounded,
+        label: 'Parties',
+        route: AppRoutes.parties),
+    _NavItem(
+        icon: Icons.inventory_2_outlined,
+        activeIcon: Icons.inventory_2_rounded,
+        label: 'Inventory',
+        route: AppRoutes.inventory),
+    _NavItem(
+        icon: Icons.receipt_long_outlined,
+        activeIcon: Icons.receipt_long_rounded,
+        label: 'Transactions',
+        route: AppRoutes.transactions),
+    _NavItem(
+        icon: Icons.description_outlined,
+        activeIcon: Icons.description_rounded,
+        label: 'Invoices',
+        route: AppRoutes.invoices),
+    _NavItem(
+        icon: Icons.wallet_outlined,
+        activeIcon: Icons.wallet_rounded,
+        label: 'Expenses',
+        route: AppRoutes.expenses),
+    _NavItem(
+        icon: Icons.bar_chart_outlined,
+        activeIcon: Icons.bar_chart_rounded,
+        label: 'Reports',
+        route: AppRoutes.reports),
+    _NavItem(
+        icon: Icons.group_outlined,
+        activeIcon: Icons.group_rounded,
+        label: 'Staff',
+        route: AppRoutes.staff),
+    _NavItem(
+        icon: Icons.account_balance_outlined,
+        activeIcon: Icons.account_balance_rounded,
+        label: 'Accounts',
+        route: AppRoutes.accounts),
+    _NavItem(
+        icon: Icons.settings_outlined,
+        activeIcon: Icons.settings_rounded,
+        label: 'Settings',
+        route: AppRoutes.settings),
   ];
 
   int _selectedIndex() {
@@ -106,8 +151,10 @@ class MainShellScreen extends ConsumerWidget {
             onDestinationSelected: (i) => context.go(_sidebarItems[i].route),
             labelType: NavigationRailLabelType.selected,
             backgroundColor: AppTheme.lightSurface,
-            selectedIconTheme: const IconThemeData(color: AppTheme.primaryColor),
-            selectedLabelTextStyle: const TextStyle(color: AppTheme.primaryColor, fontWeight: FontWeight.w600),
+            selectedIconTheme:
+                const IconThemeData(color: AppTheme.primaryColor),
+            selectedLabelTextStyle: const TextStyle(
+                color: AppTheme.primaryColor, fontWeight: FontWeight.w600),
             destinations: _sidebarItems.map((item) {
               return NavigationRailDestination(
                 icon: Icon(item.icon),
@@ -140,7 +187,8 @@ class MainShellScreen extends ConsumerWidget {
                   child: Row(
                     children: [
                       Container(
-                        width: 38, height: 38,
+                        width: 38,
+                        height: 38,
                         decoration: BoxDecoration(
                           color: AppTheme.primaryColor,
                           borderRadius: BorderRadius.circular(10),
@@ -171,7 +219,8 @@ class MainShellScreen extends ConsumerWidget {
                 // Nav items
                 Expanded(
                   child: ListView.builder(
-                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
                     itemCount: _sidebarItems.length,
                     itemBuilder: (context, i) {
                       final item = _sidebarItems[i];
@@ -180,24 +229,33 @@ class MainShellScreen extends ConsumerWidget {
                         margin: const EdgeInsets.symmetric(vertical: 2),
                         child: ListTile(
                           selected: isSelected,
-                          selectedTileColor: AppTheme.primaryColor.withValues(alpha: 0.1),
-                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                          selectedTileColor:
+                              AppTheme.primaryColor.withValues(alpha: 0.1),
+                          shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(10)),
                           leading: Icon(
                             isSelected ? item.activeIcon : item.icon,
                             size: 22,
-                            color: isSelected ? AppTheme.primaryColor : AppTheme.lightTextSecondary,
+                            color: isSelected
+                                ? AppTheme.primaryColor
+                                : AppTheme.lightTextSecondary,
                           ),
                           title: Text(
                             item.label,
                             style: TextStyle(
                               fontSize: 14,
-                              fontWeight: isSelected ? FontWeight.w600 : FontWeight.normal,
-                              color: isSelected ? AppTheme.primaryColor : AppTheme.lightTextSecondary,
+                              fontWeight: isSelected
+                                  ? FontWeight.w600
+                                  : FontWeight.normal,
+                              color: isSelected
+                                  ? AppTheme.primaryColor
+                                  : AppTheme.lightTextSecondary,
                             ),
                           ),
                           onTap: () => context.go(item.route),
                           dense: true,
-                          contentPadding: const EdgeInsets.symmetric(horizontal: 12, vertical: 2),
+                          contentPadding: const EdgeInsets.symmetric(
+                              horizontal: 12, vertical: 2),
                         ),
                       );
                     },
@@ -214,7 +272,8 @@ class MainShellScreen extends ConsumerWidget {
                     ),
                     child: Row(
                       children: [
-                        const Icon(Icons.workspace_premium, color: AppTheme.primaryColor, size: 20),
+                        const Icon(Icons.workspace_premium,
+                            color: AppTheme.primaryColor, size: 20),
                         const SizedBox(width: 8),
                         const Expanded(
                           child: Text('Free Trial',
@@ -227,11 +286,13 @@ class MainShellScreen extends ConsumerWidget {
                         TextButton(
                           onPressed: () => context.push(AppRoutes.subscription),
                           style: TextButton.styleFrom(
-                            padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: 8, vertical: 4),
                             minimumSize: Size.zero,
                             tapTargetSize: MaterialTapTargetSize.shrinkWrap,
                           ),
-                          child: const Text('Upgrade', style: TextStyle(fontSize: 12)),
+                          child: const Text('Upgrade',
+                              style: TextStyle(fontSize: 12)),
                         ),
                       ],
                     ),

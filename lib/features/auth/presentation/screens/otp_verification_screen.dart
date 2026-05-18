@@ -20,8 +20,7 @@ class OtpVerificationScreen extends ConsumerStatefulWidget {
       _OtpVerificationScreenState();
 }
 
-class _OtpVerificationScreenState
-    extends ConsumerState<OtpVerificationScreen> {
+class _OtpVerificationScreenState extends ConsumerState<OtpVerificationScreen> {
   // 6 individual digit controllers + focus nodes
   final List<TextEditingController> _controllers =
       List.generate(6, (_) => TextEditingController());
@@ -131,8 +130,7 @@ class _OtpVerificationScreenState
   // ─── Resend ──────────────────────────────────────────────────
   Future<void> _resend() async {
     setState(() => _isResending = true);
-    final ok =
-        await ref.read(authProvider.notifier).resendOtp(widget.email);
+    final ok = await ref.read(authProvider.notifier).resendOtp(widget.email);
     if (!mounted) return;
     setState(() => _isResending = false);
     if (ok) {
@@ -177,7 +175,10 @@ class _OtpVerificationScreenState
                       height: 80,
                       decoration: BoxDecoration(
                         gradient: const LinearGradient(
-                          colors: [AppTheme.primaryColor, AppTheme.primaryLight],
+                          colors: [
+                            AppTheme.primaryColor,
+                            AppTheme.primaryLight
+                          ],
                           begin: Alignment.topLeft,
                           end: Alignment.bottomRight,
                         ),
@@ -194,8 +195,7 @@ class _OtpVerificationScreenState
                           size: 40, color: Colors.white),
                     )
                         .animate()
-                        .scale(
-                            duration: 600.ms, curve: Curves.elasticOut)
+                        .scale(duration: 600.ms, curve: Curves.elasticOut)
                         .fadeIn(duration: 400.ms),
                     const SizedBox(height: 24),
                     Text(
@@ -215,8 +215,7 @@ class _OtpVerificationScreenState
                             .bodyMedium
                             ?.copyWith(color: AppTheme.lightTextSecondary),
                         children: [
-                          const TextSpan(
-                              text: 'We sent a 6-digit code to\n'),
+                          const TextSpan(text: 'We sent a 6-digit code to\n'),
                           TextSpan(
                             text: widget.email,
                             style: const TextStyle(
@@ -236,11 +235,13 @@ class _OtpVerificationScreenState
               // OTP boxes
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: List.generate(6, (i) => _OtpBox(
-                  controller: _controllers[i],
-                  focusNode: _focusNodes[i],
-                  onChanged: (v) => _onDigitChanged(i, v),
-                )).animate(delay: 250.ms).fadeIn(),
+                children: List.generate(
+                    6,
+                    (i) => _OtpBox(
+                          controller: _controllers[i],
+                          focusNode: _focusNodes[i],
+                          onChanged: (v) => _onDigitChanged(i, v),
+                        )).animate(delay: 250.ms).fadeIn(),
               ),
 
               const SizedBox(height: 36),
@@ -275,8 +276,7 @@ class _OtpVerificationScreenState
                             onTap: _resend,
                             child: RichText(
                               text: TextSpan(
-                                style:
-                                    Theme.of(context).textTheme.bodyMedium,
+                                style: Theme.of(context).textTheme.bodyMedium,
                                 children: const [
                                   TextSpan(text: "Didn't receive it? "),
                                   TextSpan(

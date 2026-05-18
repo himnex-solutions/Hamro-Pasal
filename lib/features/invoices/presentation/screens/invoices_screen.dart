@@ -19,34 +19,50 @@ class Invoice {
   final List<Map<String, dynamic>> items;
 
   const Invoice({
-    required this.id, required this.businessId, required this.invoiceNumber,
-    required this.status, this.partyId, this.partyName,
-    required this.subtotal, this.taxAmount = 0, this.discountAmount = 0,
-    required this.totalAmount, this.paidAmount = 0,
-    required this.invoiceDate, this.dueDate, this.items = const [],
+    required this.id,
+    required this.businessId,
+    required this.invoiceNumber,
+    required this.status,
+    this.partyId,
+    this.partyName,
+    required this.subtotal,
+    this.taxAmount = 0,
+    this.discountAmount = 0,
+    required this.totalAmount,
+    this.paidAmount = 0,
+    required this.invoiceDate,
+    this.dueDate,
+    this.items = const [],
   });
 
   factory Invoice.fromJson(Map<String, dynamic> json) => Invoice(
-    id: json['id'] as String, businessId: json['business_id'] as String,
-    invoiceNumber: json['invoice_number'] as String,
-    status: json['status'] as String,
-    partyId: json['party_id'] as String?, partyName: json['party_name'] as String?,
-    subtotal: (json['subtotal'] as num).toDouble(),
-    taxAmount: (json['tax_amount'] as num?)?.toDouble() ?? 0,
-    discountAmount: (json['discount_amount'] as num?)?.toDouble() ?? 0,
-    totalAmount: (json['total_amount'] as num).toDouble(),
-    paidAmount: (json['paid_amount'] as num?)?.toDouble() ?? 0,
-    invoiceDate: DateTime.parse(json['invoice_date'] as String),
-    dueDate: json['due_date'] != null ? DateTime.parse(json['due_date'] as String) : null,
-    items: (json['invoice_items'] as List<dynamic>?)?.cast<Map<String, dynamic>>() ?? [],
-  );
+        id: json['id'] as String,
+        businessId: json['business_id'] as String,
+        invoiceNumber: json['invoice_number'] as String,
+        status: json['status'] as String,
+        partyId: json['party_id'] as String?,
+        partyName: json['party_name'] as String?,
+        subtotal: (json['subtotal'] as num).toDouble(),
+        taxAmount: (json['tax_amount'] as num?)?.toDouble() ?? 0,
+        discountAmount: (json['discount_amount'] as num?)?.toDouble() ?? 0,
+        totalAmount: (json['total_amount'] as num).toDouble(),
+        paidAmount: (json['paid_amount'] as num?)?.toDouble() ?? 0,
+        invoiceDate: DateTime.parse(json['invoice_date'] as String),
+        dueDate: json['due_date'] != null
+            ? DateTime.parse(json['due_date'] as String)
+            : null,
+        items: (json['invoice_items'] as List<dynamic>?)
+                ?.cast<Map<String, dynamic>>() ??
+            [],
+      );
 
   bool get isPaid => status == 'paid';
   bool get isUnpaid => status == 'unpaid';
   double get dueAmount => totalAmount - paidAmount;
 }
 
-final invoicesProvider = AsyncNotifierProvider<InvoicesNotifier, List<Invoice>>(() {
+final invoicesProvider =
+    AsyncNotifierProvider<InvoicesNotifier, List<Invoice>>(() {
   return InvoicesNotifier();
 });
 
@@ -59,10 +75,14 @@ class InvoicesNotifier extends AsyncNotifier<List<Invoice>> {
     final businessId = prefs.getString(AppConstants.kSelectedBusinessId);
     if (businessId == null) return [];
     final res = await Supabase.instance.client
-        .from('invoices').select('*, invoice_items(*)')
+        .from('invoices')
+        .select('*, invoice_items(*)')
         .eq('business_id', businessId)
-        .order('invoice_date', ascending: false).limit(50);
-    return (res as List).map((e) => Invoice.fromJson(e as Map<String, dynamic>)).toList();
+        .order('invoice_date', ascending: false)
+        .limit(50);
+    return (res as List)
+        .map((e) => Invoice.fromJson(e as Map<String, dynamic>))
+        .toList();
   }
 
   Future<void> refresh() async {
@@ -88,7 +108,10 @@ class _InvoicesScreenState extends ConsumerState<InvoicesScreen>
   }
 
   @override
-  void dispose() { _tabCtrl.dispose(); super.dispose(); }
+  void dispose() {
+    _tabCtrl.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -99,7 +122,11 @@ class _InvoicesScreenState extends ConsumerState<InvoicesScreen>
         title: Text(context.l10n.invoices),
         bottom: TabBar(
           controller: _tabCtrl,
-          tabs: const [Tab(text: 'All'), Tab(text: 'Unpaid'), Tab(text: 'Paid')],
+          tabs: const [
+            Tab(text: 'All'),
+            Tab(text: 'Unpaid'),
+            Tab(text: 'Paid')
+          ],
         ),
         actions: [
           IconButton(
@@ -147,7 +174,8 @@ class _InvoiceList extends StatelessWidget {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            const Icon(Icons.description_outlined, size: 56, color: AppTheme.lightTextHint),
+            const Icon(Icons.description_outlined,
+                size: 56, color: AppTheme.lightTextHint),
             const SizedBox(height: 16),
             Text('No invoices', style: Theme.of(context).textTheme.titleMedium),
           ],
@@ -161,7 +189,9 @@ class _InvoiceList extends StatelessWidget {
       itemBuilder: (context, i) {
         final inv = invoices[i];
         return _InvoiceCard(invoice: inv)
-            .animate(delay: Duration(milliseconds: i * 40)).fadeIn().slideX(begin: 0.05, end: 0);
+            .animate(delay: Duration(milliseconds: i * 40))
+            .fadeIn()
+            .slideX(begin: 0.05, end: 0);
       },
     );
   }
@@ -176,62 +206,116 @@ class _InvoiceCard extends StatelessWidget {
     Color statusColor;
     String statusLabel;
     switch (invoice.status) {
-      case 'paid': statusColor = AppTheme.successColor; statusLabel = 'Paid'; break;
-      case 'partial': statusColor = AppTheme.warningColor; statusLabel = 'Partial'; break;
-      default: statusColor = AppTheme.errorColor; statusLabel = 'Unpaid';
+      case 'paid':
+        statusColor = AppTheme.successColor;
+        statusLabel = 'Paid';
+        break;
+      case 'partial':
+        statusColor = AppTheme.warningColor;
+        statusLabel = 'Partial';
+        break;
+      default:
+        statusColor = AppTheme.errorColor;
+        statusLabel = 'Unpaid';
     }
 
-    return Card(
-      child: InkWell(
-        onTap: () => context.push('/home/invoices/${invoice.id}'),
+    return Container(
+      margin: const EdgeInsets.symmetric(vertical: 4),
+      decoration: BoxDecoration(
+        color: Theme.of(context).cardTheme.color,
         borderRadius: BorderRadius.circular(16),
-        child: Padding(
-          padding: const EdgeInsets.all(16),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Text('#${invoice.invoiceNumber}',
-                      style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                            color: AppTheme.primaryColor, fontWeight: FontWeight.w700)),
-                  Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                    decoration: BoxDecoration(
-                      color: statusColor.withValues(alpha: 0.1),
-                      borderRadius: BorderRadius.circular(8),
+        border: Border.all(
+            color: Theme.of(context).brightness == Brightness.dark
+                ? AppTheme.darkBorder
+                : Colors.white,
+            width: 1.5),
+        boxShadow: [
+          BoxShadow(
+            color: statusColor.withValues(alpha: 0.12),
+            blurRadius: 16,
+            offset: const Offset(0, 6),
+          ),
+        ],
+        gradient: LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [
+            Theme.of(context).cardTheme.color ?? Colors.white,
+            (Theme.of(context).cardTheme.color ?? Colors.white)
+                .withValues(alpha: 0.6),
+          ],
+        ),
+      ),
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          onTap: () => context.push('/home/invoices/${invoice.id}'),
+          borderRadius: BorderRadius.circular(16),
+          child: Padding(
+            padding: const EdgeInsets.all(16),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text('#${invoice.invoiceNumber}',
+                        style: Theme.of(context)
+                            .textTheme
+                            .titleMedium
+                            ?.copyWith(
+                                color: AppTheme.primaryColor,
+                                fontWeight: FontWeight.w700)),
+                    Container(
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 10, vertical: 4),
+                      decoration: BoxDecoration(
+                        color: statusColor.withValues(alpha: 0.1),
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      child: Text(statusLabel,
+                          style: TextStyle(
+                              color: statusColor,
+                              fontWeight: FontWeight.w700,
+                              fontSize: 12)),
                     ),
-                    child: Text(statusLabel,
-                        style: TextStyle(color: statusColor, fontWeight: FontWeight.w700, fontSize: 12)),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 8),
-              if (invoice.partyName != null)
-                Text(invoice.partyName!, style: Theme.of(context).textTheme.bodyMedium),
-              const SizedBox(height: 4),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Text(DateFormat(AppConstants.dateFormat).format(invoice.invoiceDate),
-                      style: Theme.of(context).textTheme.bodySmall),
-                  Text(
-                    '${AppConstants.currencySymbol} ${NumberFormat('#,##,##0.00').format(invoice.totalAmount)}',
-                    style: Theme.of(context).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w700),
-                  ),
-                ],
-              ),
-              if (invoice.dueAmount > 0) ...[
+                  ],
+                ),
+                const SizedBox(height: 8),
+                if (invoice.partyName != null)
+                  Text(invoice.partyName!,
+                      style: Theme.of(context).textTheme.bodyMedium),
                 const SizedBox(height: 4),
-                Text('Due: ${AppConstants.currencySymbol} ${NumberFormat('#,##,##0.00').format(invoice.dueAmount)}',
-                    style: const TextStyle(color: AppTheme.warningColor, fontSize: 12, fontWeight: FontWeight.w600)),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text(
+                        DateFormat(AppConstants.dateFormat)
+                            .format(invoice.invoiceDate),
+                        style: Theme.of(context).textTheme.bodySmall),
+                    Text(
+                      '${AppConstants.currencySymbol} ${NumberFormat('#,##,##0.00').format(invoice.totalAmount)}',
+                      style: Theme.of(context)
+                          .textTheme
+                          .titleMedium
+                          ?.copyWith(fontWeight: FontWeight.w700),
+                    ),
+                  ],
+                ),
+                if (invoice.dueAmount > 0) ...[
+                  const SizedBox(height: 4),
+                  Text(
+                      'Due: ${AppConstants.currencySymbol} ${NumberFormat('#,##,##0.00').format(invoice.dueAmount)}',
+                      style: const TextStyle(
+                          color: AppTheme.warningColor,
+                          fontSize: 12,
+                          fontWeight: FontWeight.w600)),
+                ],
               ],
-            ],
+            ),
           ),
         ),
       ),
     );
   }
 }
-

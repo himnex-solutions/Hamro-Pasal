@@ -73,7 +73,8 @@ class _TransactionsScreenState extends ConsumerState<TransactionsScreen>
     if (_search.isNotEmpty) {
       list = list
           .where((t) =>
-              (t.partyName?.toLowerCase().contains(_search.toLowerCase()) ?? false) ||
+              (t.partyName?.toLowerCase().contains(_search.toLowerCase()) ??
+                  false) ||
               t.type.toLowerCase().contains(_search.toLowerCase()))
           .toList();
     }
@@ -116,7 +117,10 @@ class _TransactionsScreenState extends ConsumerState<TransactionsScreen>
                 prefixIcon: const Icon(Icons.search, size: 20),
                 suffixIcon: _search.isNotEmpty
                     ? IconButton(
-                        onPressed: () { _searchCtrl.clear(); setState(() => _search = ''); },
+                        onPressed: () {
+                          _searchCtrl.clear();
+                          setState(() => _search = '');
+                        },
                         icon: const Icon(Icons.clear, size: 18))
                     : null,
               ),
@@ -127,13 +131,15 @@ class _TransactionsScreenState extends ConsumerState<TransactionsScreen>
               loading: () => const Center(child: CircularProgressIndicator()),
               error: (e, _) => Center(child: Text('Error: $e')),
               data: (txs) => RefreshIndicator(
-                onRefresh: () => ref.read(transactionsProvider.notifier).refresh(),
+                onRefresh: () =>
+                    ref.read(transactionsProvider.notifier).refresh(),
                 child: TabBarView(
                   controller: _tabCtrl,
                   children: [
                     _TxList(transactions: _filter(txs, null)),
                     _TxList(transactions: _filter(txs, AppConstants.txSale)),
-                    _TxList(transactions: _filter(txs, AppConstants.txPurchase)),
+                    _TxList(
+                        transactions: _filter(txs, AppConstants.txPurchase)),
                     _TxList(transactions: _filter(txs, AppConstants.txExpense)),
                   ],
                 ),
@@ -164,9 +170,11 @@ class _TxList extends StatelessWidget {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            const Icon(Icons.receipt_long_outlined, size: 56, color: AppTheme.lightTextHint),
+            const Icon(Icons.receipt_long_outlined,
+                size: 56, color: AppTheme.lightTextHint),
             const SizedBox(height: 16),
-            Text(context.l10n.noTransactionsFound, style: Theme.of(context).textTheme.titleMedium),
+            Text(context.l10n.noTransactionsFound,
+                style: Theme.of(context).textTheme.titleMedium),
           ],
         ),
       );
@@ -187,7 +195,9 @@ class _TxList extends StatelessWidget {
         final date = dates[di];
         final txList = grouped[date]!;
         final dayTotal = txList.fold<double>(
-          0, (s, t) => s + (t.type == AppConstants.txExpense ? -t.amount : t.amount));
+            0,
+            (s, t) =>
+                s + (t.type == AppConstants.txExpense ? -t.amount : t.amount));
         return Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -204,7 +214,9 @@ class _TxList extends StatelessWidget {
                   Text(
                     '${dayTotal >= 0 ? '+' : ''}${AppConstants.currencySymbol} ${NumberFormat('#,##,##0.00').format(dayTotal)}',
                     style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                          color: dayTotal >= 0 ? AppTheme.successColor : AppTheme.errorColor,
+                          color: dayTotal >= 0
+                              ? AppTheme.successColor
+                              : AppTheme.errorColor,
                           fontWeight: FontWeight.w700,
                         ),
                   ),
@@ -235,81 +247,126 @@ class _TxCard extends StatelessWidget {
     IconData typeIcon;
     switch (tx.type) {
       case AppConstants.txSale:
-        typeColor = AppTheme.successColor; typeIcon = Icons.trending_up_rounded; break;
+        typeColor = AppTheme.successColor;
+        typeIcon = Icons.trending_up_rounded;
+        break;
       case AppConstants.txPurchase:
-        typeColor = AppTheme.infoColor; typeIcon = Icons.shopping_bag_outlined; break;
+        typeColor = AppTheme.infoColor;
+        typeIcon = Icons.shopping_bag_outlined;
+        break;
       case AppConstants.txExpense:
-        typeColor = AppTheme.errorColor; typeIcon = Icons.trending_down_rounded; break;
+        typeColor = AppTheme.errorColor;
+        typeIcon = Icons.trending_down_rounded;
+        break;
       default:
-        typeColor = AppTheme.accentColor; typeIcon = Icons.swap_horiz_rounded;
+        typeColor = AppTheme.accentColor;
+        typeIcon = Icons.swap_horiz_rounded;
     }
 
-    final isDebit = tx.type == AppConstants.txExpense || tx.type == AppConstants.txPurchase;
+    final isDebit =
+        tx.type == AppConstants.txExpense || tx.type == AppConstants.txPurchase;
     final formatted = NumberFormat('#,##,##0.00').format(tx.amount);
 
-    return Card(
+    return Container(
       margin: const EdgeInsets.symmetric(vertical: 4),
-      child: InkWell(
-        onTap: () => context.push('/home/transactions/${tx.id}'),
+      decoration: BoxDecoration(
+        color: Theme.of(context).cardTheme.color,
         borderRadius: BorderRadius.circular(16),
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
-          child: Row(
-            children: [
-              Container(
-                width: 44, height: 44,
-                decoration: BoxDecoration(
-                  color: typeColor.withValues(alpha: 0.1),
-                  borderRadius: BorderRadius.circular(12),
+        border: Border.all(
+            color: Theme.of(context).brightness == Brightness.dark
+                ? AppTheme.darkBorder
+                : Colors.white,
+            width: 1.5),
+        boxShadow: [
+          BoxShadow(
+            color: typeColor.withValues(alpha: 0.12),
+            blurRadius: 16,
+            offset: const Offset(0, 6),
+          ),
+        ],
+        gradient: LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [
+            Theme.of(context).cardTheme.color ?? Colors.white,
+            (Theme.of(context).cardTheme.color ?? Colors.white)
+                .withValues(alpha: 0.6),
+          ],
+        ),
+      ),
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          onTap: () => context.push('/home/transactions/${tx.id}'),
+          borderRadius: BorderRadius.circular(16),
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+            child: Row(
+              children: [
+                Container(
+                  width: 44,
+                  height: 44,
+                  decoration: BoxDecoration(
+                    color: typeColor.withValues(alpha: 0.1),
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  child: Icon(typeIcon, color: typeColor, size: 22),
                 ),
-                child: Icon(typeIcon, color: typeColor, size: 22),
-              ),
-              const SizedBox(width: 12),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(tx.partyName ?? tx.type.toUpperCase(),
-                        style: Theme.of(context).textTheme.titleMedium,
-                        maxLines: 1, overflow: TextOverflow.ellipsis),
-                    Row(
-                      children: [
-                        Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-                          decoration: BoxDecoration(
-                            color: typeColor.withValues(alpha: 0.1),
-                            borderRadius: BorderRadius.circular(4),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(tx.partyName ?? tx.type.toUpperCase(),
+                          style: Theme.of(context).textTheme.titleMedium,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis),
+                      Row(
+                        children: [
+                          Container(
+                            padding: const EdgeInsets.symmetric(
+                                horizontal: 6, vertical: 2),
+                            decoration: BoxDecoration(
+                              color: typeColor.withValues(alpha: 0.1),
+                              borderRadius: BorderRadius.circular(4),
+                            ),
+                            child: Text(tx.paymentMethod.toUpperCase(),
+                                style: TextStyle(
+                                    fontSize: 10,
+                                    color: typeColor,
+                                    fontWeight: FontWeight.w600)),
                           ),
-                          child: Text(tx.paymentMethod.toUpperCase(),
-                              style: TextStyle(fontSize: 10, color: typeColor,
-                                  fontWeight: FontWeight.w600)),
-                        ),
-                        const SizedBox(width: 6),
-                        Text(DateFormat('hh:mm a').format(tx.transactionDate),
-                            style: Theme.of(context).textTheme.bodySmall),
-                      ],
+                          const SizedBox(width: 6),
+                          Text(DateFormat('hh:mm a').format(tx.transactionDate),
+                              style: Theme.of(context).textTheme.bodySmall),
+                        ],
+                      ),
+                    ],
+                  ),
+                ),
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.end,
+                  children: [
+                    Text(
+                      '${isDebit ? '-' : '+'}${AppConstants.currencySymbol} $formatted',
+                      style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                            color: isDebit
+                                ? AppTheme.errorColor
+                                : AppTheme.successColor,
+                            fontWeight: FontWeight.w700,
+                          ),
                     ),
+                    if (tx.dueAmount > 0)
+                      Text(
+                          'Due: ${AppConstants.currencySymbol} ${NumberFormat('#,##,##0').format(tx.dueAmount)}',
+                          style:
+                              Theme.of(context).textTheme.bodySmall?.copyWith(
+                                    color: AppTheme.warningColor,
+                                  )),
                   ],
                 ),
-              ),
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.end,
-                children: [
-                  Text(
-                    '${isDebit ? '-' : '+'}${AppConstants.currencySymbol} $formatted',
-                    style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                          color: isDebit ? AppTheme.errorColor : AppTheme.successColor,
-                          fontWeight: FontWeight.w700,
-                        ),
-                  ),
-                  if (tx.dueAmount > 0)
-                    Text('Due: ${AppConstants.currencySymbol} ${NumberFormat('#,##,##0').format(tx.dueAmount)}',
-                        style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                              color: AppTheme.warningColor,
-                            )),
-                ],
-              ),
-            ],
+              ],
+            ),
           ),
         ),
       ),

@@ -99,7 +99,8 @@ class _CreateInvoiceScreenState extends ConsumerState<CreateInvoiceScreen> {
         });
       }
     } catch (e) {
-      if (mounted) AppSnackbar.show(context, 'Failed to load data: $e', isError: true);
+      if (mounted)
+        AppSnackbar.show(context, 'Failed to load data: $e', isError: true);
     } finally {
       if (mounted) setState(() => _isFetching = false);
     }
@@ -114,7 +115,8 @@ class _CreateInvoiceScreenState extends ConsumerState<CreateInvoiceScreen> {
   Future<void> _saveInvoice() async {
     if (!_formKey.currentState!.validate()) return;
     if (_items.every((i) => i.productName.trim().isEmpty)) {
-      AppSnackbar.show(context, 'Add at least one item to the invoice.', isError: true);
+      AppSnackbar.show(context, 'Add at least one item to the invoice.',
+          isError: true);
       return;
     }
 
@@ -154,21 +156,21 @@ class _CreateInvoiceScreenState extends ConsumerState<CreateInvoiceScreen> {
           _items.where((i) => i.productName.trim().isNotEmpty).toList();
       if (validItems.isNotEmpty) {
         await _supabase.from('invoice_items').insert(
-          validItems
-              .map((item) => {
-                    'id': const Uuid().v4(),
-                    'invoice_id': invoiceId,
-                    'product_id':
-                        item.productId.isEmpty ? null : item.productId,
-                    'product_name': item.productName,
-                    'quantity': item.quantity,
-                    'unit_price': item.unitPrice,
-                    'discount': item.discount,
-                    'total_price': item.total,
-                    'created_at': now,
-                  })
-              .toList(),
-        );
+              validItems
+                  .map((item) => {
+                        'id': const Uuid().v4(),
+                        'invoice_id': invoiceId,
+                        'product_id':
+                            item.productId.isEmpty ? null : item.productId,
+                        'product_name': item.productName,
+                        'quantity': item.quantity,
+                        'unit_price': item.unitPrice,
+                        'discount': item.discount,
+                        'total_price': item.total,
+                        'created_at': now,
+                      })
+                  .toList(),
+            );
       }
 
       if (mounted) {
@@ -179,7 +181,8 @@ class _CreateInvoiceScreenState extends ConsumerState<CreateInvoiceScreen> {
         context.pop();
       }
     } catch (e) {
-      if (mounted) AppSnackbar.show(context, 'Failed to save: $e', isError: true);
+      if (mounted)
+        AppSnackbar.show(context, 'Failed to save: $e', isError: true);
     } finally {
       if (mounted) setState(() => _isLoading = false);
     }
@@ -189,7 +192,9 @@ class _CreateInvoiceScreenState extends ConsumerState<CreateInvoiceScreen> {
   Future<void> _pickDate({required bool isDue}) async {
     final picked = await showDatePicker(
       context: context,
-      initialDate: isDue ? (_dueDate ?? DateTime.now().add(const Duration(days: 15))) : _invoiceDate,
+      initialDate: isDue
+          ? (_dueDate ?? DateTime.now().add(const Duration(days: 15)))
+          : _invoiceDate,
       firstDate: DateTime(2020),
       lastDate: DateTime(2030),
     );
@@ -315,8 +320,7 @@ class _CreateInvoiceScreenState extends ConsumerState<CreateInvoiceScreen> {
                     title: 'Items',
                     icon: Icons.inventory_2_outlined,
                     trailing: TextButton.icon(
-                      onPressed: () =>
-                          setState(() => _items.add(_LineItem())),
+                      onPressed: () => setState(() => _items.add(_LineItem())),
                       icon: const Icon(Icons.add, size: 16),
                       label: Text(context.l10n.addItem),
                     ),
@@ -327,9 +331,26 @@ class _CreateInvoiceScreenState extends ConsumerState<CreateInvoiceScreen> {
                           padding: EdgeInsets.only(bottom: 8),
                           child: Row(
                             children: [
-                              Expanded(flex: 4, child: Text('Item', style: TextStyle(fontWeight: FontWeight.w600, fontSize: 12))),
-                              Expanded(flex: 2, child: Text('Qty', style: TextStyle(fontWeight: FontWeight.w600, fontSize: 12), textAlign: TextAlign.center)),
-                              Expanded(flex: 2, child: Text('Price', style: TextStyle(fontWeight: FontWeight.w600, fontSize: 12), textAlign: TextAlign.center)),
+                              Expanded(
+                                  flex: 4,
+                                  child: Text('Item',
+                                      style: TextStyle(
+                                          fontWeight: FontWeight.w600,
+                                          fontSize: 12))),
+                              Expanded(
+                                  flex: 2,
+                                  child: Text('Qty',
+                                      style: TextStyle(
+                                          fontWeight: FontWeight.w600,
+                                          fontSize: 12),
+                                      textAlign: TextAlign.center)),
+                              Expanded(
+                                  flex: 2,
+                                  child: Text('Price',
+                                      style: TextStyle(
+                                          fontWeight: FontWeight.w600,
+                                          fontSize: 12),
+                                      textAlign: TextAlign.center)),
                               SizedBox(width: 32),
                             ],
                           ),
@@ -395,8 +416,7 @@ class _CreateInvoiceScreenState extends ConsumerState<CreateInvoiceScreen> {
                                       suffixText: '%',
                                     ),
                                     onChanged: (v) => setState(() =>
-                                        _taxPercent =
-                                            double.tryParse(v) ?? 0),
+                                        _taxPercent = double.tryParse(v) ?? 0),
                                   ),
                                 ],
                               ),
@@ -616,8 +636,8 @@ class _LineItemRowState extends State<_LineItemRow> {
                         widget.item.productName = '';
                         widget.item.unitPrice = 0;
                       } else {
-                        final p = widget.products
-                            .firstWhere((p) => p['id'] == v);
+                        final p =
+                            widget.products.firstWhere((p) => p['id'] == v);
                         widget.item.productId = v;
                         widget.item.productName = p['name'] as String;
                         widget.item.unitPrice =
@@ -641,8 +661,8 @@ class _LineItemRowState extends State<_LineItemRow> {
               decoration: InputDecoration(
                 contentPadding:
                     const EdgeInsets.symmetric(horizontal: 6, vertical: 8),
-                border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(10)),
+                border:
+                    OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
               ),
               onChanged: (v) {
                 widget.item.quantity = double.tryParse(v) ?? 1;
@@ -662,8 +682,8 @@ class _LineItemRowState extends State<_LineItemRow> {
               decoration: InputDecoration(
                 contentPadding:
                     const EdgeInsets.symmetric(horizontal: 6, vertical: 8),
-                border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(10)),
+                border:
+                    OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
               ),
               onChanged: (v) {
                 widget.item.unitPrice = double.tryParse(v) ?? 0;
@@ -778,15 +798,14 @@ class _DateTile extends StatelessWidget {
           children: [
             Icon(icon,
                 size: 16,
-                color:
-                    isPlaceholder ? AppTheme.lightTextHint : AppTheme.primaryColor),
+                color: isPlaceholder
+                    ? AppTheme.lightTextHint
+                    : AppTheme.primaryColor),
             const SizedBox(width: 6),
             Text(label,
                 style: TextStyle(
                     fontSize: 13,
-                    color: isPlaceholder
-                        ? AppTheme.lightTextHint
-                        : null)),
+                    color: isPlaceholder ? AppTheme.lightTextHint : null)),
           ],
         ),
       ),
@@ -810,9 +829,7 @@ class _SummaryRow extends StatelessWidget {
           Text(label, style: Theme.of(context).textTheme.bodySmall),
           Text(value,
               style: TextStyle(
-                  color: color,
-                  fontWeight: FontWeight.w600,
-                  fontSize: 13)),
+                  color: color, fontWeight: FontWeight.w600, fontSize: 13)),
         ],
       ),
     );

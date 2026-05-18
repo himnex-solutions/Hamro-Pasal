@@ -56,7 +56,8 @@ class _ProfileEditScreenState extends ConsumerState<ProfileEditScreen> {
         _email = data['email'] ?? _supabase.auth.currentUser?.email ?? '';
       }
     } catch (e) {
-      if (mounted) AppSnackbar.show(context, 'Failed to load profile: $e', isError: true);
+      if (mounted)
+        AppSnackbar.show(context, 'Failed to load profile: $e', isError: true);
     } finally {
       if (mounted) setState(() => _isFetching = false);
     }
@@ -78,11 +79,13 @@ class _ProfileEditScreenState extends ConsumerState<ProfileEditScreen> {
       });
 
       if (mounted) {
-        AppSnackbar.show(context, '✅ Profile updated successfully!', isSuccess: true);
+        AppSnackbar.show(context, '✅ Profile updated successfully!',
+            isSuccess: true);
         Navigator.of(context).pop();
       }
     } catch (e) {
-      if (mounted) AppSnackbar.show(context, 'Update failed: $e', isError: true);
+      if (mounted)
+        AppSnackbar.show(context, 'Update failed: $e', isError: true);
     } finally {
       if (mounted) setState(() => _isLoading = false);
     }
@@ -116,14 +119,18 @@ class _ProfileEditScreenState extends ConsumerState<ProfileEditScreen> {
                             height: 90,
                             decoration: BoxDecoration(
                               gradient: const LinearGradient(
-                                colors: [AppTheme.primaryColor, AppTheme.primaryDark],
+                                colors: [
+                                  AppTheme.primaryColor,
+                                  AppTheme.primaryDark
+                                ],
                                 begin: Alignment.topLeft,
                                 end: Alignment.bottomRight,
                               ),
                               shape: BoxShape.circle,
                               boxShadow: [
                                 BoxShadow(
-                                  color: AppTheme.primaryColor.withValues(alpha: 0.35),
+                                  color: AppTheme.primaryColor
+                                      .withValues(alpha: 0.35),
                                   blurRadius: 16,
                                   offset: const Offset(0, 6),
                                 ),
@@ -145,9 +152,10 @@ class _ProfileEditScreenState extends ConsumerState<ProfileEditScreen> {
                           const SizedBox(height: 8),
                           Text(
                             _email,
-                            style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                                  color: AppTheme.lightTextSecondary,
-                                ),
+                            style:
+                                Theme.of(context).textTheme.bodySmall?.copyWith(
+                                      color: AppTheme.lightTextSecondary,
+                                    ),
                           ),
                         ],
                       ),
@@ -159,25 +167,34 @@ class _ProfileEditScreenState extends ConsumerState<ProfileEditScreen> {
                     _sectionLabel(context, 'Email Address'),
                     Container(
                       width: double.infinity,
-                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 16, vertical: 14),
                       decoration: BoxDecoration(
-                        color: Theme.of(context).colorScheme.surfaceContainerHighest.withValues(alpha: 0.5),
+                        color: Theme.of(context)
+                            .colorScheme
+                            .surfaceContainerHighest
+                            .withValues(alpha: 0.5),
                         borderRadius: BorderRadius.circular(12),
                         border: Border.all(color: AppTheme.lightBorder),
                       ),
                       child: Row(
                         children: [
-                          const Icon(Icons.email_outlined, color: AppTheme.lightTextHint, size: 20),
+                          const Icon(Icons.email_outlined,
+                              color: AppTheme.lightTextHint, size: 20),
                           const SizedBox(width: 12),
                           Expanded(
                             child: Text(
                               _email.isEmpty ? 'No email' : _email,
-                              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                              style: Theme.of(context)
+                                  .textTheme
+                                  .bodyMedium
+                                  ?.copyWith(
                                     color: AppTheme.lightTextSecondary,
                                   ),
                             ),
                           ),
-                          const Icon(Icons.lock_outline, color: AppTheme.lightTextHint, size: 16),
+                          const Icon(Icons.lock_outline,
+                              color: AppTheme.lightTextHint, size: 16),
                         ],
                       ),
                     ).animate(delay: 100.ms).fadeIn(),
@@ -201,9 +218,11 @@ class _ProfileEditScreenState extends ConsumerState<ProfileEditScreen> {
                       hint: 'Your full name',
                       prefixIcon: Icons.person_outline,
                       textCapitalization: TextCapitalization.words,
-                      validator: (v) =>
-                          (v == null || v.trim().isEmpty) ? 'Name is required' : null,
-                      onChanged: (_) => setState(() {}), // refresh avatar initial
+                      validator: (v) => (v == null || v.trim().isEmpty)
+                          ? 'Name is required'
+                          : null,
+                      onChanged: (_) =>
+                          setState(() {}), // refresh avatar initial
                     ).animate(delay: 150.ms).fadeIn(),
 
                     const SizedBox(height: 20),

@@ -37,15 +37,20 @@ class _AddProductScreenState extends ConsumerState<AddProductScreen> {
 
   @override
   void dispose() {
-    _nameCtrl.dispose(); _skuCtrl.dispose(); _barcodeCtrl.dispose();
-    _costCtrl.dispose(); _sellCtrl.dispose(); _stockCtrl.dispose();
+    _nameCtrl.dispose();
+    _skuCtrl.dispose();
+    _barcodeCtrl.dispose();
+    _costCtrl.dispose();
+    _sellCtrl.dispose();
+    _stockCtrl.dispose();
     _minStockCtrl.dispose();
     super.dispose();
   }
 
   Future<void> _pickImage() async {
     final picker = ImagePicker();
-    final picked = await picker.pickImage(source: ImageSource.gallery, imageQuality: 70);
+    final picked =
+        await picker.pickImage(source: ImageSource.gallery, imageQuality: 70);
     if (picked != null) setState(() => _imageFile = File(picked.path));
   }
 
@@ -75,7 +80,8 @@ class _AddProductScreenState extends ConsumerState<AddProductScreen> {
     setState(() => _isLoading = true);
     try {
       final prefs = await SharedPreferences.getInstance();
-      final businessId = prefs.getString(AppConstants.kSelectedBusinessId) ?? '';
+      final businessId =
+          prefs.getString(AppConstants.kSelectedBusinessId) ?? '';
       final productId = const Uuid().v4();
       final imageUrl = await _uploadImage(productId);
       final now = DateTime.now().toIso8601String();
@@ -85,7 +91,8 @@ class _AddProductScreenState extends ConsumerState<AddProductScreen> {
         'business_id': businessId,
         'name': _nameCtrl.text.trim(),
         'sku': _skuCtrl.text.trim().isEmpty ? null : _skuCtrl.text.trim(),
-        'barcode': _barcodeCtrl.text.trim().isEmpty ? null : _barcodeCtrl.text.trim(),
+        'barcode':
+            _barcodeCtrl.text.trim().isEmpty ? null : _barcodeCtrl.text.trim(),
         'unit': _selectedUnit,
         'cost_price': double.tryParse(_costCtrl.text) ?? 0,
         'selling_price': double.tryParse(_sellCtrl.text) ?? 0,
@@ -99,7 +106,8 @@ class _AddProductScreenState extends ConsumerState<AddProductScreen> {
 
       if (mounted) {
         ref.invalidate(inventoryProvider);
-        AppSnackbar.show(context, 'Product added successfully!', isSuccess: true);
+        AppSnackbar.show(context, 'Product added successfully!',
+            isSuccess: true);
         context.pop();
       }
     } catch (e) {
@@ -124,7 +132,8 @@ class _AddProductScreenState extends ConsumerState<AddProductScreen> {
                 onTap: _pickImage,
                 child: AnimatedContainer(
                   duration: const Duration(milliseconds: 200),
-                  width: 100, height: 100,
+                  width: 100,
+                  height: 100,
                   decoration: BoxDecoration(
                     color: AppTheme.primaryColor.withValues(alpha: 0.08),
                     borderRadius: BorderRadius.circular(16),
@@ -157,22 +166,32 @@ class _AddProductScreenState extends ConsumerState<AddProductScreen> {
             const SizedBox(height: 24),
 
             _label(context, 'Product Name *'),
-            AppTextField(controller: _nameCtrl, hint: 'e.g. Basmati Rice 1kg',
+            AppTextField(
+                controller: _nameCtrl,
+                hint: 'e.g. Basmati Rice 1kg',
                 prefixIcon: Icons.inventory_2_outlined),
             const SizedBox(height: 16),
 
             Row(
               children: [
-                Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                  _label(context, 'SKU'),
-                  AppTextField(controller: _skuCtrl, hint: 'e.g. RICE001'),
-                ])),
+                Expanded(
+                    child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                      _label(context, 'SKU'),
+                      AppTextField(controller: _skuCtrl, hint: 'e.g. RICE001'),
+                    ])),
                 const SizedBox(width: 12),
-                Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                  _label(context, 'Barcode'),
-                  AppTextField(controller: _barcodeCtrl, hint: 'Scan or enter',
-                      keyboardType: TextInputType.number),
-                ])),
+                Expanded(
+                    child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                      _label(context, 'Barcode'),
+                      AppTextField(
+                          controller: _barcodeCtrl,
+                          hint: 'Scan or enter',
+                          keyboardType: TextInputType.number),
+                    ])),
               ],
             ).animate(delay: 50.ms).fadeIn(),
             const SizedBox(height: 16),
@@ -186,34 +205,58 @@ class _AddProductScreenState extends ConsumerState<AddProductScreen> {
 
             Row(
               children: [
-                Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                  _label(context, 'Cost Price (Rs.) *'),
-                  AppTextField(controller: _costCtrl, hint: '0.00',
-                      keyboardType: TextInputType.number, prefixIcon: Icons.money_off_outlined),
-                ])),
+                Expanded(
+                    child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                      _label(context, 'Cost Price (Rs.) *'),
+                      AppTextField(
+                          controller: _costCtrl,
+                          hint: '0.00',
+                          keyboardType: TextInputType.number,
+                          prefixIcon: Icons.money_off_outlined),
+                    ])),
                 const SizedBox(width: 12),
-                Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                  _label(context, 'Selling Price (Rs.) *'),
-                  AppTextField(controller: _sellCtrl, hint: '0.00',
-                      keyboardType: TextInputType.number, prefixIcon: Icons.attach_money_rounded),
-                ])),
+                Expanded(
+                    child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                      _label(context, 'Selling Price (Rs.) *'),
+                      AppTextField(
+                          controller: _sellCtrl,
+                          hint: '0.00',
+                          keyboardType: TextInputType.number,
+                          prefixIcon: Icons.attach_money_rounded),
+                    ])),
               ],
             ).animate(delay: 150.ms).fadeIn(),
             const SizedBox(height: 16),
 
             Row(
               children: [
-                Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                  _label(context, 'Opening Stock'),
-                  AppTextField(controller: _stockCtrl, hint: '0',
-                      keyboardType: TextInputType.number, prefixIcon: Icons.layers_outlined),
-                ])),
+                Expanded(
+                    child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                      _label(context, 'Opening Stock'),
+                      AppTextField(
+                          controller: _stockCtrl,
+                          hint: '0',
+                          keyboardType: TextInputType.number,
+                          prefixIcon: Icons.layers_outlined),
+                    ])),
                 const SizedBox(width: 12),
-                Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-                  _label(context, 'Min Stock Alert'),
-                  AppTextField(controller: _minStockCtrl, hint: '5',
-                      keyboardType: TextInputType.number, prefixIcon: Icons.warning_amber_outlined),
-                ])),
+                Expanded(
+                    child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                      _label(context, 'Min Stock Alert'),
+                      AppTextField(
+                          controller: _minStockCtrl,
+                          hint: '5',
+                          keyboardType: TextInputType.number,
+                          prefixIcon: Icons.warning_amber_outlined),
+                    ])),
               ],
             ).animate(delay: 200.ms).fadeIn(),
             const SizedBox(height: 32),

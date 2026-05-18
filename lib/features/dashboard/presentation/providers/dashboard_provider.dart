@@ -90,7 +90,8 @@ class DashboardNotifier extends AsyncNotifier<DashboardStats> {
       // Recent transactions (last 5)
       final recentRes = await supabase
           .from('transactions')
-          .select('id, type, amount, party_name, transaction_date, payment_method')
+          .select(
+              'id, type, amount, party_name, transaction_date, payment_method')
           .eq('business_id', businessId)
           .order('transaction_date', ascending: false)
           .limit(AppConstants.dashboardRecentTxCount);

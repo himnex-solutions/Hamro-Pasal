@@ -70,15 +70,27 @@ class Product {
       };
 
   bool get isLowStock => stockQuantity <= minStockAlert;
-  double get profitMargin => sellingPrice > 0
-      ? ((sellingPrice - costPrice) / sellingPrice) * 100
-      : 0;
+  double get profitMargin =>
+      sellingPrice > 0 ? ((sellingPrice - costPrice) / sellingPrice) * 100 : 0;
   double get inventoryValue => costPrice * stockQuantity;
 }
 
 class ProductUnit {
   static const List<String> all = [
-    'Piece', 'Dozen', 'Box', 'Kg', 'Gram', 'Liter', 'ML', 'Meter',
-    'Feet', 'Bag', 'Bundle', 'Pack', 'Bottle', 'Carton', 'Roll',
+    'Piece',
+    'Dozen',
+    'Box',
+    'Kg',
+    'Gram',
+    'Liter',
+    'ML',
+    'Meter',
+    'Feet',
+    'Bag',
+    'Bundle',
+    'Pack',
+    'Bottle',
+    'Carton',
+    'Roll',
   ];
 }

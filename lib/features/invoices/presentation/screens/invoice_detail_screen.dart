@@ -65,7 +65,8 @@ class _InvoiceDetailScreenState extends State<InvoiceDetailScreen> {
         });
       }
     } catch (e) {
-      if (mounted) AppSnackbar.show(context, 'Failed to load: $e', isError: true);
+      if (mounted)
+        AppSnackbar.show(context, 'Failed to load: $e', isError: true);
     } finally {
       if (mounted) setState(() => _isLoading = false);
     }
@@ -79,8 +80,12 @@ class _InvoiceDetailScreenState extends State<InvoiceDetailScreen> {
         title: Text(context.l10n.markAsPaid),
         content: Text('${context.l10n.markAsPaid}?'),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(context, false), child: Text(context.l10n.cancel)),
-          ElevatedButton(onPressed: () => Navigator.pop(context, true), child: Text(context.l10n.confirm)),
+          TextButton(
+              onPressed: () => Navigator.pop(context, false),
+              child: Text(context.l10n.cancel)),
+          ElevatedButton(
+              onPressed: () => Navigator.pop(context, true),
+              child: Text(context.l10n.confirm)),
         ],
       ),
     );
@@ -92,7 +97,8 @@ class _InvoiceDetailScreenState extends State<InvoiceDetailScreen> {
         'paid_amount': total,
       }).eq('id', widget.invoiceId);
       await _load();
-      if (mounted) AppSnackbar.show(context, '✅ Invoice marked as paid!', isSuccess: true);
+      if (mounted)
+        AppSnackbar.show(context, '✅ Invoice marked as paid!', isSuccess: true);
     } catch (e) {
       if (mounted) AppSnackbar.show(context, 'Failed: $e', isError: true);
     }
@@ -210,13 +216,17 @@ class _InvoiceDetailScreenState extends State<InvoiceDetailScreen> {
                   pw.Column(
                     crossAxisAlignment: pw.CrossAxisAlignment.end,
                     children: [
-                      _pdfDateRow('Invoice Date', dateFmt.format(invoiceDate), darkText, greyText),
+                      _pdfDateRow('Invoice Date', dateFmt.format(invoiceDate),
+                          darkText, greyText),
                       if (dueDate != null)
-                        _pdfDateRow('Due Date', dateFmt.format(dueDate), darkText, greyText),
+                        _pdfDateRow('Due Date', dateFmt.format(dueDate),
+                            darkText, greyText),
                       _pdfDateRow(
                         'Status',
                         (inv['status'] as String).toUpperCase(),
-                        inv['status'] == 'paid' ? PdfColor.fromHex('2E7D32') : PdfColor.fromHex('C62828'),
+                        inv['status'] == 'paid'
+                            ? PdfColor.fromHex('2E7D32')
+                            : PdfColor.fromHex('C62828'),
                         greyText,
                       ),
                     ],
@@ -227,7 +237,8 @@ class _InvoiceDetailScreenState extends State<InvoiceDetailScreen> {
 
               // ── Items Table ─────────────────────────────
               pw.Table(
-                border: pw.TableBorder.all(color: PdfColor.fromHex('E0E0E0'), width: 0.5),
+                border: pw.TableBorder.all(
+                    color: PdfColor.fromHex('E0E0E0'), width: 0.5),
                 columnWidths: {
                   0: const pw.FlexColumnWidth(4),
                   1: const pw.FlexColumnWidth(1.5),
@@ -240,9 +251,12 @@ class _InvoiceDetailScreenState extends State<InvoiceDetailScreen> {
                     decoration: pw.BoxDecoration(color: primaryColor),
                     children: [
                       _pdfCell('ITEM', isHeader: true),
-                      _pdfCell('QTY', isHeader: true, align: pw.TextAlign.center),
-                      _pdfCell('UNIT PRICE', isHeader: true, align: pw.TextAlign.right),
-                      _pdfCell('TOTAL', isHeader: true, align: pw.TextAlign.right),
+                      _pdfCell('QTY',
+                          isHeader: true, align: pw.TextAlign.center),
+                      _pdfCell('UNIT PRICE',
+                          isHeader: true, align: pw.TextAlign.right),
+                      _pdfCell('TOTAL',
+                          isHeader: true, align: pw.TextAlign.right),
                     ],
                   ),
                   // Items
@@ -279,11 +293,23 @@ class _InvoiceDetailScreenState extends State<InvoiceDetailScreen> {
                   width: 220,
                   child: pw.Column(
                     children: [
-                      _pdfTotalRow('Subtotal', '${AppConstants.currencySymbol} ${fmt.format(subtotal)}', darkText, greyText),
+                      _pdfTotalRow(
+                          'Subtotal',
+                          '${AppConstants.currencySymbol} ${fmt.format(subtotal)}',
+                          darkText,
+                          greyText),
                       if (tax > 0)
-                        _pdfTotalRow('Tax', '+${AppConstants.currencySymbol} ${fmt.format(tax)}', darkText, greyText),
+                        _pdfTotalRow(
+                            'Tax',
+                            '+${AppConstants.currencySymbol} ${fmt.format(tax)}',
+                            darkText,
+                            greyText),
                       if (discount > 0)
-                        _pdfTotalRow('Discount', '-${AppConstants.currencySymbol} ${fmt.format(discount)}', darkText, greyText),
+                        _pdfTotalRow(
+                            'Discount',
+                            '-${AppConstants.currencySymbol} ${fmt.format(discount)}',
+                            darkText,
+                            greyText),
                       pw.Divider(color: greyText),
                       _pdfTotalRow(
                         'TOTAL',
@@ -306,9 +332,12 @@ class _InvoiceDetailScreenState extends State<InvoiceDetailScreen> {
                 ),
               ),
 
-              if (inv['notes'] != null && (inv['notes'] as String).isNotEmpty) ...[
+              if (inv['notes'] != null &&
+                  (inv['notes'] as String).isNotEmpty) ...[
                 pw.SizedBox(height: 16),
-                pw.Text('Notes', style: pw.TextStyle(fontWeight: pw.FontWeight.bold, fontSize: 11)),
+                pw.Text('Notes',
+                    style: pw.TextStyle(
+                        fontWeight: pw.FontWeight.bold, fontSize: 11)),
                 pw.SizedBox(height: 4),
                 pw.Text(inv['notes'] as String,
                     style: pw.TextStyle(color: greyText, fontSize: 10)),
@@ -334,7 +363,8 @@ class _InvoiceDetailScreenState extends State<InvoiceDetailScreen> {
   }
 
   // ── PDF helpers ───────────────────────────────────────────────
-  pw.Widget _pdfCell(String text, {bool isHeader = false, pw.TextAlign align = pw.TextAlign.left}) {
+  pw.Widget _pdfCell(String text,
+      {bool isHeader = false, pw.TextAlign align = pw.TextAlign.left}) {
     return pw.Padding(
       padding: const pw.EdgeInsets.symmetric(horizontal: 8, vertical: 6),
       child: pw.Text(
@@ -349,21 +379,27 @@ class _InvoiceDetailScreenState extends State<InvoiceDetailScreen> {
     );
   }
 
-  pw.Widget _pdfDateRow(String label, String value, PdfColor valueColor, PdfColor labelColor) {
+  pw.Widget _pdfDateRow(
+      String label, String value, PdfColor valueColor, PdfColor labelColor) {
     return pw.Padding(
       padding: const pw.EdgeInsets.symmetric(vertical: 2),
       child: pw.Row(
         mainAxisAlignment: pw.MainAxisAlignment.end,
         children: [
-          pw.Text('$label:  ', style: pw.TextStyle(fontSize: 10, color: labelColor)),
+          pw.Text('$label:  ',
+              style: pw.TextStyle(fontSize: 10, color: labelColor)),
           pw.Text(value,
-              style: pw.TextStyle(fontSize: 10, fontWeight: pw.FontWeight.bold, color: valueColor)),
+              style: pw.TextStyle(
+                  fontSize: 10,
+                  fontWeight: pw.FontWeight.bold,
+                  color: valueColor)),
         ],
       ),
     );
   }
 
-  pw.Widget _pdfTotalRow(String label, String value, PdfColor valueColor, PdfColor labelColor,
+  pw.Widget _pdfTotalRow(
+      String label, String value, PdfColor valueColor, PdfColor labelColor,
       {bool isBold = false, double fontSize = 11}) {
     return pw.Padding(
       padding: const pw.EdgeInsets.symmetric(vertical: 3),
@@ -371,11 +407,17 @@ class _InvoiceDetailScreenState extends State<InvoiceDetailScreen> {
         mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
         children: [
           pw.Text(label,
-              style: pw.TextStyle(fontSize: fontSize, color: labelColor,
-                  fontWeight: isBold ? pw.FontWeight.bold : pw.FontWeight.normal)),
+              style: pw.TextStyle(
+                  fontSize: fontSize,
+                  color: labelColor,
+                  fontWeight:
+                      isBold ? pw.FontWeight.bold : pw.FontWeight.normal)),
           pw.Text(value,
-              style: pw.TextStyle(fontSize: fontSize, color: valueColor,
-                  fontWeight: isBold ? pw.FontWeight.bold : pw.FontWeight.normal)),
+              style: pw.TextStyle(
+                  fontSize: fontSize,
+                  color: valueColor,
+                  fontWeight:
+                      isBold ? pw.FontWeight.bold : pw.FontWeight.normal)),
         ],
       ),
     );
@@ -383,7 +425,8 @@ class _InvoiceDetailScreenState extends State<InvoiceDetailScreen> {
 
   @override
   Widget build(BuildContext context) {
-    if (_isLoading) return const Scaffold(body: Center(child: CircularProgressIndicator()));
+    if (_isLoading)
+      return const Scaffold(body: Center(child: CircularProgressIndicator()));
     if (_invoice == null) {
       return Scaffold(
         appBar: AppBar(title: Text(context.l10n.invoice)),
@@ -395,7 +438,9 @@ class _InvoiceDetailScreenState extends State<InvoiceDetailScreen> {
     final fmt = NumberFormat('#,##,##0.00');
     final dateFmt = DateFormat('dd MMM yyyy');
     final invoiceDate = DateTime.parse(inv['invoice_date'] as String);
-    final dueDate = inv['due_date'] != null ? DateTime.parse(inv['due_date'] as String) : null;
+    final dueDate = inv['due_date'] != null
+        ? DateTime.parse(inv['due_date'] as String)
+        : null;
     final total = (inv['total_amount'] as num).toDouble();
     final paid = (inv['paid_amount'] as num?)?.toDouble() ?? 0;
     final subtotal = (inv['subtotal'] as num).toDouble();
@@ -404,10 +449,16 @@ class _InvoiceDetailScreenState extends State<InvoiceDetailScreen> {
     final status = inv['status'] as String;
     final isPaid = status == 'paid';
 
-    final statusColor = isPaid ? AppTheme.successColor
-        : status == 'partial' ? AppTheme.warningColor
-        : AppTheme.errorColor;
-    final statusLabel = isPaid ? 'Paid' : status == 'partial' ? 'Partial' : 'Unpaid';
+    final statusColor = isPaid
+        ? AppTheme.successColor
+        : status == 'partial'
+            ? AppTheme.warningColor
+            : AppTheme.errorColor;
+    final statusLabel = isPaid
+        ? 'Paid'
+        : status == 'partial'
+            ? 'Partial'
+            : 'Unpaid';
 
     return Scaffold(
       appBar: AppBar(
@@ -418,12 +469,15 @@ class _InvoiceDetailScreenState extends State<InvoiceDetailScreen> {
               onPressed: _markAsPaid,
               icon: const Icon(Icons.check_circle_outline),
               label: Text(context.l10n.markAsPaid),
-              style: TextButton.styleFrom(foregroundColor: AppTheme.successColor),
+              style:
+                  TextButton.styleFrom(foregroundColor: AppTheme.successColor),
             ),
           IconButton(
             onPressed: _isPrinting ? null : _printInvoice,
             icon: _isPrinting
-                ? const SizedBox(width: 20, height: 20,
+                ? const SizedBox(
+                    width: 20,
+                    height: 20,
                     child: CircularProgressIndicator(strokeWidth: 2))
                 : const Icon(Icons.print_outlined),
             tooltip: 'Print / Download PDF',
@@ -445,24 +499,34 @@ class _InvoiceDetailScreenState extends State<InvoiceDetailScreen> {
               ),
               child: Row(
                 children: [
-                  Icon(isPaid ? Icons.check_circle_rounded : Icons.pending_outlined,
-                      color: statusColor, size: 22),
+                  Icon(
+                      isPaid
+                          ? Icons.check_circle_rounded
+                          : Icons.pending_outlined,
+                      color: statusColor,
+                      size: 22),
                   const SizedBox(width: 10),
                   Expanded(
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(statusLabel,
-                            style: TextStyle(color: statusColor, fontWeight: FontWeight.w700)),
+                            style: TextStyle(
+                                color: statusColor,
+                                fontWeight: FontWeight.w700)),
                         if (!isPaid && total - paid > 0)
-                          Text('Due: ${AppConstants.currencySymbol} ${fmt.format(total - paid)}',
-                              style: TextStyle(color: statusColor, fontSize: 12)),
+                          Text(
+                              'Due: ${AppConstants.currencySymbol} ${fmt.format(total - paid)}',
+                              style:
+                                  TextStyle(color: statusColor, fontSize: 12)),
                       ],
                     ),
                   ),
                   Text('${AppConstants.currencySymbol} ${fmt.format(total)}',
                       style: TextStyle(
-                          color: statusColor, fontWeight: FontWeight.w800, fontSize: 18)),
+                          color: statusColor,
+                          fontWeight: FontWeight.w800,
+                          fontSize: 18)),
                 ],
               ),
             ).animate().fadeIn(),
@@ -477,10 +541,13 @@ class _InvoiceDetailScreenState extends State<InvoiceDetailScreen> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Row(children: [
-                      const Icon(Icons.receipt_long_outlined, size: 18, color: AppTheme.primaryColor),
+                      const Icon(Icons.receipt_long_outlined,
+                          size: 18, color: AppTheme.primaryColor),
                       const SizedBox(width: 8),
                       Text('Invoice Details',
-                          style: Theme.of(context).textTheme.titleMedium
+                          style: Theme.of(context)
+                              .textTheme
+                              .titleMedium
                               ?.copyWith(fontWeight: FontWeight.w700)),
                     ]),
                     const Divider(height: 20),
@@ -507,18 +574,35 @@ class _InvoiceDetailScreenState extends State<InvoiceDetailScreen> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Row(children: [
-                      const Icon(Icons.inventory_2_outlined, size: 18, color: AppTheme.primaryColor),
+                      const Icon(Icons.inventory_2_outlined,
+                          size: 18, color: AppTheme.primaryColor),
                       const SizedBox(width: 8),
                       Text('Items',
-                          style: Theme.of(context).textTheme.titleMedium
+                          style: Theme.of(context)
+                              .textTheme
+                              .titleMedium
                               ?.copyWith(fontWeight: FontWeight.w700)),
                     ]),
                     const Divider(height: 20),
                     // table header
                     const Row(children: [
-                      Expanded(flex: 4, child: Text('Item', style: TextStyle(fontWeight: FontWeight.w600, fontSize: 12))),
-                      Expanded(flex: 1, child: Text('Qty', style: TextStyle(fontWeight: FontWeight.w600, fontSize: 12), textAlign: TextAlign.center)),
-                      Expanded(flex: 2, child: Text('Price', style: TextStyle(fontWeight: FontWeight.w600, fontSize: 12), textAlign: TextAlign.right)),
+                      Expanded(
+                          flex: 4,
+                          child: Text('Item',
+                              style: TextStyle(
+                                  fontWeight: FontWeight.w600, fontSize: 12))),
+                      Expanded(
+                          flex: 1,
+                          child: Text('Qty',
+                              style: TextStyle(
+                                  fontWeight: FontWeight.w600, fontSize: 12),
+                              textAlign: TextAlign.center)),
+                      Expanded(
+                          flex: 2,
+                          child: Text('Price',
+                              style: TextStyle(
+                                  fontWeight: FontWeight.w600, fontSize: 12),
+                              textAlign: TextAlign.right)),
                     ]),
                     const SizedBox(height: 8),
                     ..._items.asMap().entries.map((e) {
@@ -526,21 +610,29 @@ class _InvoiceDetailScreenState extends State<InvoiceDetailScreen> {
                       return Container(
                         padding: const EdgeInsets.symmetric(vertical: 8),
                         decoration: const BoxDecoration(
-                          border: Border(top: BorderSide(color: AppTheme.lightBorder, width: 0.5)),
+                          border: Border(
+                              top: BorderSide(
+                                  color: AppTheme.lightBorder, width: 0.5)),
                         ),
                         child: Row(
                           children: [
-                            Expanded(flex: 4, child: Text(item['product_name'] as String? ?? '')),
-                            Expanded(flex: 1,
+                            Expanded(
+                                flex: 4,
+                                child: Text(
+                                    item['product_name'] as String? ?? '')),
+                            Expanded(
+                                flex: 1,
                                 child: Text(
                                   (item['quantity'] as num).toStringAsFixed(0),
                                   textAlign: TextAlign.center,
                                 )),
-                            Expanded(flex: 2,
+                            Expanded(
+                                flex: 2,
                                 child: Text(
                                   '${AppConstants.currencySymbol} ${fmt.format((item['total_price'] as num).toDouble())}',
                                   textAlign: TextAlign.right,
-                                  style: const TextStyle(fontWeight: FontWeight.w500),
+                                  style: const TextStyle(
+                                      fontWeight: FontWeight.w500),
                                 )),
                           ],
                         ),
@@ -559,25 +651,37 @@ class _InvoiceDetailScreenState extends State<InvoiceDetailScreen> {
                 padding: const EdgeInsets.all(16),
                 child: Column(
                   children: [
-                    _TotalRow('Subtotal', '${AppConstants.currencySymbol} ${fmt.format(subtotal)}'),
+                    _TotalRow('Subtotal',
+                        '${AppConstants.currencySymbol} ${fmt.format(subtotal)}'),
                     if (tax > 0)
-                      _TotalRow('Tax', '+${AppConstants.currencySymbol} ${fmt.format(tax)}', color: AppTheme.warningColor),
+                      _TotalRow('Tax',
+                          '+${AppConstants.currencySymbol} ${fmt.format(tax)}',
+                          color: AppTheme.warningColor),
                     if (discount > 0)
-                      _TotalRow('Discount', '-${AppConstants.currencySymbol} ${fmt.format(discount)}', color: AppTheme.successColor),
+                      _TotalRow('Discount',
+                          '-${AppConstants.currencySymbol} ${fmt.format(discount)}',
+                          color: AppTheme.successColor),
                     const Divider(height: 16),
-                    _TotalRow('Total', '${AppConstants.currencySymbol} ${fmt.format(total)}',
-                        isBold: true, fontSize: 16, color: AppTheme.primaryColor),
+                    _TotalRow('Total',
+                        '${AppConstants.currencySymbol} ${fmt.format(total)}',
+                        isBold: true,
+                        fontSize: 16,
+                        color: AppTheme.primaryColor),
                     if (paid > 0)
-                      _TotalRow('Paid', '${AppConstants.currencySymbol} ${fmt.format(paid)}', color: AppTheme.successColor),
+                      _TotalRow('Paid',
+                          '${AppConstants.currencySymbol} ${fmt.format(paid)}',
+                          color: AppTheme.successColor),
                     if (total - paid > 0 && !isPaid)
-                      _TotalRow('Amount Due', '${AppConstants.currencySymbol} ${fmt.format(total - paid)}',
+                      _TotalRow('Amount Due',
+                          '${AppConstants.currencySymbol} ${fmt.format(total - paid)}',
                           isBold: true, color: AppTheme.errorColor),
                   ],
                 ),
               ),
             ).animate(delay: 200.ms).fadeIn(),
 
-            if (inv['notes'] != null && (inv['notes'] as String).isNotEmpty) ...[
+            if (inv['notes'] != null &&
+                (inv['notes'] as String).isNotEmpty) ...[
               const SizedBox(height: 16),
               Card(
                 child: Padding(
@@ -585,8 +689,11 @@ class _InvoiceDetailScreenState extends State<InvoiceDetailScreen> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text('Notes', style: Theme.of(context).textTheme.titleSmall
-                          ?.copyWith(fontWeight: FontWeight.w700)),
+                      Text('Notes',
+                          style: Theme.of(context)
+                              .textTheme
+                              .titleSmall
+                              ?.copyWith(fontWeight: FontWeight.w700)),
                       const SizedBox(height: 8),
                       Text(inv['notes'] as String,
                           style: Theme.of(context).textTheme.bodyMedium),
@@ -602,15 +709,20 @@ class _InvoiceDetailScreenState extends State<InvoiceDetailScreen> {
             ElevatedButton.icon(
               onPressed: _isPrinting ? null : _printInvoice,
               icon: _isPrinting
-                  ? const SizedBox(width: 18, height: 18,
-                      child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white))
+                  ? const SizedBox(
+                      width: 18,
+                      height: 18,
+                      child: CircularProgressIndicator(
+                          strokeWidth: 2, color: Colors.white))
                   : const Icon(Icons.print_rounded),
-              label: Text(_isPrinting ? 'Preparing PDF...' : 'Print / Download PDF'),
+              label: Text(
+                  _isPrinting ? 'Preparing PDF...' : 'Print / Download PDF'),
               style: ElevatedButton.styleFrom(
                 backgroundColor: AppTheme.primaryColor,
                 foregroundColor: Colors.white,
                 minimumSize: const Size.fromHeight(48),
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12)),
               ),
             ).animate(delay: 300.ms).fadeIn(),
 
@@ -637,12 +749,16 @@ class _MetaRow extends StatelessWidget {
           SizedBox(
             width: 110,
             child: Text(label,
-                style: Theme.of(context).textTheme.bodySmall
+                style: Theme.of(context)
+                    .textTheme
+                    .bodySmall
                     ?.copyWith(color: AppTheme.lightTextHint)),
           ),
           Expanded(
             child: Text(value,
-                style: Theme.of(context).textTheme.bodyMedium
+                style: Theme.of(context)
+                    .textTheme
+                    .bodyMedium
                     ?.copyWith(fontWeight: FontWeight.w500)),
           ),
         ],

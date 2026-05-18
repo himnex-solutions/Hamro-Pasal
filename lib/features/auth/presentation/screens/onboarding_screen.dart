@@ -26,7 +26,7 @@ class _GetStartedScreen extends StatelessWidget {
         children: [
           // ── Ultra-Professional Mesh Gradient Background ──────────
           Container(color: const Color(0xFF0EA5B0)),
-          
+
           // Soft ambient glow 1 (Top Left)
           Positioned(
             top: -screenHeight * 0.1,
@@ -43,10 +43,16 @@ class _GetStartedScreen extends StatelessWidget {
                   ],
                 ),
               ),
-            ).animate(onPlay: (controller) => controller.repeat(reverse: true))
-             .scaleXY(begin: 1.0, end: 1.1, duration: 7.seconds, curve: Curves.easeInOut),
+            )
+                .animate(
+                    onPlay: (controller) => controller.repeat(reverse: true))
+                .scaleXY(
+                    begin: 1.0,
+                    end: 1.1,
+                    duration: 7.seconds,
+                    curve: Curves.easeInOut),
           ),
-          
+
           // Soft ambient glow 2 (Bottom Right)
           Positioned(
             bottom: screenHeight * 0.2,
@@ -63,9 +69,19 @@ class _GetStartedScreen extends StatelessWidget {
                   ],
                 ),
               ),
-            ).animate(onPlay: (controller) => controller.repeat(reverse: true))
-             .moveX(begin: 0, end: -40, duration: 8.seconds, curve: Curves.easeInOut)
-             .scaleXY(begin: 1.0, end: 1.15, duration: 8.seconds, curve: Curves.easeInOut),
+            )
+                .animate(
+                    onPlay: (controller) => controller.repeat(reverse: true))
+                .moveX(
+                    begin: 0,
+                    end: -40,
+                    duration: 8.seconds,
+                    curve: Curves.easeInOut)
+                .scaleXY(
+                    begin: 1.0,
+                    end: 1.15,
+                    duration: 8.seconds,
+                    curve: Curves.easeInOut),
           ),
 
           // ── Main content ──────────────────────────────────
@@ -103,7 +119,10 @@ class _GetStartedScreen extends StatelessWidget {
                               color: Color(0xFF0EA5B0),
                               letterSpacing: 1.2,
                             ),
-                          ).animate(delay: 200.ms).fadeIn().slideY(begin: 0.2, end: 0),
+                          )
+                              .animate(delay: 200.ms)
+                              .fadeIn()
+                              .slideY(begin: 0.2, end: 0),
 
                           const SizedBox(height: 12),
 
@@ -117,7 +136,10 @@ class _GetStartedScreen extends StatelessWidget {
                               color: Color(0xFF0F172A),
                               height: 1.25,
                             ),
-                          ).animate(delay: 300.ms).fadeIn().slideY(begin: 0.2, end: 0),
+                          )
+                              .animate(delay: 300.ms)
+                              .fadeIn()
+                              .slideY(begin: 0.2, end: 0),
 
                           const SizedBox(height: 14),
 
@@ -137,13 +159,20 @@ class _GetStartedScreen extends StatelessWidget {
                           // Get Started Button
                           _GetStartedButton(
                             onTap: () => context.go(AppRoutes.login),
-                          ).animate(delay: 500.ms).fadeIn().slideY(begin: 0.2, end: 0),
+                          )
+                              .animate(delay: 500.ms)
+                              .fadeIn()
+                              .slideY(begin: 0.2, end: 0),
 
                           const SizedBox(height: 16),
                         ],
                       ),
                     ),
-                  ).animate(delay: 100.ms).slideY(begin: 0.12, end: 0, duration: 500.ms, curve: Curves.easeOut),
+                  ).animate(delay: 100.ms).slideY(
+                      begin: 0.12,
+                      end: 0,
+                      duration: 500.ms,
+                      curve: Curves.easeOut),
                 ),
               ],
             ),
@@ -197,15 +226,27 @@ class _IllustrationWidget extends StatelessWidget {
                     Row(
                       crossAxisAlignment: CrossAxisAlignment.end,
                       children: [
-                        _MiniBar(height: 28, color: const Color(0xFF0EA5B0).withValues(alpha: 0.5)),
+                        _MiniBar(
+                            height: 28,
+                            color:
+                                const Color(0xFF0EA5B0).withValues(alpha: 0.5)),
                         const SizedBox(width: 4),
-                        _MiniBar(height: 44, color: const Color(0xFF0EA5B0).withValues(alpha: 0.7)),
+                        _MiniBar(
+                            height: 44,
+                            color:
+                                const Color(0xFF0EA5B0).withValues(alpha: 0.7)),
                         const SizedBox(width: 4),
-                        _MiniBar(height: 36, color: const Color(0xFF0EA5B0).withValues(alpha: 0.5)),
+                        _MiniBar(
+                            height: 36,
+                            color:
+                                const Color(0xFF0EA5B0).withValues(alpha: 0.5)),
                         const SizedBox(width: 4),
                         const _MiniBar(height: 52, color: Color(0xFF0EA5B0)),
                         const SizedBox(width: 4),
-                        _MiniBar(height: 40, color: const Color(0xFF0EA5B0).withValues(alpha: 0.6)),
+                        _MiniBar(
+                            height: 40,
+                            color:
+                                const Color(0xFF0EA5B0).withValues(alpha: 0.6)),
                       ],
                     ),
                     const SizedBox(height: 10),
@@ -218,8 +259,10 @@ class _IllustrationWidget extends StatelessWidget {
                           child: CircularProgressIndicator(
                             value: 0.72,
                             strokeWidth: 4,
-                            backgroundColor: Colors.grey.withValues(alpha: 0.15),
-                            valueColor: const AlwaysStoppedAnimation<Color>(Color(0xFF0EA5B0)),
+                            backgroundColor:
+                                Colors.grey.withValues(alpha: 0.15),
+                            valueColor: const AlwaysStoppedAnimation<Color>(
+                                Color(0xFF0EA5B0)),
                           ),
                         ),
                         const SizedBox(width: 8),
@@ -239,7 +282,8 @@ class _IllustrationWidget extends StatelessWidget {
                               height: 6,
                               width: 28,
                               decoration: BoxDecoration(
-                                color: const Color(0xFF0EA5B0).withValues(alpha: 0.4),
+                                color: const Color(0xFF0EA5B0)
+                                    .withValues(alpha: 0.4),
                                 borderRadius: BorderRadius.circular(3),
                               ),
                             ),

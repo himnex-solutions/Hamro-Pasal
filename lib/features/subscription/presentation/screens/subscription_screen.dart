@@ -5,7 +5,6 @@ import 'package:hamro_pasal/core/theme/app_theme.dart';
 import 'package:hamro_pasal/features/subscription/data/models/subscription_model.dart';
 import 'package:hamro_pasal/features/subscription/presentation/providers/subscription_provider.dart';
 
-
 class SubscriptionScreen extends ConsumerWidget {
   const SubscriptionScreen({super.key});
 
@@ -20,14 +19,19 @@ class SubscriptionScreen extends ConsumerWidget {
       'Staff management (up to 3)',
       'Offline mode',
     ]),
-    _Plan('Yearly Plan', 'yearly', 4499, [
-      'Everything in Monthly',
-      'Save Rs. 1,489 vs monthly',
-      'Staff management (unlimited)',
-      'Priority support',
-      'Data backup & restore',
-      'Custom invoice branding',
-    ], isBestValue: true),
+    _Plan(
+        'Yearly Plan',
+        'yearly',
+        4499,
+        [
+          'Everything in Monthly',
+          'Save Rs. 1,489 vs monthly',
+          'Staff management (unlimited)',
+          'Priority support',
+          'Data backup & restore',
+          'Custom invoice branding',
+        ],
+        isBestValue: true),
   ];
 
   @override
@@ -45,38 +49,51 @@ class SubscriptionScreen extends ConsumerWidget {
             subAsync.when(
               loading: () => const SizedBox.shrink(),
               error: (_, __) => const SizedBox.shrink(),
-              data: (sub) => sub != null ? _StatusCard(sub: sub) : const SizedBox.shrink(),
+              data: (sub) =>
+                  sub != null ? _StatusCard(sub: sub) : const SizedBox.shrink(),
             ),
             const SizedBox(height: 24),
 
-            Text('Choose Your Plan', style: Theme.of(context).textTheme.headlineMedium)
-                .animate().fadeIn(),
+            Text('Choose Your Plan',
+                    style: Theme.of(context).textTheme.headlineMedium)
+                .animate()
+                .fadeIn(),
             const SizedBox(height: 6),
             Text('Unlock full access to Hamro Pasal',
-                style: Theme.of(context).textTheme.bodyMedium?.copyWith(color: AppTheme.lightTextSecondary))
-                .animate(delay: 50.ms).fadeIn(),
+                    style: Theme.of(context)
+                        .textTheme
+                        .bodyMedium
+                        ?.copyWith(color: AppTheme.lightTextSecondary))
+                .animate(delay: 50.ms)
+                .fadeIn(),
             const SizedBox(height: 20),
 
             ..._plans.asMap().entries.map((entry) {
               return Padding(
                 padding: const EdgeInsets.only(bottom: 16),
                 child: _PlanCard(plan: entry.value)
-                    .animate(delay: Duration(milliseconds: 100 + entry.key * 80))
-                    .fadeIn().slideY(begin: 0.1, end: 0),
+                    .animate(
+                        delay: Duration(milliseconds: 100 + entry.key * 80))
+                    .fadeIn()
+                    .slideY(begin: 0.1, end: 0),
               );
             }),
 
             const SizedBox(height: 16),
 
             // Payment methods
-            Text('Payment Methods', style: Theme.of(context).textTheme.titleLarge)
-                .animate(delay: 260.ms).fadeIn(),
+            Text('Payment Methods',
+                    style: Theme.of(context).textTheme.titleLarge)
+                .animate(delay: 260.ms)
+                .fadeIn(),
             const SizedBox(height: 12),
             const Row(
               children: [
-                _PaymentMethodChip('Khalti', 'assets/images/khalti.png', Color(0xFF5C2D91)),
+                _PaymentMethodChip(
+                    'Khalti', 'assets/images/khalti.png', Color(0xFF5C2D91)),
                 SizedBox(width: 12),
-                _PaymentMethodChip('eSewa', 'assets/images/esewa.png', Color(0xFF60BB46)),
+                _PaymentMethodChip(
+                    'eSewa', 'assets/images/esewa.png', Color(0xFF60BB46)),
               ],
             ).animate(delay: 300.ms).fadeIn(),
 
@@ -88,18 +105,22 @@ class SubscriptionScreen extends ConsumerWidget {
               decoration: BoxDecoration(
                 color: AppTheme.primaryColor.withValues(alpha: 0.05),
                 borderRadius: BorderRadius.circular(14),
-                border: Border.all(color: AppTheme.primaryColor.withValues(alpha: 0.2)),
+                border: Border.all(
+                    color: AppTheme.primaryColor.withValues(alpha: 0.2)),
               ),
               child: Row(
                 children: [
-                  const Icon(Icons.support_agent_outlined, color: AppTheme.primaryColor, size: 28),
+                  const Icon(Icons.support_agent_outlined,
+                      color: AppTheme.primaryColor, size: 28),
                   const SizedBox(width: 12),
                   Expanded(
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text('Need Help?', style: Theme.of(context).textTheme.titleMedium),
-                        Text('Contact our support team for assistance with subscription.',
+                        Text('Need Help?',
+                            style: Theme.of(context).textTheme.titleMedium),
+                        Text(
+                            'Contact our support team for assistance with subscription.',
                             style: Theme.of(context).textTheme.bodySmall),
                       ],
                     ),
@@ -151,7 +172,10 @@ class _StatusCard extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        gradient: LinearGradient(colors: [statusColor.withValues(alpha: 0.1), statusColor.withValues(alpha: 0.05)]),
+        gradient: LinearGradient(colors: [
+          statusColor.withValues(alpha: 0.1),
+          statusColor.withValues(alpha: 0.05)
+        ]),
         borderRadius: BorderRadius.circular(14),
         border: Border.all(color: statusColor.withValues(alpha: 0.3)),
       ),
@@ -162,9 +186,13 @@ class _StatusCard extends StatelessWidget {
           Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text('Current Status', style: Theme.of(context).textTheme.bodySmall),
+              Text('Current Status',
+                  style: Theme.of(context).textTheme.bodySmall),
               Text(statusText,
-                  style: Theme.of(context).textTheme.titleMedium?.copyWith(color: statusColor)),
+                  style: Theme.of(context)
+                      .textTheme
+                      .titleMedium
+                      ?.copyWith(color: statusColor)),
             ],
           ),
         ],
@@ -178,7 +206,8 @@ class _Plan {
   final int price;
   final List<String> features;
   final bool isBestValue;
-  const _Plan(this.name, this.interval, this.price, this.features, {this.isBestValue = false});
+  const _Plan(this.name, this.interval, this.price, this.features,
+      {this.isBestValue = false});
 }
 
 class _PlanCard extends StatelessWidget {
@@ -192,11 +221,17 @@ class _PlanCard extends StatelessWidget {
         color: Theme.of(context).colorScheme.surface,
         borderRadius: BorderRadius.circular(20),
         border: Border.all(
-          color: plan.isBestValue ? AppTheme.primaryColor : AppTheme.lightBorder,
+          color:
+              plan.isBestValue ? AppTheme.primaryColor : AppTheme.lightBorder,
           width: plan.isBestValue ? 2 : 1,
         ),
         boxShadow: plan.isBestValue
-            ? [BoxShadow(color: AppTheme.primaryColor.withValues(alpha: 0.1), blurRadius: 20, offset: const Offset(0, 4))]
+            ? [
+                BoxShadow(
+                    color: AppTheme.primaryColor.withValues(alpha: 0.1),
+                    blurRadius: 20,
+                    offset: const Offset(0, 4))
+              ]
             : [],
       ),
       child: Column(
@@ -208,7 +243,9 @@ class _PlanCard extends StatelessWidget {
               padding: const EdgeInsets.symmetric(vertical: 8),
               decoration: const BoxDecoration(
                 color: AppTheme.primaryColor,
-                borderRadius: BorderRadius.only(topLeft: Radius.circular(18), topRight: Radius.circular(18)),
+                borderRadius: BorderRadius.only(
+                    topLeft: Radius.circular(18),
+                    topRight: Radius.circular(18)),
               ),
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.center,
@@ -216,7 +253,10 @@ class _PlanCard extends StatelessWidget {
                   const Icon(Icons.star, color: Colors.white, size: 14),
                   const SizedBox(width: 4),
                   const Text('BEST VALUE — SAVE 25%',
-                      style: TextStyle(color: Colors.white, fontWeight: FontWeight.w700, fontSize: 13)),
+                      style: TextStyle(
+                          color: Colors.white,
+                          fontWeight: FontWeight.w700,
+                          fontSize: 13)),
                 ],
               ),
             ),
@@ -231,8 +271,12 @@ class _PlanCard extends StatelessWidget {
                     Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text(plan.name, style: Theme.of(context).textTheme.titleLarge),
-                        Text(plan.interval == 'monthly' ? 'Per month' : 'Per year',
+                        Text(plan.name,
+                            style: Theme.of(context).textTheme.titleLarge),
+                        Text(
+                            plan.interval == 'monthly'
+                                ? 'Per month'
+                                : 'Per year',
                             style: Theme.of(context).textTheme.bodySmall),
                       ],
                     ),
@@ -240,8 +284,12 @@ class _PlanCard extends StatelessWidget {
                       crossAxisAlignment: CrossAxisAlignment.end,
                       children: [
                         Text('Rs. ${plan.price}',
-                            style: Theme.of(context).textTheme.headlineMedium?.copyWith(
-                                  color: AppTheme.primaryColor, fontWeight: FontWeight.w800)),
+                            style: Theme.of(context)
+                                .textTheme
+                                .headlineMedium
+                                ?.copyWith(
+                                    color: AppTheme.primaryColor,
+                                    fontWeight: FontWeight.w800)),
                       ],
                     ),
                   ],
@@ -253,9 +301,13 @@ class _PlanCard extends StatelessWidget {
                       padding: const EdgeInsets.symmetric(vertical: 4),
                       child: Row(
                         children: [
-                          const Icon(Icons.check_circle_outline, color: AppTheme.successColor, size: 18),
+                          const Icon(Icons.check_circle_outline,
+                              color: AppTheme.successColor, size: 18),
                           const SizedBox(width: 10),
-                          Expanded(child: Text(f, style: Theme.of(context).textTheme.bodyMedium)),
+                          Expanded(
+                              child: Text(f,
+                                  style:
+                                      Theme.of(context).textTheme.bodyMedium)),
                         ],
                       ),
                     )),
@@ -265,11 +317,14 @@ class _PlanCard extends StatelessWidget {
                   child: ElevatedButton(
                     onPressed: () {},
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: plan.isBestValue ? AppTheme.primaryColor : null,
+                      backgroundColor:
+                          plan.isBestValue ? AppTheme.primaryColor : null,
                       minimumSize: const Size(double.infinity, 48),
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                      shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12)),
                     ),
-                    child: Text('Subscribe — Rs. ${plan.price}/${plan.interval == 'monthly' ? 'mo' : 'yr'}'),
+                    child: Text(
+                        'Subscribe — Rs. ${plan.price}/${plan.interval == 'monthly' ? 'mo' : 'yr'}'),
                   ),
                 ),
               ],
@@ -296,10 +351,14 @@ class _PaymentMethodChip extends StatelessWidget {
         border: Border.all(color: color.withValues(alpha: 0.3)),
       ),
       child: Row(
+        mainAxisSize: MainAxisSize.min,
         children: [
-          Icon(Icons.payment, color: color, size: 20),
-          const SizedBox(width: 8),
-          Text(name, style: TextStyle(color: color, fontWeight: FontWeight.w700)),
+          Image.asset(
+            imagePath, 
+            height: 24, 
+            width: 70, 
+            fit: BoxFit.contain,
+          ),
         ],
       ),
     );

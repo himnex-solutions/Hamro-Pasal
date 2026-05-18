@@ -50,9 +50,14 @@ class TransactionDetailScreen extends ConsumerWidget {
                       final item = tx.items[i];
                       return ListTile(
                         title: Text(item.productName),
-                        subtitle: Text('${item.quantity} x ${AppConstants.currencySymbol} ${NumberFormat('#,##,##0.00').format(item.unitPrice)}'),
-                        trailing: Text('${AppConstants.currencySymbol} ${NumberFormat('#,##,##0.00').format(item.totalPrice)}',
-                            style: Theme.of(context).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w600)),
+                        subtitle: Text(
+                            '${item.quantity} x ${AppConstants.currencySymbol} ${NumberFormat('#,##,##0.00').format(item.unitPrice)}'),
+                        trailing: Text(
+                            '${AppConstants.currencySymbol} ${NumberFormat('#,##,##0.00').format(item.totalPrice)}',
+                            style: Theme.of(context)
+                                .textTheme
+                                .titleMedium
+                                ?.copyWith(fontWeight: FontWeight.w600)),
                       );
                     },
                   ),
@@ -65,10 +70,15 @@ class TransactionDetailScreen extends ConsumerWidget {
                   padding: const EdgeInsets.all(16),
                   child: Column(
                     children: [
-                      _Row('Total', '${AppConstants.currencySymbol} ${NumberFormat('#,##,##0.00').format(tx.amount)}', bold: true),
-                      _Row('Paid', '${AppConstants.currencySymbol} ${NumberFormat('#,##,##0.00').format(tx.paidAmount)}'),
+                      _Row('Total',
+                          '${AppConstants.currencySymbol} ${NumberFormat('#,##,##0.00').format(tx.amount)}',
+                          bold: true),
+                      _Row('Paid',
+                          '${AppConstants.currencySymbol} ${NumberFormat('#,##,##0.00').format(tx.paidAmount)}'),
                       if (tx.dueAmount > 0)
-                        _Row('Due', '${AppConstants.currencySymbol} ${NumberFormat('#,##,##0.00').format(tx.dueAmount)}', color: AppTheme.warningColor),
+                        _Row('Due',
+                            '${AppConstants.currencySymbol} ${NumberFormat('#,##,##0.00').format(tx.dueAmount)}',
+                            color: AppTheme.warningColor),
                     ],
                   ),
                 ),
@@ -84,7 +94,8 @@ class TransactionDetailScreen extends ConsumerWidget {
                     color: AppTheme.lightBorder.withValues(alpha: 0.5),
                     borderRadius: BorderRadius.circular(10),
                   ),
-                  child: Text(tx.note!, style: Theme.of(context).textTheme.bodyMedium),
+                  child: Text(tx.note!,
+                      style: Theme.of(context).textTheme.bodyMedium),
                 ),
               ],
             ],
@@ -105,18 +116,28 @@ class _HeaderCard extends StatelessWidget {
     IconData typeIcon;
     switch (tx.type) {
       case AppConstants.txSale:
-        typeColor = AppTheme.successColor; typeIcon = Icons.trending_up_rounded; break;
+        typeColor = AppTheme.successColor;
+        typeIcon = Icons.trending_up_rounded;
+        break;
       case AppConstants.txPurchase:
-        typeColor = AppTheme.infoColor; typeIcon = Icons.shopping_bag_outlined; break;
+        typeColor = AppTheme.infoColor;
+        typeIcon = Icons.shopping_bag_outlined;
+        break;
       case AppConstants.txExpense:
-        typeColor = AppTheme.errorColor; typeIcon = Icons.trending_down_rounded; break;
+        typeColor = AppTheme.errorColor;
+        typeIcon = Icons.trending_down_rounded;
+        break;
       default:
-        typeColor = AppTheme.accentColor; typeIcon = Icons.swap_horiz_rounded;
+        typeColor = AppTheme.accentColor;
+        typeIcon = Icons.swap_horiz_rounded;
     }
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        gradient: LinearGradient(colors: [typeColor.withValues(alpha: 0.1), typeColor.withValues(alpha: 0.05)]),
+        gradient: LinearGradient(colors: [
+          typeColor.withValues(alpha: 0.1),
+          typeColor.withValues(alpha: 0.05)
+        ]),
         borderRadius: BorderRadius.circular(16),
         border: Border.all(color: typeColor.withValues(alpha: 0.3)),
       ),
@@ -124,7 +145,9 @@ class _HeaderCard extends StatelessWidget {
         children: [
           Container(
             padding: const EdgeInsets.all(14),
-            decoration: BoxDecoration(color: typeColor.withValues(alpha: 0.15), shape: BoxShape.circle),
+            decoration: BoxDecoration(
+                color: typeColor.withValues(alpha: 0.15),
+                shape: BoxShape.circle),
             child: Icon(typeIcon, color: typeColor, size: 28),
           ),
           const SizedBox(width: 16),
@@ -133,12 +156,23 @@ class _HeaderCard extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(tx.type.toUpperCase(),
-                    style: TextStyle(color: typeColor, fontWeight: FontWeight.w700, fontSize: 12, letterSpacing: 1)),
-                Text('${AppConstants.currencySymbol} ${NumberFormat('#,##,##0.00').format(tx.amount)}',
-                    style: Theme.of(context).textTheme.headlineSmall?.copyWith(fontWeight: FontWeight.w800)),
+                    style: TextStyle(
+                        color: typeColor,
+                        fontWeight: FontWeight.w700,
+                        fontSize: 12,
+                        letterSpacing: 1)),
+                Text(
+                    '${AppConstants.currencySymbol} ${NumberFormat('#,##,##0.00').format(tx.amount)}',
+                    style: Theme.of(context)
+                        .textTheme
+                        .headlineSmall
+                        ?.copyWith(fontWeight: FontWeight.w800)),
                 if (tx.partyName != null)
-                  Text(tx.partyName!, style: Theme.of(context).textTheme.bodySmall),
-                Text(DateFormat(AppConstants.dateTimeFormat).format(tx.transactionDate),
+                  Text(tx.partyName!,
+                      style: Theme.of(context).textTheme.bodySmall),
+                Text(
+                    DateFormat(AppConstants.dateTimeFormat)
+                        .format(tx.transactionDate),
                     style: Theme.of(context).textTheme.bodySmall),
               ],
             ),
@@ -162,8 +196,10 @@ class _Row extends StatelessWidget {
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
           Text(label, style: Theme.of(context).textTheme.bodyMedium),
-          Text(value, style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-              fontWeight: bold ? FontWeight.w700 : FontWeight.w600, color: color ?? AppTheme.primaryColor)),
+          Text(value,
+              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                  fontWeight: bold ? FontWeight.w700 : FontWeight.w600,
+                  color: color ?? AppTheme.primaryColor)),
         ],
       ),
     );

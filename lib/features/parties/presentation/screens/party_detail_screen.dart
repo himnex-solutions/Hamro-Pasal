@@ -83,7 +83,8 @@ class PartyDetailScreen extends ConsumerWidget {
               actions: [
                 if (party.phone != null)
                   IconButton(
-                    onPressed: () => _sendWhatsApp(party.phone!, party.currentBalance),
+                    onPressed: () =>
+                        _sendWhatsApp(party.phone!, party.currentBalance),
                     icon: const Icon(Icons.chat_outlined, color: Colors.white),
                     tooltip: 'Send WhatsApp reminder',
                   ),
@@ -94,7 +95,6 @@ class PartyDetailScreen extends ConsumerWidget {
                 ),
               ],
             ),
-
             SliverToBoxAdapter(
               child: Padding(
                 padding: const EdgeInsets.all(16),
@@ -102,7 +102,10 @@ class PartyDetailScreen extends ConsumerWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     // Balance card
-                    _BalanceCard(party: party).animate().fadeIn().slideY(begin: 0.1, end: 0),
+                    _BalanceCard(party: party)
+                        .animate()
+                        .fadeIn()
+                        .slideY(begin: 0.1, end: 0),
                     const SizedBox(height: 16),
 
                     // Info cards
@@ -113,9 +116,11 @@ class PartyDetailScreen extends ConsumerWidget {
                           child: Column(
                             children: [
                               if (party.address != null)
-                                _InfoRow(Icons.location_on_outlined, 'Address', party.address!),
+                                _InfoRow(Icons.location_on_outlined, 'Address',
+                                    party.address!),
                               if (party.email != null)
-                                _InfoRow(Icons.email_outlined, 'Email', party.email!),
+                                _InfoRow(Icons.email_outlined, 'Email',
+                                    party.email!),
                             ],
                           ),
                         ),
@@ -147,20 +152,22 @@ class PartyDetailScreen extends ConsumerWidget {
                     const SizedBox(height: 24),
 
                     Text('Ledger History',
-                        style: Theme.of(context).textTheme.titleLarge)
-                        .animate(delay: 150.ms).fadeIn(),
+                            style: Theme.of(context).textTheme.titleLarge)
+                        .animate(delay: 150.ms)
+                        .fadeIn(),
                     const SizedBox(height: 10),
                   ],
                 ),
               ),
             ),
-
             ledgerAsync.when(
               loading: () => const SliverToBoxAdapter(
-                  child: Center(child: Padding(
-                      padding: EdgeInsets.all(32),
-                      child: CircularProgressIndicator()))),
-              error: (e, _) => SliverToBoxAdapter(child: Center(child: Text('$e'))),
+                  child: Center(
+                      child: Padding(
+                          padding: EdgeInsets.all(32),
+                          child: CircularProgressIndicator()))),
+              error: (e, _) =>
+                  SliverToBoxAdapter(child: Center(child: Text('$e'))),
               data: (entries) => entries.isEmpty
                   ? SliverToBoxAdapter(
                       child: Padding(
@@ -168,10 +175,12 @@ class PartyDetailScreen extends ConsumerWidget {
                         child: Center(
                           child: Column(
                             children: [
-                              const Icon(Icons.receipt_long_outlined, size: 48, color: AppTheme.lightTextHint),
+                              const Icon(Icons.receipt_long_outlined,
+                                  size: 48, color: AppTheme.lightTextHint),
                               const SizedBox(height: 12),
                               Text('No ledger entries yet',
-                                  style: Theme.of(context).textTheme.titleMedium),
+                                  style:
+                                      Theme.of(context).textTheme.titleMedium),
                             ],
                           ),
                         ),
@@ -183,28 +192,39 @@ class PartyDetailScreen extends ConsumerWidget {
                           final entry = entries[i];
                           final amount = (entry['amount'] as num).toDouble();
                           final isDebit = entry['entry_type'] == 'debit';
-                          final date = DateTime.parse(entry['entry_date'] as String);
+                          final date =
+                              DateTime.parse(entry['entry_date'] as String);
                           return ListTile(
                             leading: Container(
-                              width: 40, height: 40,
+                              width: 40,
+                              height: 40,
                               decoration: BoxDecoration(
                                 color: isDebit
                                     ? AppTheme.errorColor.withValues(alpha: 0.1)
-                                    : AppTheme.successColor.withValues(alpha: 0.1),
+                                    : AppTheme.successColor
+                                        .withValues(alpha: 0.1),
                                 borderRadius: BorderRadius.circular(10),
                               ),
                               child: Icon(
-                                isDebit ? Icons.arrow_upward : Icons.arrow_downward,
-                                color: isDebit ? AppTheme.errorColor : AppTheme.successColor,
+                                isDebit
+                                    ? Icons.arrow_upward
+                                    : Icons.arrow_downward,
+                                color: isDebit
+                                    ? AppTheme.errorColor
+                                    : AppTheme.successColor,
                                 size: 20,
                               ),
                             ),
-                            title: Text(entry['description'] as String? ?? (isDebit ? 'Debit' : 'Credit')),
-                            subtitle: Text(DateFormat('dd MMM yyyy').format(date)),
+                            title: Text(entry['description'] as String? ??
+                                (isDebit ? 'Debit' : 'Credit')),
+                            subtitle:
+                                Text(DateFormat('dd MMM yyyy').format(date)),
                             trailing: Text(
                               '${isDebit ? '+' : '-'}${AppConstants.currencySymbol} ${NumberFormat('#,##,##0.00').format(amount)}',
                               style: TextStyle(
-                                color: isDebit ? AppTheme.successColor : AppTheme.errorColor,
+                                color: isDebit
+                                    ? AppTheme.successColor
+                                    : AppTheme.errorColor,
                                 fontWeight: FontWeight.w700,
                               ),
                             ),
@@ -222,11 +242,14 @@ class PartyDetailScreen extends ConsumerWidget {
 
   void _sendWhatsApp(String phone, double balance) async {
     final cleanPhone = phone.replaceAll(RegExp(r'[^0-9]'), '');
-    final npPhone = cleanPhone.startsWith('0') ? '977${cleanPhone.substring(1)}' : '977$cleanPhone';
+    final npPhone = cleanPhone.startsWith('0')
+        ? '977${cleanPhone.substring(1)}'
+        : '977$cleanPhone';
     final msg = balance > 0
         ? 'Namaskar! Your outstanding balance is Rs. ${balance.toStringAsFixed(2)}. Please clear when convenient. Thank you! - Hamro Pasal'
         : 'Namaskar! Please contact us regarding your account balance. Thank you! - Hamro Pasal';
-    final url = Uri.parse('https://wa.me/$npPhone?text=${Uri.encodeComponent(msg)}');
+    final url =
+        Uri.parse('https://wa.me/$npPhone?text=${Uri.encodeComponent(msg)}');
     if (await canLaunchUrl(url)) await launchUrl(url);
   }
 }
@@ -239,9 +262,18 @@ class _BalanceCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final isReceivable = party.currentBalance > 0;
     final isPayable = party.currentBalance < 0;
-    final formatted = NumberFormat('#,##,##0.00').format(party.currentBalance.abs());
-    Color color = isReceivable ? AppTheme.successColor : isPayable ? AppTheme.errorColor : AppTheme.lightTextSecondary;
-    String label = isReceivable ? 'To Receive' : isPayable ? 'To Pay' : 'Settled';
+    final formatted =
+        NumberFormat('#,##,##0.00').format(party.currentBalance.abs());
+    Color color = isReceivable
+        ? AppTheme.successColor
+        : isPayable
+            ? AppTheme.errorColor
+            : AppTheme.lightTextSecondary;
+    String label = isReceivable
+        ? 'To Receive'
+        : isPayable
+            ? 'To Pay'
+            : 'Settled';
 
     return Container(
       padding: const EdgeInsets.all(20),
@@ -258,11 +290,14 @@ class _BalanceCard extends StatelessWidget {
           Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text('Current Balance', style: Theme.of(context).textTheme.bodySmall),
+              Text('Current Balance',
+                  style: Theme.of(context).textTheme.bodySmall),
               const SizedBox(height: 4),
               Text('${AppConstants.currencySymbol} $formatted',
-                  style: Theme.of(context).textTheme.headlineMedium?.copyWith(
-                        color: color, fontWeight: FontWeight.w800)),
+                  style: Theme.of(context)
+                      .textTheme
+                      .headlineMedium
+                      ?.copyWith(color: color, fontWeight: FontWeight.w800)),
             ],
           ),
           Container(
@@ -272,7 +307,8 @@ class _BalanceCard extends StatelessWidget {
               borderRadius: BorderRadius.circular(10),
             ),
             child: Text(label,
-                style: TextStyle(color: color, fontWeight: FontWeight.w700, fontSize: 14)),
+                style: TextStyle(
+                    color: color, fontWeight: FontWeight.w700, fontSize: 14)),
           ),
         ],
       ),
@@ -294,7 +330,9 @@ class _InfoRow extends StatelessWidget {
           Icon(icon, size: 18, color: AppTheme.lightTextSecondary),
           const SizedBox(width: 10),
           Text('$label: ', style: Theme.of(context).textTheme.bodySmall),
-          Expanded(child: Text(value, style: Theme.of(context).textTheme.bodyMedium)),
+          Expanded(
+              child:
+                  Text(value, style: Theme.of(context).textTheme.bodyMedium)),
         ],
       ),
     );

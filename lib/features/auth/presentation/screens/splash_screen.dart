@@ -103,18 +103,26 @@ class _SplashScreenState extends ConsumerState<SplashScreen>
         child: Stack(
           children: [
             // Background decorative orbs — direct Positioned children (no LayoutBuilder)
-            Positioned(top: -80, right: -60,
-              child: _Orb(300, const Color(0xFF3B82F6).withValues(alpha: 0.15))),
-            Positioned(bottom: -100, left: -80,
-              child: _Orb(360, const Color(0xFF6366F1).withValues(alpha: 0.12))),
             Positioned(
-              top: MediaQuery.sizeOf(context).height * 0.4,
-              right: -40,
-              child: _Orb(200, const Color(0xFF06B6D4).withValues(alpha: 0.08))),
+                top: -80,
+                right: -60,
+                child:
+                    _Orb(300, const Color(0xFF3B82F6).withValues(alpha: 0.15))),
             Positioned(
-              top: MediaQuery.sizeOf(context).height * 0.2,
-              left: -30,
-              child: _Orb(180, const Color(0xFF8B5CF6).withValues(alpha: 0.10))),
+                bottom: -100,
+                left: -80,
+                child:
+                    _Orb(360, const Color(0xFF6366F1).withValues(alpha: 0.12))),
+            Positioned(
+                top: MediaQuery.sizeOf(context).height * 0.4,
+                right: -40,
+                child:
+                    _Orb(200, const Color(0xFF06B6D4).withValues(alpha: 0.08))),
+            Positioned(
+                top: MediaQuery.sizeOf(context).height * 0.2,
+                left: -30,
+                child:
+                    _Orb(180, const Color(0xFF8B5CF6).withValues(alpha: 0.10))),
 
             // Main content
             Center(
@@ -142,12 +150,14 @@ class _SplashScreenState extends ConsumerState<SplashScreen>
                         ),
                         boxShadow: [
                           BoxShadow(
-                            color: const Color(0xFF1E6FD9).withValues(alpha: 0.55),
+                            color:
+                                const Color(0xFF1E6FD9).withValues(alpha: 0.55),
                             blurRadius: 45,
                             spreadRadius: 8,
                           ),
                           BoxShadow(
-                            color: const Color(0xFF6366F1).withValues(alpha: 0.35),
+                            color:
+                                const Color(0xFF6366F1).withValues(alpha: 0.35),
                             blurRadius: 80,
                             spreadRadius: 15,
                           ),
@@ -197,9 +207,7 @@ class _SplashScreenState extends ConsumerState<SplashScreen>
                       fontSize: 15,
                       letterSpacing: 0.5,
                     ),
-                  )
-                      .animate(delay: 500.ms)
-                      .fadeIn(duration: 600.ms),
+                  ).animate(delay: 500.ms).fadeIn(duration: 600.ms),
 
                   const SizedBox(height: 80),
 
@@ -220,9 +228,15 @@ class _SplashScreenState extends ConsumerState<SplashScreen>
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  Text('Made with ', style: Theme.of(context).textTheme.bodySmall?.copyWith(color: Colors.white.withValues(alpha: 0.4), letterSpacing: 1)),
+                  Text('Made with ',
+                      style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                          color: Colors.white.withValues(alpha: 0.4),
+                          letterSpacing: 1)),
                   const Icon(Icons.favorite, color: Colors.red, size: 14),
-                  Text(' in Nepal', style: Theme.of(context).textTheme.bodySmall?.copyWith(color: Colors.white.withValues(alpha: 0.4), letterSpacing: 1)),
+                  Text(' in Nepal',
+                      style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                          color: Colors.white.withValues(alpha: 0.4),
+                          letterSpacing: 1)),
                 ],
               ).animate(delay: 1200.ms).fadeIn(),
             ),
@@ -241,8 +255,8 @@ class _Orb extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => Container(
-    width: size,
-    height: size,
-    decoration: BoxDecoration(shape: BoxShape.circle, color: color),
-  );
+        width: size,
+        height: size,
+        decoration: BoxDecoration(shape: BoxShape.circle, color: color),
+      );
 }

@@ -46,8 +46,12 @@ class _ForgotPasswordScreenState extends ConsumerState<ForgotPasswordScreen> {
   @override
   void dispose() {
     _emailCtrl.dispose();
-    for (final c in _otpCtrls) { c.dispose(); }
-    for (final f in _otpFocus) { f.dispose(); }
+    for (final c in _otpCtrls) {
+      c.dispose();
+    }
+    for (final f in _otpFocus) {
+      f.dispose();
+    }
     _pwCtrl.dispose();
     _confirmPwCtrl.dispose();
     _cooldownTimer?.cancel();
@@ -62,9 +66,8 @@ class _ForgotPasswordScreenState extends ConsumerState<ForgotPasswordScreen> {
       return;
     }
     setState(() => _isLoading = true);
-    final ok = await ref
-        .read(authProvider.notifier)
-        .sendPasswordResetOtp(email);
+    final ok =
+        await ref.read(authProvider.notifier).sendPasswordResetOtp(email);
     if (!mounted) return;
     setState(() => _isLoading = false);
     if (ok) {
@@ -72,7 +75,8 @@ class _ForgotPasswordScreenState extends ConsumerState<ForgotPasswordScreen> {
       _startCooldown();
       setState(() => _stage = _Stage.otp);
     } else {
-      AppSnackbar.show(context, 'Could not send OTP. Check the email and try again.',
+      AppSnackbar.show(
+          context, 'Could not send OTP. Check the email and try again.',
           isError: true);
     }
   }
@@ -95,9 +99,12 @@ class _ForgotPasswordScreenState extends ConsumerState<ForgotPasswordScreen> {
     if (ok) {
       setState(() => _stage = _Stage.newPassword);
     } else {
-      AppSnackbar.show(context, 'Invalid or expired OTP. Try again.', isError: true);
+      AppSnackbar.show(context, 'Invalid or expired OTP. Try again.',
+          isError: true);
       // Clear OTP boxes
-      for (final c in _otpCtrls) { c.clear(); }
+      for (final c in _otpCtrls) {
+        c.clear();
+      }
       _otpFocus[0].requestFocus();
     }
   }
@@ -129,7 +136,8 @@ class _ForgotPasswordScreenState extends ConsumerState<ForgotPasswordScreen> {
     final pw = _pwCtrl.text;
     final confirm = _confirmPwCtrl.text;
     if (pw.length < 6) {
-      AppSnackbar.show(context, 'Password must be at least 6 characters', isError: true);
+      AppSnackbar.show(context, 'Password must be at least 6 characters',
+          isError: true);
       return;
     }
     if (pw != confirm) {
@@ -141,10 +149,12 @@ class _ForgotPasswordScreenState extends ConsumerState<ForgotPasswordScreen> {
     if (!mounted) return;
     setState(() => _isLoading = false);
     if (ok) {
-      AppSnackbar.show(context, '✅ Password updated! Please sign in.', isSuccess: true);
+      AppSnackbar.show(context, '✅ Password updated! Please sign in.',
+          isSuccess: true);
       context.go(AppRoutes.login);
     } else {
-      AppSnackbar.show(context, 'Failed to update password. Try again.', isError: true);
+      AppSnackbar.show(context, 'Failed to update password. Try again.',
+          isError: true);
     }
   }
 
@@ -200,9 +210,8 @@ class _ForgotPasswordScreenState extends ConsumerState<ForgotPasswordScreen> {
             : IconButton(
                 icon: const Icon(Icons.arrow_back_ios_rounded),
                 onPressed: () => setState(() {
-                  _stage = _stage == _Stage.newPassword
-                      ? _Stage.otp
-                      : _Stage.email;
+                  _stage =
+                      _stage == _Stage.newPassword ? _Stage.otp : _Stage.email;
                 }),
               ),
       ),
@@ -385,10 +394,12 @@ class _OtpStage extends StatelessWidget {
         const SizedBox(height: 32),
         Row(
           mainAxisAlignment: MainAxisAlignment.center,
-          children: List.generate(6, (i) => Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 4),
-            child: buildBox(i),
-          )),
+          children: List.generate(
+              6,
+              (i) => Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 4),
+                    child: buildBox(i),
+                  )),
         ).animate(delay: 200.ms).fadeIn(),
         const SizedBox(height: 32),
         AppButton(

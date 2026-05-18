@@ -39,7 +39,8 @@ class SettingsScreen extends ConsumerWidget {
             title: l.businessProfile,
             subtitle: l.editBusiness,
             onTap: () => Navigator.of(context).push(
-              MaterialPageRoute(builder: (_) => const BusinessProfileEditScreen()),
+              MaterialPageRoute(
+                  builder: (_) => const BusinessProfileEditScreen()),
             ),
           ),
           const _SwitchProfileTile(),
@@ -49,7 +50,7 @@ class SettingsScreen extends ConsumerWidget {
           // ── Preferences ───────────────────────────────────
           _SectionHeader(l.preferences),
           const _ThemeToggleTile(),
-          const _LanguageTile(),          // ← working language picker
+          const _LanguageTile(), // ← working language picker
           _SettingsTile(
             icon: Icons.currency_rupee_outlined,
             title: l.currency2,
@@ -178,27 +179,49 @@ class _LanguageTile extends ConsumerWidget {
     final isNepali = currentLocale.languageCode == 'ne';
     final subtitle = isNepali ? 'नेपाली' : 'English';
 
-    return Card(
+    return Container(
       margin: const EdgeInsets.symmetric(vertical: 4),
-      child: ListTile(
-        leading: Container(
-          width: 40,
-          height: 40,
-          decoration: BoxDecoration(
-            color: AppTheme.primaryColor.withValues(alpha: 0.08),
-            borderRadius: BorderRadius.circular(10),
+      decoration: BoxDecoration(
+        color: Theme.of(context).cardTheme.color,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(
+            color: Theme.of(context).brightness == Brightness.dark
+                ? AppTheme.darkBorder
+                : Colors.white,
+            width: 1.5),
+        boxShadow: [
+          BoxShadow(
+            color: AppTheme.primaryColor.withValues(alpha: 0.05),
+            blurRadius: 15,
+            offset: const Offset(0, 5),
           ),
-          child: const Icon(Icons.language_outlined,
-              color: AppTheme.lightTextSecondary, size: 20),
+        ],
+      ),
+      child: Material(
+        color: Colors.transparent,
+        borderRadius: BorderRadius.circular(16),
+        child: InkWell(
+          borderRadius: BorderRadius.circular(16),
+          onTap: () => _showLanguagePicker(context, ref, currentLocale),
+          child: ListTile(
+            leading: Container(
+              width: 40,
+              height: 40,
+              decoration: BoxDecoration(
+                color: AppTheme.primaryColor.withValues(alpha: 0.08),
+                borderRadius: BorderRadius.circular(10),
+              ),
+              child: const Icon(Icons.language_outlined,
+                  color: AppTheme.lightTextSecondary, size: 20),
+            ),
+            title: Text(l.language,
+                style: Theme.of(context).textTheme.titleMedium),
+            subtitle:
+                Text(subtitle, style: Theme.of(context).textTheme.bodySmall),
+            trailing:
+                const Icon(Icons.chevron_right, color: AppTheme.lightTextHint),
+          ),
         ),
-        title: Text(l.language,
-            style: Theme.of(context).textTheme.titleMedium),
-        subtitle: Text(subtitle,
-            style: Theme.of(context).textTheme.bodySmall),
-        trailing: const Icon(Icons.chevron_right,
-            color: AppTheme.lightTextHint),
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-        onTap: () => _showLanguagePicker(context, ref, currentLocale),
       ),
     );
   }
@@ -210,10 +233,8 @@ class _LanguageTile extends ConsumerWidget {
       context: context,
       builder: (ctx) => AlertDialog(
         title: Text(l.selectLanguage),
-        shape:
-            RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-        contentPadding:
-            const EdgeInsets.symmetric(vertical: 16, horizontal: 0),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+        contentPadding: const EdgeInsets.symmetric(vertical: 16, horizontal: 0),
         content: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
@@ -274,17 +295,14 @@ class _LangOption extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return ListTile(
-      contentPadding:
-          const EdgeInsets.symmetric(horizontal: 20, vertical: 4),
+      contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 4),
       leading: Text(flag, style: const TextStyle(fontSize: 28)),
       title: Text(label,
           style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                fontWeight:
-                    isSelected ? FontWeight.w700 : FontWeight.normal,
+                fontWeight: isSelected ? FontWeight.w700 : FontWeight.normal,
                 color: isSelected ? AppTheme.primaryColor : null,
               )),
-      subtitle: Text(sublabel,
-          style: Theme.of(context).textTheme.bodySmall),
+      subtitle: Text(sublabel, style: Theme.of(context).textTheme.bodySmall),
       trailing: isSelected
           ? const Icon(Icons.check_circle_rounded,
               color: AppTheme.primaryColor, size: 22)
@@ -330,30 +348,49 @@ class _SettingsTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Card(
+    return Container(
       margin: const EdgeInsets.symmetric(vertical: 4),
-      child: ListTile(
-        leading: Container(
-          width: 40,
-          height: 40,
-          decoration: BoxDecoration(
-            color: (color ?? AppTheme.primaryColor).withValues(alpha: 0.08),
-            borderRadius: BorderRadius.circular(10),
+      decoration: BoxDecoration(
+        color: Theme.of(context).cardTheme.color,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(
+            color: Theme.of(context).brightness == Brightness.dark
+                ? AppTheme.darkBorder
+                : Colors.white,
+            width: 1.5),
+        boxShadow: [
+          BoxShadow(
+            color: AppTheme.primaryColor.withValues(alpha: 0.05),
+            blurRadius: 15,
+            offset: const Offset(0, 5),
           ),
-          child: Icon(icon,
-              color: color ?? AppTheme.lightTextSecondary, size: 20),
+        ],
+      ),
+      child: Material(
+        color: Colors.transparent,
+        borderRadius: BorderRadius.circular(16),
+        child: InkWell(
+          borderRadius: BorderRadius.circular(16),
+          onTap: onTap,
+          child: ListTile(
+            leading: Container(
+              width: 40,
+              height: 40,
+              decoration: BoxDecoration(
+                color: (color ?? AppTheme.primaryColor).withValues(alpha: 0.08),
+                borderRadius: BorderRadius.circular(10),
+              ),
+              child: Icon(icon,
+                  color: color ?? AppTheme.lightTextSecondary, size: 20),
+            ),
+            title: Text(title, style: Theme.of(context).textTheme.titleMedium),
+            subtitle: subtitle != null
+                ? Text(subtitle!, style: Theme.of(context).textTheme.bodySmall)
+                : null,
+            trailing:
+                const Icon(Icons.chevron_right, color: AppTheme.lightTextHint),
+          ),
         ),
-        title: Text(title,
-            style: Theme.of(context).textTheme.titleMedium),
-        subtitle: subtitle != null
-            ? Text(subtitle!,
-                style: Theme.of(context).textTheme.bodySmall)
-            : null,
-        trailing: const Icon(Icons.chevron_right,
-            color: AppTheme.lightTextHint),
-        onTap: onTap,
-        shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(12)),
       ),
     );
   }
@@ -368,98 +405,114 @@ class _SwitchProfileTile extends ConsumerWidget {
     final l = context.l10n;
     final mode = ref.watch(profileModeProvider);
     final isPersonal = mode == ProfileMode.personal;
-    final accentColor = isPersonal
-        ? const Color(0xFF8E44AD)
-        : AppTheme.primaryColor;
+    final accentColor =
+        isPersonal ? const Color(0xFF8E44AD) : AppTheme.primaryColor;
 
-    return Card(
+    return Container(
       margin: const EdgeInsets.symmetric(vertical: 4),
-      child: InkWell(
-        borderRadius: BorderRadius.circular(12),
-        onTap: () {
-          ref.read(profileModeProvider.notifier).toggle();
-          AppSnackbar.show(
-            context,
-            isPersonal ? l.switchedToBusiness : l.switchedToPersonal,
-            isSuccess: true,
-          );
-        },
-        child: Padding(
-          padding:
-              const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-          child: Row(
-            children: [
-              AnimatedContainer(
-                duration: const Duration(milliseconds: 300),
-                width: 40,
-                height: 40,
-                decoration: BoxDecoration(
-                  color: accentColor.withValues(alpha: 0.12),
-                  borderRadius: BorderRadius.circular(10),
-                ),
-                child: AnimatedSwitcher(
+      decoration: BoxDecoration(
+        color: Theme.of(context).cardTheme.color,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(
+            color: Theme.of(context).brightness == Brightness.dark
+                ? AppTheme.darkBorder
+                : Colors.white,
+            width: 1.5),
+        boxShadow: [
+          BoxShadow(
+            color: accentColor.withValues(alpha: 0.05),
+            blurRadius: 15,
+            offset: const Offset(0, 5),
+          ),
+        ],
+      ),
+      child: Material(
+        color: Colors.transparent,
+        borderRadius: BorderRadius.circular(16),
+        child: InkWell(
+          borderRadius: BorderRadius.circular(16),
+          onTap: () {
+            ref.read(profileModeProvider.notifier).toggle();
+            AppSnackbar.show(
+              context,
+              isPersonal ? l.switchedToBusiness : l.switchedToPersonal,
+              isSuccess: true,
+            );
+          },
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+            child: Row(
+              children: [
+                AnimatedContainer(
                   duration: const Duration(milliseconds: 300),
-                  child: Icon(
-                    isPersonal
-                        ? Icons.person_rounded
-                        : Icons.store_rounded,
-                    key: ValueKey(isPersonal),
-                    color: accentColor,
-                    size: 20,
+                  width: 40,
+                  height: 40,
+                  decoration: BoxDecoration(
+                    color: accentColor.withValues(alpha: 0.12),
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                  child: AnimatedSwitcher(
+                    duration: const Duration(milliseconds: 300),
+                    child: Icon(
+                      isPersonal ? Icons.person_rounded : Icons.store_rounded,
+                      key: ValueKey(isPersonal),
+                      color: accentColor,
+                      size: 20,
+                    ),
                   ),
                 ),
-              ),
-              const SizedBox(width: 16),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(l.switchProfile,
-                        style: Theme.of(context).textTheme.titleMedium),
-                    AnimatedSwitcher(
-                      duration: const Duration(milliseconds: 250),
-                      child: Text(
-                        isPersonal
-                            ? l.currentlyPersonal
-                            : l.currentlyBusiness,
-                        key: ValueKey(isPersonal),
-                        style: Theme.of(context)
-                            .textTheme
-                            .bodySmall
-                            ?.copyWith(color: accentColor),
+                const SizedBox(width: 16),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(l.switchProfile,
+                          style: Theme.of(context).textTheme.titleMedium),
+                      AnimatedSwitcher(
+                        duration: const Duration(milliseconds: 250),
+                        child: Text(
+                          isPersonal
+                              ? l.currentlyPersonal
+                              : l.currentlyBusiness,
+                          key: ValueKey(isPersonal),
+                          style: Theme.of(context)
+                              .textTheme
+                              .bodySmall
+                              ?.copyWith(color: accentColor),
+                        ),
                       ),
-                    ),
-                  ],
+                    ],
+                  ),
                 ),
-              ),
-              AnimatedContainer(
-                duration: const Duration(milliseconds: 300),
-                height: 32,
-                decoration: BoxDecoration(
-                  color: accentColor.withValues(alpha: 0.1),
-                  borderRadius: BorderRadius.circular(20),
-                  border: Border.all(
-                      color: accentColor.withValues(alpha: 0.3)),
+                AnimatedContainer(
+                  duration: const Duration(milliseconds: 300),
+                  height: 32,
+                  decoration: BoxDecoration(
+                    color: accentColor.withValues(alpha: 0.1),
+                    borderRadius: BorderRadius.circular(20),
+                    border:
+                        Border.all(color: accentColor.withValues(alpha: 0.3)),
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      _ModeChip(
+                        label: l.personal,
+                        icon: Icons.person_outline,
+                        isActive: isPersonal,
+                        activeColor: const Color(0xFF8E44AD),
+                      ),
+                      _ModeChip(
+                        label: l.business,
+                        icon: Icons.store_outlined,
+                        isActive: !isPersonal,
+                        activeColor: AppTheme.primaryColor,
+                      ),
+                    ],
+                  ),
                 ),
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    _ModeChip(
-                      label: l.personal,
-                      icon: Icons.person_outline,
-                      isActive: isPersonal,
-                      activeColor: const Color(0xFF8E44AD),
-                    ),
-                    _ModeChip(
-                      label: l.business,
-                      icon: Icons.store_outlined,
-                      isActive: !isPersonal,
-                      activeColor: AppTheme.primaryColor,
-                    ),
-                  ],
-                ),
-              ),
-            ],
+              ],
+            ),
           ),
         ),
       ),
@@ -499,8 +552,7 @@ class _ModeChip extends StatelessWidget {
             label,
             style: TextStyle(
               fontSize: 11,
-              fontWeight:
-                  isActive ? FontWeight.w700 : FontWeight.normal,
+              fontWeight: isActive ? FontWeight.w700 : FontWeight.normal,
               color: isActive ? Colors.white : AppTheme.lightTextHint,
             ),
           ),
@@ -519,31 +571,49 @@ class _ThemeToggleTile extends ConsumerWidget {
     final l = context.l10n;
     final themeMode = ref.watch(themeModeProvider);
     final isDark = themeMode == ThemeMode.dark;
-    return Card(
+    return Container(
       margin: const EdgeInsets.symmetric(vertical: 4),
-      child: ListTile(
-        leading: Container(
-          width: 40,
-          height: 40,
-          decoration: BoxDecoration(
-            color: AppTheme.primaryColor.withValues(alpha: 0.08),
-            borderRadius: BorderRadius.circular(10),
+      decoration: BoxDecoration(
+        color: Theme.of(context).cardTheme.color,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(
+            color: Theme.of(context).brightness == Brightness.dark
+                ? AppTheme.darkBorder
+                : Colors.white,
+            width: 1.5),
+        boxShadow: [
+          BoxShadow(
+            color: AppTheme.primaryColor.withValues(alpha: 0.05),
+            blurRadius: 15,
+            offset: const Offset(0, 5),
           ),
-          child: Icon(
-            isDark ? Icons.dark_mode_outlined : Icons.light_mode_outlined,
-            color: AppTheme.lightTextSecondary,
-            size: 20,
+        ],
+      ),
+      child: Material(
+        color: Colors.transparent,
+        borderRadius: BorderRadius.circular(16),
+        child: ListTile(
+          leading: Container(
+            width: 40,
+            height: 40,
+            decoration: BoxDecoration(
+              color: AppTheme.primaryColor.withValues(alpha: 0.08),
+              borderRadius: BorderRadius.circular(10),
+            ),
+            child: Icon(
+              isDark ? Icons.dark_mode_outlined : Icons.light_mode_outlined,
+              color: AppTheme.lightTextSecondary,
+              size: 20,
+            ),
+          ),
+          title: Text(l.darkMode),
+          subtitle: Text(isDark ? l.on : l.off),
+          trailing: Switch(
+            value: isDark,
+            onChanged: (_) =>
+                ref.read(themeModeProvider.notifier).toggleTheme(),
           ),
         ),
-        title: Text(l.darkMode),
-        subtitle: Text(isDark ? l.on : l.off),
-        trailing: Switch(
-          value: isDark,
-          onChanged: (_) =>
-              ref.read(themeModeProvider.notifier).toggleTheme(),
-        ),
-        shape:
-            RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
       ),
     );
   }
