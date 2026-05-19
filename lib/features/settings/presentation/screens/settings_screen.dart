@@ -407,16 +407,17 @@ class _SwitchProfileTile extends ConsumerWidget {
     final isPersonal = mode == ProfileMode.personal;
     final accentColor =
         isPersonal ? const Color(0xFF8E44AD) : AppTheme.primaryColor;
+    final isDark = Theme.of(context).brightness == Brightness.dark;
 
-    return Container(
+    return AnimatedContainer(
+      duration: const Duration(milliseconds: 400),
+      curve: Curves.easeOutCubic,
       margin: const EdgeInsets.symmetric(vertical: 4),
       decoration: BoxDecoration(
         color: Theme.of(context).cardTheme.color,
         borderRadius: BorderRadius.circular(16),
         border: Border.all(
-            color: Theme.of(context).brightness == Brightness.dark
-                ? AppTheme.darkBorder
-                : Colors.white,
+            color: isDark ? AppTheme.darkBorder : Colors.white,
             width: 1.5),
         boxShadow: [
           BoxShadow(
@@ -440,16 +441,17 @@ class _SwitchProfileTile extends ConsumerWidget {
             );
           },
           child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
             child: Row(
               children: [
                 AnimatedContainer(
-                  duration: const Duration(milliseconds: 300),
-                  width: 40,
-                  height: 40,
+                  duration: const Duration(milliseconds: 400),
+                  curve: Curves.easeOutCubic,
+                  width: 48,
+                  height: 48,
                   decoration: BoxDecoration(
                     color: accentColor.withValues(alpha: 0.12),
-                    borderRadius: BorderRadius.circular(10),
+                    borderRadius: BorderRadius.circular(14),
                   ),
                   child: AnimatedSwitcher(
                     duration: const Duration(milliseconds: 300),
@@ -457,7 +459,7 @@ class _SwitchProfileTile extends ConsumerWidget {
                       isPersonal ? Icons.person_rounded : Icons.store_rounded,
                       key: ValueKey(isPersonal),
                       color: accentColor,
-                      size: 20,
+                      size: 24,
                     ),
                   ),
                 ),
@@ -467,7 +469,11 @@ class _SwitchProfileTile extends ConsumerWidget {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(l.switchProfile,
-                          style: Theme.of(context).textTheme.titleMedium),
+                          style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                            fontWeight: FontWeight.w800,
+                            letterSpacing: -0.3,
+                          )),
+                      const SizedBox(height: 2),
                       AnimatedSwitcher(
                         duration: const Duration(milliseconds: 250),
                         child: Text(
@@ -478,20 +484,22 @@ class _SwitchProfileTile extends ConsumerWidget {
                           style: Theme.of(context)
                               .textTheme
                               .bodySmall
-                              ?.copyWith(color: accentColor),
+                              ?.copyWith(
+                                color: accentColor,
+                                fontWeight: FontWeight.w600,
+                              ),
                         ),
                       ),
                     ],
                   ),
                 ),
                 AnimatedContainer(
-                  duration: const Duration(milliseconds: 300),
-                  height: 32,
+                  duration: const Duration(milliseconds: 400),
+                  padding: const EdgeInsets.all(4),
                   decoration: BoxDecoration(
-                    color: accentColor.withValues(alpha: 0.1),
-                    borderRadius: BorderRadius.circular(20),
-                    border:
-                        Border.all(color: accentColor.withValues(alpha: 0.3)),
+                    color: isDark ? Colors.black26 : const Color(0xFFF1F5F9),
+                    borderRadius: BorderRadius.circular(24),
+                    border: Border.all(color: accentColor.withValues(alpha: 0.1)),
                   ),
                   child: Row(
                     mainAxisSize: MainAxisSize.min,
@@ -535,26 +543,37 @@ class _ModeChip extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return AnimatedContainer(
-      duration: const Duration(milliseconds: 300),
-      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+      duration: const Duration(milliseconds: 400),
+      curve: Curves.easeOutCubic,
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
       decoration: BoxDecoration(
         color: isActive ? activeColor : Colors.transparent,
         borderRadius: BorderRadius.circular(20),
+        boxShadow: isActive ? [
+          BoxShadow(
+            color: activeColor.withValues(alpha: 0.4),
+            blurRadius: 8,
+            offset: const Offset(0, 2),
+          ),
+        ] : [],
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
           Icon(icon,
-              size: 13,
+              size: 14,
               color: isActive ? Colors.white : AppTheme.lightTextHint),
           const SizedBox(width: 4),
-          Text(
-            label,
+          AnimatedDefaultTextStyle(
+            duration: const Duration(milliseconds: 400),
+            curve: Curves.easeOutCubic,
             style: TextStyle(
               fontSize: 11,
-              fontWeight: isActive ? FontWeight.w700 : FontWeight.normal,
+              fontWeight: isActive ? FontWeight.w800 : FontWeight.w600,
               color: isActive ? Colors.white : AppTheme.lightTextHint,
+              letterSpacing: isActive ? 0.2 : 0.0,
             ),
+            child: Text(label),
           ),
         ],
       ),
