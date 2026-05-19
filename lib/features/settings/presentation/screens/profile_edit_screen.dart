@@ -56,8 +56,9 @@ class _ProfileEditScreenState extends ConsumerState<ProfileEditScreen> {
         _email = data['email'] ?? _supabase.auth.currentUser?.email ?? '';
       }
     } catch (e) {
-      if (mounted)
+      if (mounted) {
         AppSnackbar.show(context, 'Failed to load profile: $e', isError: true);
+      }
     } finally {
       if (mounted) setState(() => _isFetching = false);
     }
@@ -84,8 +85,9 @@ class _ProfileEditScreenState extends ConsumerState<ProfileEditScreen> {
         Navigator.of(context).pop();
       }
     } catch (e) {
-      if (mounted)
+      if (mounted) {
         AppSnackbar.show(context, 'Update failed: $e', isError: true);
+      }
     } finally {
       if (mounted) setState(() => _isLoading = false);
     }

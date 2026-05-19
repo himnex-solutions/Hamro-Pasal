@@ -28,6 +28,7 @@ class AppStrings {
   String get accounts => _s('Accounts', 'खाताहरू');
   String get staff => _s('Staff', 'कर्मचारीहरू');
   String get settings => _s('Settings', 'सेटिङहरू');
+  String get tools => _s('Tools', 'उपकरणहरू');
 
   // ── Common Actions ────────────────────────────────────────
   String get add => _s('Add', 'थप्नुहोस्');

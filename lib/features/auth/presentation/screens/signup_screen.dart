@@ -320,15 +320,15 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
           const SizedBox(height: 18),
 
           // Divider
-          Row(children: [
+          const Row(children: [
             Expanded(child: Divider(color: _border, thickness: 1)),
             Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 14),
+              padding: EdgeInsets.symmetric(horizontal: 14),
               child: Text(
                 'Or Continue With',
                 style: TextStyle(
                   fontSize: 12,
-                  color: Colors.grey[500],
+                  color: Color(0xFF9E9E9E),
                   fontWeight: FontWeight.w500,
                 ),
               ),

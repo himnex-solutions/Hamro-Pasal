@@ -72,6 +72,18 @@ class SettingsScreen extends ConsumerWidget {
 
           const SizedBox(height: 20),
 
+          // ── Tools ──────────────────────────────────────────
+          _SectionHeader(l.tools),
+          _SettingsTile(
+            icon: Icons.build_outlined,
+            title: 'Business Tools',
+            subtitle: 'Calculators & Utilities',
+            color: const Color(0xFF0D7E8A),
+            onTap: () => context.go(AppRoutes.tools),
+          ),
+
+          const SizedBox(height: 20),
+
           // ── Data & Sync ───────────────────────────────────
           _SectionHeader(l.dataSync),
           _SettingsTile(

@@ -65,8 +65,9 @@ class _InvoiceDetailScreenState extends State<InvoiceDetailScreen> {
         });
       }
     } catch (e) {
-      if (mounted)
+      if (mounted) {
         AppSnackbar.show(context, 'Failed to load: $e', isError: true);
+      }
     } finally {
       if (mounted) setState(() => _isLoading = false);
     }
@@ -97,8 +98,9 @@ class _InvoiceDetailScreenState extends State<InvoiceDetailScreen> {
         'paid_amount': total,
       }).eq('id', widget.invoiceId);
       await _load();
-      if (mounted)
+      if (mounted) {
         AppSnackbar.show(context, '✅ Invoice marked as paid!', isSuccess: true);
+      }
     } catch (e) {
       if (mounted) AppSnackbar.show(context, 'Failed: $e', isError: true);
     }
@@ -425,8 +427,9 @@ class _InvoiceDetailScreenState extends State<InvoiceDetailScreen> {
 
   @override
   Widget build(BuildContext context) {
-    if (_isLoading)
+    if (_isLoading) {
       return const Scaffold(body: Center(child: CircularProgressIndicator()));
+    }
     if (_invoice == null) {
       return Scaffold(
         appBar: AppBar(title: Text(context.l10n.invoice)),

@@ -27,15 +27,17 @@ class MainShellScreen extends ConsumerStatefulWidget {
   ];
   static const _extraRoutes = [
     AppRoutes.invoices, AppRoutes.reports, AppRoutes.accounts,
-    AppRoutes.staff, AppRoutes.settings,
+    AppRoutes.staff, AppRoutes.tools, AppRoutes.settings,
   ];
   static const _extraIcons = [
     Icons.description_outlined, Icons.bar_chart_outlined,
-    Icons.account_balance_outlined, Icons.group_outlined, Icons.settings_outlined,
+    Icons.account_balance_outlined, Icons.group_outlined,
+    Icons.build_outlined, Icons.settings_outlined,
   ];
   static const _extraActiveIcons = [
     Icons.description_rounded, Icons.bar_chart_rounded,
-    Icons.account_balance_rounded, Icons.group_rounded, Icons.settings_rounded,
+    Icons.account_balance_rounded, Icons.group_rounded,
+    Icons.build_rounded, Icons.settings_rounded,
   ];
 
   @override
@@ -80,7 +82,7 @@ class _MainShellScreenState extends ConsumerState<MainShellScreen> {
     final screenWidth = MediaQuery.of(context).size.width;
 
     final labels = [l.dashboard, l.transactions, l.parties, l.inventory, l.expenses];
-    final extraLabels = [l.invoices, l.reports, l.accounts, l.staff, l.settings];
+    final extraLabels = [l.invoices, l.reports, l.accounts, l.staff, l.tools, l.settings];
 
     final destinations = List.generate(MainShellScreen._routes.length, (i) => _NavItem(
       MainShellScreen._routes[i],

@@ -295,6 +295,12 @@ class _DashAppBar extends ConsumerWidget {
       surfaceTintColor: Colors.transparent,
       actions: [
         IconButton(
+          tooltip: 'Tools',
+          onPressed: () => context.push(AppRoutes.tools),
+          icon: const Icon(Icons.build_outlined,
+              size: 20, color: Colors.white70),
+        ),
+        IconButton(
           tooltip: 'Settings',
           onPressed: () => context.push(AppRoutes.settings),
           icon: const Icon(Icons.settings_outlined,
@@ -601,6 +607,12 @@ class _QuickActionsGrid extends StatelessWidget {
           AppRoutes.addExpense),
       const _QA('Reports', Icons.bar_chart_rounded, Color(0xFFF59E0B),
           AppRoutes.reports),
+      const _QA('Tools', Icons.build_outlined, Color(0xFF0D7E8A),
+          AppRoutes.tools),
+      const _QA('Invoices', Icons.description_outlined, Color(0xFF14B8A6),
+          AppRoutes.invoices),
+      const _QA('Settings', Icons.settings_outlined, Color(0xFF64748B),
+          AppRoutes.settings),
     ];
 
     return GridView.count(
@@ -869,12 +881,12 @@ class _PremiumTrialBanner extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    final totalDays = 14;
+    const totalDays = 14;
     final progress = (totalDays - daysLeft) / totalDays;
     final clampedProgress = progress.clamp(0.0, 1.0);
     
     // Palette matching the teal theme
-    final primaryColor = AppTheme.primaryColor;
+    const primaryColor = AppTheme.primaryColor;
     final cardColor = Theme.of(context).cardTheme.color ?? (isDark ? const Color(0xFF0F4050) : Colors.white);
 
     return Container(
@@ -942,11 +954,11 @@ class _PremiumTrialBanner extends StatelessWidget {
                           borderRadius: BorderRadius.circular(10),
                           border: Border.all(color: primaryColor.withValues(alpha: 0.25)),
                         ),
-                        child: Row(
+                        child: const Row(
                           mainAxisSize: MainAxisSize.min,
                           children: [
                             Icon(Icons.discount_rounded, size: 10, color: primaryColor),
-                            const SizedBox(width: 4),
+                            SizedBox(width: 4),
                             Text(
                               '45% OFF',
                               style: TextStyle(

@@ -16,7 +16,7 @@ const _dark = Color(0xFF0F172A); // near-black title text
 const _grey = Color(0xFF94A3B8); // placeholder / secondary text
 const _border = Color(0xFFE2E8F0); // input border
 const _bgDark1 = Color(0xFF07242B); // top-left of background gradient
-const _bgDark2 = Color(0xFF0F4850); // bottom-right of background gradient
+// _bgDark2 = Color(0xFF0F4850) — unused, kept for reference only
 
 class LoginScreen extends ConsumerStatefulWidget {
   const LoginScreen({super.key});
@@ -295,15 +295,15 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
           const SizedBox(height: 20),
 
           // Divider
-          Row(children: [
+          const Row(children: [
             Expanded(child: Divider(color: _border, thickness: 1)),
             Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 14),
+              padding: EdgeInsets.symmetric(horizontal: 14),
               child: Text(
                 'Or Continue With',
                 style: TextStyle(
                   fontSize: 12,
-                  color: Colors.grey[500],
+                  color: Color(0xFF9E9E9E),
                   fontWeight: FontWeight.w500,
                 ),
               ),

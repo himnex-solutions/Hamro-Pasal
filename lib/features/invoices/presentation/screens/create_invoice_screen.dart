@@ -99,8 +99,9 @@ class _CreateInvoiceScreenState extends ConsumerState<CreateInvoiceScreen> {
         });
       }
     } catch (e) {
-      if (mounted)
+      if (mounted) {
         AppSnackbar.show(context, 'Failed to load data: $e', isError: true);
+      }
     } finally {
       if (mounted) setState(() => _isFetching = false);
     }
@@ -181,8 +182,9 @@ class _CreateInvoiceScreenState extends ConsumerState<CreateInvoiceScreen> {
         context.pop();
       }
     } catch (e) {
-      if (mounted)
+      if (mounted) {
         AppSnackbar.show(context, 'Failed to save: $e', isError: true);
+      }
     } finally {
       if (mounted) setState(() => _isLoading = false);
     }

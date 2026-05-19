@@ -465,3 +465,28 @@ CREATE INDEX idx_sync_queue_status ON sync_queue(business_id, status);
 --   ('business-logos', 'business-logos', true),
 --   ('product-images', 'product-images', true),
 --   ('receipt-images', 'receipt-images', false);
+
+-- ============================================================
+-- SUPABASE REALTIME CONFIGURATION
+-- Run these in Supabase SQL Editor to enable live updates
+-- ============================================================
+
+-- 1. Set REPLICA IDENTITY FULL on subscriptions so UPDATE/DELETE
+--    events include the full old row (required for filtered realtime
+--    channels using business_id = <value>).
+ALTER TABLE subscriptions REPLICA IDENTITY FULL;
+
+-- 2. Add subscriptions to the supabase_realtime publication so
+--    Supabase broadcasts INSERT / UPDATE / DELETE to Flutter clients.
+--    (This is idempotent — safe to run multiple times.)
+DO $$
+BEGIN
+  IF NOT EXISTS (
+    SELECT 1 FROM pg_publication_tables
+    WHERE pubname = 'supabase_realtime'
+      AND tablename = 'subscriptions'
+  ) THEN
+    ALTER PUBLICATION supabase_realtime ADD TABLE subscriptions;
+  END IF;
+END $$;
+

@@ -47,9 +47,20 @@ class _SplashScreenState extends ConsumerState<SplashScreen>
   }
 
   Future<void> _navigate() async {
+    // Wait for the minimum splash animation duration
     await Future.delayed(const Duration(milliseconds: 2800));
     if (!mounted) return;
-    final authState = ref.read(authProvider);
+
+    // Wait until auth initialization completes
+    var authState = ref.read(authProvider);
+    while (authState.status == AuthStatus.initial) {
+      if (!mounted) return;
+      await Future.delayed(const Duration(milliseconds: 100));
+      authState = ref.read(authProvider);
+    }
+
+    if (!mounted) return;
+
     switch (authState.status) {
       case AuthStatus.authenticated:
         context.go(AppRoutes.dashboard);
@@ -61,7 +72,7 @@ class _SplashScreenState extends ConsumerState<SplashScreen>
         context.go(AppRoutes.login);
         break;
       case AuthStatus.unauthenticated:
-      case AuthStatus.initial:
+      case AuthStatus.initial: // Fallback, though should no longer occur
         context.go(AppRoutes.onboarding);
         break;
     }
