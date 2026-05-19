@@ -379,9 +379,14 @@ class AuthNotifier extends StateNotifier<AuthState> {
       }
     } catch (_) {}
 
-    await _supabase.auth.signOut();
+    // Always clear local preferences to prevent data leaks across accounts
     final prefs = await SharedPreferences.getInstance();
     await prefs.remove(AppConstants.kSelectedBusinessId);
+
+    try {
+      await _supabase.auth.signOut();
+    } catch (_) {}
+    
     state = AuthState.unauthenticated();
   }
 
