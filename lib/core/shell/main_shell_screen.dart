@@ -11,6 +11,8 @@ import 'package:hamro_pasal/core/services/sync_service.dart';
 import 'package:hamro_pasal/features/auth/presentation/providers/auth_provider.dart';
 import 'package:hamro_pasal/features/subscription/data/services/subscription_manager.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:hamro_pasal/core/services/app_lock_service.dart';
+import 'package:hamro_pasal/features/settings/presentation/screens/pin_lock_screen.dart';
 
 class MainShellScreen extends ConsumerStatefulWidget {
   final Widget child;
@@ -47,12 +49,14 @@ class MainShellScreen extends ConsumerStatefulWidget {
   ConsumerState<MainShellScreen> createState() => _MainShellScreenState();
 }
 
-class _MainShellScreenState extends ConsumerState<MainShellScreen> {
+class _MainShellScreenState extends ConsumerState<MainShellScreen> with WidgetsBindingObserver {
   Timer? _heartbeatTimer;
+  bool _isCurrentlyLocked = false;
 
   @override
   void initState() {
     super.initState();
+    WidgetsBinding.instance.addObserver(this);
     _sendHeartbeat();
     _heartbeatTimer = Timer.periodic(
       const Duration(minutes: 5),
@@ -60,14 +64,35 @@ class _MainShellScreenState extends ConsumerState<MainShellScreen> {
     );
   }
 
-  void _sendHeartbeat() {
-    ref.read(authProvider.notifier).heartbeat();
+  @override
+  void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+    _heartbeatTimer?.cancel();
+    super.dispose();
   }
 
   @override
-  void dispose() {
-    _heartbeatTimer?.cancel();
-    super.dispose();
+  Future<void> didChangeAppLifecycleState(AppLifecycleState state) async {
+    super.didChangeAppLifecycleState(state);
+    if (state == AppLifecycleState.resumed) {
+      final lockEnabled = await AppLockService.isEnabled();
+      if (lockEnabled && !_isCurrentlyLocked) {
+        _isCurrentlyLocked = true;
+        if (mounted) {
+          await Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => const PinLockScreen(),
+            ),
+          );
+          _isCurrentlyLocked = false;
+        }
+      }
+    }
+  }
+
+  void _sendHeartbeat() {
+    ref.read(authProvider.notifier).heartbeat();
   }
 
   int _locationIndex(String location) {
