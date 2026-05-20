@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:hamro_pasal/core/router/app_router.dart';
 import 'package:hamro_pasal/features/admin/presentation/providers/admin_auth_provider.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 
 class AdminShellScreen extends ConsumerStatefulWidget {
   final Widget child;
@@ -32,7 +33,46 @@ class _AdminShellScreenState extends ConsumerState<AdminShellScreen> {
         route: AppRoutes.adminSubscriptions,
         icon: Icons.card_membership_rounded,
         label: 'Subscriptions'),
+    _NavItem(
+        route: AppRoutes.adminFeedback,
+        icon: Icons.feedback_outlined,
+        label: 'Feedback'),
   ];
+
+  // Pending feedback count for the notification badge
+  int _pendingFeedback = 0;
+  RealtimeChannel? _fbChannel;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadPendingCount();
+    _fbChannel = Supabase.instance.client
+        .channel('shell-feedbacks')
+        .onPostgresChanges(
+          event: PostgresChangeEvent.all,
+          schema: 'public',
+          table: 'feedbacks',
+          callback: (_) => _loadPendingCount(),
+        )
+        .subscribe();
+  }
+
+  @override
+  void dispose() {
+    _fbChannel?.unsubscribe();
+    super.dispose();
+  }
+
+  Future<void> _loadPendingCount() async {
+    try {
+      final res = await Supabase.instance.client
+          .from('feedbacks')
+          .select('id')
+          .eq('status', 'pending');
+      if (mounted) setState(() => _pendingFeedback = (res as List).length);
+    } catch (_) {}
+  }
 
   void _onNavTap(int index) {
     setState(() => _selectedIndex = index);
@@ -137,6 +177,7 @@ class _AdminShellScreenState extends ConsumerState<AdminShellScreen> {
                       itemBuilder: (context, i) {
                         final item = _navItems[i];
                         final selected = _selectedIndex == i;
+                        final isFeedback = item.route == AppRoutes.adminFeedback;
                         return Padding(
                           padding: const EdgeInsets.only(bottom: 4),
                           child: InkWell(
@@ -160,12 +201,42 @@ class _AdminShellScreenState extends ConsumerState<AdminShellScreen> {
                               ),
                               child: Row(
                                 children: [
-                                  Icon(
-                                    item.icon,
-                                    size: 20,
-                                    color: selected
-                                        ? const Color(0xFFF59E0B)
-                                        : Colors.white38,
+                                  Stack(
+                                    clipBehavior: Clip.none,
+                                    children: [
+                                      Icon(
+                                        item.icon,
+                                        size: 20,
+                                        color: selected
+                                            ? const Color(0xFFF59E0B)
+                                            : Colors.white38,
+                                      ),
+                                      if (isFeedback && _pendingFeedback > 0)
+                                        Positioned(
+                                          top: -4,
+                                          right: -4,
+                                          child: Container(
+                                            width: 14,
+                                            height: 14,
+                                            decoration: const BoxDecoration(
+                                              color: Color(0xFFEF4444),
+                                              shape: BoxShape.circle,
+                                            ),
+                                            child: Center(
+                                              child: Text(
+                                                _pendingFeedback > 9
+                                                    ? '9+'
+                                                    : '$_pendingFeedback',
+                                                style: const TextStyle(
+                                                  color: Colors.white,
+                                                  fontSize: 8,
+                                                  fontWeight: FontWeight.w800,
+                                                ),
+                                              ),
+                                            ),
+                                          ),
+                                        ),
+                                    ],
                                   ),
                                   const SizedBox(width: 12),
                                   Text(
@@ -262,12 +333,19 @@ class _AdminShellScreenState extends ConsumerState<AdminShellScreen> {
               type: BottomNavigationBarType.fixed,
               selectedLabelStyle: const TextStyle(
                   fontSize: 10, fontWeight: FontWeight.w600),
-              items: _navItems
-                  .map((e) => BottomNavigationBarItem(
-                        icon: Icon(e.icon),
-                        label: e.label,
-                      ))
-                  .toList(),
+              items: _navItems.map((e) {
+                final isFeedback = e.route == AppRoutes.adminFeedback;
+                return BottomNavigationBarItem(
+                  icon: isFeedback && _pendingFeedback > 0
+                      ? Badge(
+                          label: Text('$_pendingFeedback'),
+                          backgroundColor: const Color(0xFFEF4444),
+                          child: Icon(e.icon),
+                        )
+                      : Icon(e.icon),
+                  label: e.label,
+                );
+              }).toList(),
             ),
     );
   }

@@ -12,6 +12,9 @@ import 'package:hamro_pasal/core/providers/profile_mode_provider.dart';
 import 'package:hamro_pasal/features/auth/presentation/providers/auth_provider.dart';
 import 'package:hamro_pasal/features/settings/presentation/screens/profile_edit_screen.dart';
 import 'package:hamro_pasal/features/settings/presentation/screens/business_profile_edit_screen.dart';
+import 'package:hamro_pasal/features/settings/presentation/screens/help_faq_screen.dart';
+import 'package:hamro_pasal/features/settings/presentation/screens/send_feedback_screen.dart';
+import 'package:hamro_pasal/features/settings/presentation/screens/legal_screens.dart';
 
 class SettingsScreen extends ConsumerWidget {
   const SettingsScreen({super.key});
@@ -107,23 +110,31 @@ class SettingsScreen extends ConsumerWidget {
             icon: Icons.help_outline_rounded,
             title: l.helpFaq,
             subtitle: l.helpSubtitle,
-            onTap: () {},
+            onTap: () => Navigator.of(context).push(
+              MaterialPageRoute(builder: (_) => const HelpFaqScreen()),
+            ),
           ),
           _SettingsTile(
             icon: Icons.feedback_outlined,
             title: l.sendFeedback,
             subtitle: l.feedbackSubtitle,
-            onTap: () {},
+            onTap: () => Navigator.of(context).push(
+              MaterialPageRoute(builder: (_) => const SendFeedbackScreen()),
+            ),
           ),
           _SettingsTile(
             icon: Icons.privacy_tip_outlined,
             title: l.privacyPolicy,
-            onTap: () {},
+            onTap: () => Navigator.of(context).push(
+              MaterialPageRoute(builder: (_) => const PrivacyPolicyScreen()),
+            ),
           ),
           _SettingsTile(
             icon: Icons.description_outlined,
             title: l.termsOfService,
-            onTap: () {},
+            onTap: () => Navigator.of(context).push(
+              MaterialPageRoute(builder: (_) => const TermsOfServiceScreen()),
+            ),
           ),
 
           const SizedBox(height: 24),

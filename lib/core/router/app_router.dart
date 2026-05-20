@@ -45,6 +45,7 @@ import 'package:hamro_pasal/features/admin/presentation/screens/admin_dashboard_
 import 'package:hamro_pasal/features/admin/presentation/screens/admin_users_screen.dart';
 import 'package:hamro_pasal/features/admin/presentation/screens/admin_businesses_screen.dart';
 import 'package:hamro_pasal/features/admin/presentation/screens/admin_subscriptions_screen.dart';
+import 'package:hamro_pasal/features/admin/presentation/screens/admin_feedback_screen.dart';
 
 // ── Route Name Constants ──────────────────────────────────────
 class AppRoutes {
@@ -85,6 +86,7 @@ class AppRoutes {
   static const String adminUsers = '/admin/users';
   static const String adminBusinesses = '/admin/businesses';
   static const String adminSubscriptions = '/admin/subscriptions';
+  static const String adminFeedback = '/admin/feedback';
 }
 
 // ── Admin auth listenable ─────────────────────────────────────
@@ -318,6 +320,10 @@ final appRouterProvider = Provider<GoRouter>((ref) {
         GoRoute(
           path: AppRoutes.adminSubscriptions,
           builder: (_, __) => const AdminSubscriptionsScreen(),
+        ),
+        GoRoute(
+          path: AppRoutes.adminFeedback,
+          builder: (_, __) => const AdminFeedbackScreen(),
         ),
       ],
     ),

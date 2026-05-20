@@ -129,4 +129,52 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
+-- ─── 8. Feedbacks table ───────────────────────────────────────
+CREATE TABLE IF NOT EXISTS public.feedbacks (
+  id           UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  user_id      UUID REFERENCES auth.users(id) ON DELETE SET NULL,
+  rating       INT NOT NULL CHECK (rating BETWEEN 1 AND 5),
+  category     TEXT NOT NULL DEFAULT 'General',
+  message      TEXT NOT NULL,
+  status       TEXT NOT NULL DEFAULT 'pending'
+               CHECK (status IN ('pending', 'reviewed', 'resolved')),
+  admin_notes  TEXT,
+  created_at   TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  updated_at   TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+-- Index for fast admin queries
+CREATE INDEX IF NOT EXISTS idx_feedbacks_status     ON public.feedbacks(status);
+CREATE INDEX IF NOT EXISTS idx_feedbacks_created_at ON public.feedbacks(created_at DESC);
+
+-- Auto-update updated_at
+CREATE TRIGGER feedbacks_updated_at
+  BEFORE UPDATE ON public.feedbacks
+  FOR EACH ROW EXECUTE FUNCTION update_updated_at();
+
+-- RLS
+ALTER TABLE public.feedbacks ENABLE ROW LEVEL SECURITY;
+
+-- Users can INSERT their own feedback (logged in)
+CREATE POLICY "Users can submit feedback"
+  ON public.feedbacks FOR INSERT
+  TO authenticated
+  WITH CHECK (auth.uid() = user_id);
+
+-- Users can read their own feedback
+CREATE POLICY "Users can view own feedback"
+  ON public.feedbacks FOR SELECT
+  TO authenticated
+  USING (auth.uid() = user_id);
+
+-- Service role (admin backend) can do everything
+CREATE POLICY "Service role full access"
+  ON public.feedbacks
+  TO service_role
+  USING (true)
+  WITH CHECK (true);
+
+-- Enable realtime for admin dashboard notifications
+ALTER PUBLICATION supabase_realtime ADD TABLE public.feedbacks;
+
 -- Done ✓
