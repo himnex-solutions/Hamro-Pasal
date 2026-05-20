@@ -132,7 +132,7 @@ $$ LANGUAGE plpgsql;
 -- ─── 8. Feedbacks table ───────────────────────────────────────
 CREATE TABLE IF NOT EXISTS public.feedbacks (
   id           UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-  user_id      UUID REFERENCES auth.users(id) ON DELETE SET NULL,
+  user_id      UUID REFERENCES public.user_profiles(id) ON DELETE SET NULL,
   rating       INT NOT NULL CHECK (rating BETWEEN 1 AND 5),
   category     TEXT NOT NULL DEFAULT 'General',
   message      TEXT NOT NULL,
@@ -166,6 +166,19 @@ CREATE POLICY "Users can view own feedback"
   ON public.feedbacks FOR SELECT
   TO authenticated
   USING (auth.uid() = user_id);
+
+-- Admins can view all feedback
+CREATE POLICY "Admins can view all feedback"
+  ON public.feedbacks FOR SELECT
+  TO authenticated
+  USING (is_admin_user());
+
+-- Admins can update all feedback
+CREATE POLICY "Admins can update all feedback"
+  ON public.feedbacks FOR UPDATE
+  TO authenticated
+  USING (is_admin_user())
+  WITH CHECK (is_admin_user());
 
 -- Service role (admin backend) can do everything
 CREATE POLICY "Service role full access"

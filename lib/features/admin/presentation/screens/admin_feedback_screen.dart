@@ -60,7 +60,15 @@ class _AdminFeedbackScreenState extends State<AdminFeedbackScreen> {
         });
       }
     } catch (e) {
-      if (mounted) setState(() => _loading = false);
+      if (mounted) {
+        setState(() => _loading = false);
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Error loading feedback: $e'),
+            backgroundColor: const Color(0xFFEF4444),
+          ),
+        );
+      }
     }
   }
 
@@ -266,13 +274,29 @@ class _AdminFeedbackScreenState extends State<AdminFeedbackScreen> {
                     width: double.infinity,
                     child: ElevatedButton.icon(
                       onPressed: () async {
-                        await _supabase.from('feedbacks').update({
-                          'status': status,
-                          'admin_notes': notesCtrl.text.trim(),
-                          'updated_at': DateTime.now().toIso8601String(),
-                        }).eq('id', fb['id']);
-                        if (ctx.mounted) Navigator.pop(ctx);
-                        _loadFeedbacks();
+                        try {
+                          final updated = await _supabase.from('feedbacks').update({
+                            'status': status,
+                            'admin_notes': notesCtrl.text.trim(),
+                            'updated_at': DateTime.now().toIso8601String(),
+                          }).eq('id', fb['id']).select();
+
+                          if (updated.isEmpty) {
+                            throw Exception('RLS policy blocked the update or row not found.');
+                          }
+
+                          if (ctx.mounted) Navigator.pop(ctx);
+                          _loadFeedbacks();
+                        } catch (e) {
+                          if (ctx.mounted) {
+                            ScaffoldMessenger.of(ctx).showSnackBar(
+                              SnackBar(
+                                content: Text('Error saving: $e'),
+                                backgroundColor: const Color(0xFFEF4444),
+                              ),
+                            );
+                          }
+                        }
                       },
                       style: ElevatedButton.styleFrom(
                         backgroundColor: const Color(0xFFF59E0B),
