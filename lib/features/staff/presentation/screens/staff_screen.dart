@@ -1,10 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:go_router/go_router.dart';
 import 'package:hamro_pasal/core/theme/app_theme.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:hamro_pasal/core/constants/app_constants.dart';
+import 'package:hamro_pasal/core/widgets/app_snackbar.dart';
+import 'package:hamro_pasal/core/router/app_router.dart';
+import 'package:hamro_pasal/features/subscription/data/services/subscription_manager.dart';
+import 'package:hamro_pasal/core/l10n/app_strings.dart';
 
 class StaffMember {
   final String id, userId, role, email, fullName;
@@ -96,6 +101,33 @@ class StaffScreen extends ConsumerWidget {
     'accountant': AppTheme.warningColor,
   };
 
+  void _onInvitePressed(BuildContext context, WidgetRef ref, int currentCount) {
+    final manager = ref.read(subscriptionManagerProvider);
+    final maxStaff = manager.maxStaff;
+
+    if (maxStaff <= 0) {
+      AppSnackbar.show(
+        context,
+        context.l10n.staffPremiumMsg,
+        isError: true,
+      );
+      context.push(AppRoutes.subscription);
+      return;
+    }
+
+    if (currentCount >= maxStaff) {
+      AppSnackbar.show(
+        context,
+        context.l10n.staffLimitMsg(maxStaff),
+        isError: true,
+      );
+      context.push(AppRoutes.subscription);
+      return;
+    }
+
+    _showInviteDialog(context);
+  }
+
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final staffAsync = ref.watch(staffProvider);
@@ -105,7 +137,7 @@ class StaffScreen extends ConsumerWidget {
         title: const Text('Staff'),
         actions: [
           IconButton(
-            onPressed: () => _showInviteDialog(context),
+            onPressed: () => _onInvitePressed(context, ref, staffAsync.value?.length ?? 0),
             icon: const Icon(Icons.person_add_outlined),
             tooltip: 'Invite Staff',
           ),
@@ -130,7 +162,7 @@ class StaffScreen extends ConsumerWidget {
                       style: Theme.of(context).textTheme.bodySmall),
                   const SizedBox(height: 16),
                   ElevatedButton.icon(
-                    onPressed: () => _showInviteDialog(context),
+                    onPressed: () => _onInvitePressed(context, ref, staff.length),
                     icon: const Icon(Icons.person_add_outlined),
                     label: const Text('Invite Staff'),
                   ),

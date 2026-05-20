@@ -46,6 +46,7 @@ import 'package:hamro_pasal/features/admin/presentation/screens/admin_users_scre
 import 'package:hamro_pasal/features/admin/presentation/screens/admin_businesses_screen.dart';
 import 'package:hamro_pasal/features/admin/presentation/screens/admin_subscriptions_screen.dart';
 import 'package:hamro_pasal/features/admin/presentation/screens/admin_feedback_screen.dart';
+import 'package:hamro_pasal/features/invoices/presentation/screens/invoice_settings_screen.dart';
 
 // ── Route Name Constants ──────────────────────────────────────
 class AppRoutes {
@@ -79,6 +80,7 @@ class AppRoutes {
   static const String subscription = '/subscription';
   static const String trialExpired = '/trial-expired';
   static const String settings = '/settings';
+  static const String invoiceSettings = '/settings/invoices';
 
   // ── Admin routes ───────────────────────────────────────
   static const String adminLogin = '/admin/login';
@@ -170,6 +172,9 @@ final appRouterProvider = Provider<GoRouter>((ref) {
       GoRoute(
           path: AppRoutes.settings,
           builder: (_, __) => const SettingsScreen()),
+      GoRoute(
+          path: AppRoutes.invoiceSettings,
+          builder: (_, __) => const InvoiceSettingsScreen()),
 
       // ── Shell routes (bottom nav / rail / sidebar) ────────
       ShellRoute(

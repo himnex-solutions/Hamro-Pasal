@@ -10,6 +10,8 @@ import 'package:hamro_pasal/core/theme/app_theme.dart';
 import 'package:hamro_pasal/features/inventory/data/models/product_model.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:hamro_pasal/features/subscription/data/services/subscription_manager.dart';
+import 'package:hamro_pasal/core/widgets/app_snackbar.dart';
 
 final inventoryProvider =
     AsyncNotifierProvider<InventoryNotifier, List<Product>>(() {
@@ -109,8 +111,19 @@ class _InventoryScreenState extends ConsumerState<InventoryScreen> {
                 FilterChip(
                   label: Text(l.lowStock),
                   selected: _filter == 'low_stock',
-                  onSelected: (v) =>
-                      setState(() => _filter = v ? 'low_stock' : 'all'),
+                  onSelected: (v) {
+                    final manager = ref.read(subscriptionManagerProvider.notifier);
+                    if (manager.currentSubscriptionPlan == 'basic') {
+                      AppSnackbar.show(
+                        context,
+                        context.l10n.lowStockPremiumMsg,
+                        isError: true,
+                      );
+                      context.push(AppRoutes.subscription);
+                      return;
+                    }
+                    setState(() => _filter = v ? 'low_stock' : 'all');
+                  },
                   selectedColor: AppTheme.warningColor.withValues(alpha: 0.15),
                   checkmarkColor: AppTheme.warningColor,
                 ),
@@ -196,12 +209,14 @@ class _InventoryScreenState extends ConsumerState<InventoryScreen> {
   }
 }
 
-class _InventoryStats extends StatelessWidget {
+class _InventoryStats extends ConsumerWidget {
   final List<Product> products;
   const _InventoryStats({required this.products});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final manager = ref.watch(subscriptionManagerProvider);
+    final hasLowStockAlerts = manager.planCode != 'basic' && manager.status == 'active';
     final totalValue = products.fold<double>(0, (s, p) => s + p.inventoryValue);
     final lowStockCount = products.where((p) => p.isLowStock).length;
     final formatted = NumberFormat('#,##,##0').format(totalValue);
@@ -216,7 +231,7 @@ class _InventoryStats extends StatelessWidget {
           _StatChip('Rs. $formatted', Icons.monetization_on_outlined,
               AppTheme.successColor),
           const SizedBox(width: 8),
-          if (lowStockCount > 0)
+          if (lowStockCount > 0 && hasLowStockAlerts)
             _StatChip('$lowStockCount ${context.l10n.lowStock}',
                 Icons.warning_amber_outlined, AppTheme.warningColor),
         ],
@@ -254,12 +269,16 @@ class _StatChip extends StatelessWidget {
   }
 }
 
-class _ProductCard extends StatelessWidget {
+class _ProductCard extends ConsumerWidget {
   final Product product;
   const _ProductCard({required this.product});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final manager = ref.watch(subscriptionManagerProvider);
+    final hasLowStockAlerts = manager.planCode != 'basic' && manager.status == 'active';
+    final isLow = product.isLowStock && hasLowStockAlerts;
+
     return Container(
       decoration: BoxDecoration(
         color: Theme.of(context).cardTheme.color,
@@ -328,7 +347,7 @@ class _ProductCard extends StatelessWidget {
                                 maxLines: 1,
                                 overflow: TextOverflow.ellipsis),
                           ),
-                          if (product.isLowStock)
+                          if (isLow)
                             Container(
                               padding: const EdgeInsets.symmetric(
                                   horizontal: 6, vertical: 2),
@@ -359,7 +378,7 @@ class _ProductCard extends StatelessWidget {
                             style:
                                 Theme.of(context).textTheme.bodySmall?.copyWith(
                                       fontWeight: FontWeight.w600,
-                                      color: product.isLowStock
+                                      color: isLow
                                           ? AppTheme.warningColor
                                           : AppTheme.successColor,
                                     ),

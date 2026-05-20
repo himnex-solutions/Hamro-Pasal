@@ -9,7 +9,7 @@ import 'package:hamro_pasal/core/widgets/app_button.dart';
 import 'package:hamro_pasal/core/widgets/app_snackbar.dart';
 import 'package:hamro_pasal/core/widgets/app_text_field.dart';
 import 'package:hamro_pasal/features/auth/presentation/providers/auth_provider.dart';
-
+import 'package:hamro_pasal/features/subscription/data/services/subscription_manager.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:uuid/uuid.dart';
@@ -78,6 +78,31 @@ class _BusinessSetupScreenState extends ConsumerState<BusinessSetupScreen> {
     try {
       final supabase = Supabase.instance.client;
       final userId = supabase.auth.currentUser!.id;
+
+      final existingBiz = await supabase
+          .from('businesses')
+          .select('id')
+          .eq('owner_id', userId);
+      final count = (existingBiz as List).length;
+
+      final manager = ref.read(subscriptionManagerProvider);
+      final maxBusinesses = manager.planCode == 'diamond'
+          ? 5
+          : manager.planCode == 'gold'
+              ? 3
+              : 1;
+
+      if (count >= maxBusinesses) {
+        if (mounted) {
+          AppSnackbar.show(
+            context,
+            'Business limit reached ($maxBusinesses) for ${manager.planCode.toUpperCase()} tier. Please upgrade.',
+            isError: true,
+          );
+          context.push(AppRoutes.subscription);
+        }
+        return;
+      }
 
       // ── PAN uniqueness check ──────────────────────────────────────
       final pan = _panCtrl.text.trim();

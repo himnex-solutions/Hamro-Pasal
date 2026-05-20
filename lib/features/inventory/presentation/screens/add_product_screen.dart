@@ -15,6 +15,10 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:uuid/uuid.dart';
 import 'dart:io';
+import 'package:hamro_pasal/core/widgets/barcode_scanner_modal.dart';
+import 'package:hamro_pasal/features/subscription/data/services/subscription_manager.dart';
+import 'package:hamro_pasal/core/router/app_router.dart';
+import 'package:hamro_pasal/core/l10n/app_strings.dart';
 
 class AddProductScreen extends ConsumerStatefulWidget {
   const AddProductScreen({super.key});
@@ -45,6 +49,30 @@ class _AddProductScreenState extends ConsumerState<AddProductScreen> {
     _stockCtrl.dispose();
     _minStockCtrl.dispose();
     super.dispose();
+  }
+
+  Future<void> _scanBarcode() async {
+    final manager = ref.read(subscriptionManagerProvider.notifier);
+    final hasAccess = manager.checkFeatureAccess('barcode_scanner');
+
+    if (!hasAccess) {
+      AppSnackbar.show(
+        context,
+        context.l10n.barcodePremiumMsg,
+        isError: true,
+      );
+      context.push(AppRoutes.subscription);
+      return;
+    }
+
+    final code = await BarcodeScannerModal.show(context);
+    if (!mounted) return;
+    if (code != null && code.isNotEmpty) {
+      setState(() {
+        _barcodeCtrl.text = code;
+      });
+      AppSnackbar.show(context, 'Barcode scanned: $code', isSuccess: true);
+    }
   }
 
   Future<void> _pickImage() async {
@@ -190,7 +218,11 @@ class _AddProductScreenState extends ConsumerState<AddProductScreen> {
                       AppTextField(
                           controller: _barcodeCtrl,
                           hint: 'Scan or enter',
-                          keyboardType: TextInputType.number),
+                          keyboardType: TextInputType.number,
+                          suffixIcon: IconButton(
+                            icon: const Icon(Icons.qr_code_scanner, color: AppTheme.primaryColor),
+                            onPressed: _scanBarcode,
+                          )),
                     ])),
               ],
             ).animate(delay: 50.ms).fadeIn(),

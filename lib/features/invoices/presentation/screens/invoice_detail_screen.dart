@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 import 'package:pdf/pdf.dart';
 import 'package:pdf/widgets.dart' as pw;
@@ -10,16 +11,18 @@ import 'package:hamro_pasal/core/constants/app_constants.dart';
 import 'package:hamro_pasal/core/l10n/app_strings.dart';
 import 'package:hamro_pasal/core/theme/app_theme.dart';
 import 'package:hamro_pasal/core/widgets/app_snackbar.dart';
+import 'package:hamro_pasal/features/invoices/data/services/invoice_settings_service.dart';
+import 'package:hamro_pasal/features/subscription/data/services/subscription_manager.dart';
 
-class InvoiceDetailScreen extends StatefulWidget {
+class InvoiceDetailScreen extends ConsumerStatefulWidget {
   final String invoiceId;
   const InvoiceDetailScreen({super.key, required this.invoiceId});
 
   @override
-  State<InvoiceDetailScreen> createState() => _InvoiceDetailScreenState();
+  ConsumerState<InvoiceDetailScreen> createState() => _InvoiceDetailScreenState();
 }
 
-class _InvoiceDetailScreenState extends State<InvoiceDetailScreen> {
+class _InvoiceDetailScreenState extends ConsumerState<InvoiceDetailScreen> {
   final _supabase = Supabase.instance.client;
   Map<String, dynamic>? _invoice;
   Map<String, dynamic>? _business;
@@ -128,15 +131,39 @@ class _InvoiceDetailScreenState extends State<InvoiceDetailScreen> {
       final tax = (inv['tax_amount'] as num?)?.toDouble() ?? 0;
       final discount = (inv['discount_amount'] as num?)?.toDouble() ?? 0;
 
-      final primaryColor = PdfColor.fromHex('2E7D32');
+      final settings = ref.read(invoiceSettingsProvider);
+      final primaryColorHex = settings.themeColorHex.replaceFirst('#', '');
+      final primaryColor = PdfColor.fromHex(primaryColorHex);
       final lightGrey = PdfColor.fromHex('F5F5F5');
       final darkText = PdfColor.fromHex('212121');
       final greyText = PdfColor.fromHex('757575');
 
+      PdfPageFormat pageFormat;
+      double marginValue;
+      switch (settings.printTemplate) {
+        case 'a5':
+          pageFormat = PdfPageFormat.a5;
+          marginValue = 24;
+          break;
+        case 'thermal_58':
+          pageFormat = const PdfPageFormat(58 * PdfPageFormat.mm, 180 * PdfPageFormat.mm);
+          marginValue = 12;
+          break;
+        case 'thermal_80':
+          pageFormat = const PdfPageFormat(80 * PdfPageFormat.mm, 240 * PdfPageFormat.mm);
+          marginValue = 16;
+          break;
+        case 'a4':
+        default:
+          pageFormat = PdfPageFormat.a4;
+          marginValue = 32;
+          break;
+      }
+
       pdf.addPage(
         pw.Page(
-          pageFormat: PdfPageFormat.a4,
-          margin: const pw.EdgeInsets.all(32),
+          pageFormat: pageFormat,
+          margin: pw.EdgeInsets.all(marginValue),
           build: (ctx) => pw.Column(
             crossAxisAlignment: pw.CrossAxisAlignment.start,
             children: [
@@ -173,9 +200,9 @@ class _InvoiceDetailScreenState extends State<InvoiceDetailScreen> {
                   pw.Column(
                     crossAxisAlignment: pw.CrossAxisAlignment.end,
                     children: [
-                      pw.Text('INVOICE',
+                      pw.Text(settings.title.toUpperCase(),
                           style: pw.TextStyle(
-                            fontSize: 28,
+                            fontSize: 24,
                             fontWeight: pw.FontWeight.bold,
                             color: greyText,
                           )),
@@ -348,9 +375,16 @@ class _InvoiceDetailScreenState extends State<InvoiceDetailScreen> {
               pw.Spacer(),
               pw.Divider(color: PdfColor.fromHex('E0E0E0')),
               pw.Center(
-                child: pw.Text('Thank you for your business!',
+                child: pw.Text(settings.footerNote,
                     style: pw.TextStyle(color: greyText, fontSize: 10)),
               ),
+              if (ref.read(subscriptionManagerProvider).planCode == 'basic') ...[
+                pw.SizedBox(height: 8),
+                pw.Center(
+                  child: pw.Text('Powered by Hamro Pasal',
+                      style: pw.TextStyle(color: greyText, fontSize: 8, fontStyle: pw.FontStyle.italic)),
+                ),
+              ],
             ],
           ),
         ),

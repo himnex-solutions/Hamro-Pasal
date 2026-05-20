@@ -6,6 +6,18 @@ import 'package:hamro_pasal/core/constants/app_constants.dart';
 import 'package:hamro_pasal/core/theme/app_theme.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
+import 'dart:io';
+import 'package:excel/excel.dart' as xl;
+import 'package:path_provider/path_provider.dart';
+import 'package:pdf/pdf.dart';
+import 'package:pdf/widgets.dart' as pw;
+import 'package:printing/printing.dart';
+import 'package:share_plus/share_plus.dart';
+import 'package:hamro_pasal/core/widgets/app_snackbar.dart';
+import 'package:hamro_pasal/features/subscription/data/services/subscription_manager.dart';
+import 'package:hamro_pasal/core/router/app_router.dart';
+import 'package:go_router/go_router.dart';
+import 'package:hamro_pasal/core/l10n/app_strings.dart';
 
 class ReportSummary {
   final double totalSales;
@@ -106,6 +118,138 @@ class ReportsScreen extends ConsumerStatefulWidget {
 
 class _ReportsScreenState extends ConsumerState<ReportsScreen> {
   ReportPeriod _period = ReportPeriod.month;
+
+  Future<void> _exportPdf(ReportSummary report) async {
+    final manager = ref.read(subscriptionManagerProvider.notifier);
+    if (manager.currentSubscriptionPlan == 'basic') {
+      AppSnackbar.show(
+        context,
+        context.l10n.reportPremiumMsg,
+        isError: true,
+      );
+      context.push(AppRoutes.subscription);
+      return;
+    }
+
+    try {
+      final pdf = pw.Document();
+      final fmt = NumberFormat('#,##,##0.00');
+
+      pdf.addPage(
+        pw.Page(
+          pageFormat: PdfPageFormat.a4,
+          build: (context) {
+            return pw.Column(
+              crossAxisAlignment: pw.CrossAxisAlignment.start,
+              children: [
+                pw.Text('Hamro Pasal — Business Performance Report', style: pw.TextStyle(fontSize: 20, fontWeight: pw.FontWeight.bold)),
+                pw.SizedBox(height: 8),
+                pw.Text('Generated on: ${DateFormat('yyyy-MM-dd HH:mm').format(DateTime.now())}'),
+                pw.SizedBox(height: 16),
+                pw.Divider(),
+                pw.SizedBox(height: 16),
+                pw.Text('Profit & Loss Summary', style: pw.TextStyle(fontSize: 14, fontWeight: pw.FontWeight.bold)),
+                pw.SizedBox(height: 8),
+                pw.Text('Total Sales: Rs. ${fmt.format(report.totalSales)}'),
+                pw.Text('Total Purchases: Rs. ${fmt.format(report.totalPurchases)}'),
+                pw.Text('Total Expenses: Rs. ${fmt.format(report.totalExpenses)}'),
+                pw.Divider(),
+                pw.Text('Net Profit: Rs. ${fmt.format(report.netProfit)}', style: pw.TextStyle(fontWeight: pw.FontWeight.bold)),
+                pw.SizedBox(height: 24),
+                if (report.topProducts.isNotEmpty) ...[
+                  pw.Text('Top Selling Products', style: pw.TextStyle(fontSize: 14, fontWeight: pw.FontWeight.bold)),
+                  pw.SizedBox(height: 8),
+                  pw.Table(
+                    border: pw.TableBorder.all(),
+                    children: [
+                      pw.TableRow(
+                        children: [
+                          pw.Padding(padding: const pw.EdgeInsets.all(6), child: pw.Text('Product Name', style: pw.TextStyle(fontWeight: pw.FontWeight.bold))),
+                          pw.Padding(padding: const pw.EdgeInsets.all(6), child: pw.Text('Qty Sold', style: pw.TextStyle(fontWeight: pw.FontWeight.bold))),
+                          pw.Padding(padding: const pw.EdgeInsets.all(6), child: pw.Text('Total Sales', style: pw.TextStyle(fontWeight: pw.FontWeight.bold))),
+                        ]
+                      ),
+                      ...report.topProducts.map((p) => pw.TableRow(
+                        children: [
+                          pw.Padding(padding: const pw.EdgeInsets.all(6), child: pw.Text(p['product_name'] as String)),
+                          pw.Padding(padding: const pw.EdgeInsets.all(6), child: pw.Text(p['quantity'].toString())),
+                          pw.Padding(padding: const pw.EdgeInsets.all(6), child: pw.Text('Rs. ${fmt.format(p['total_price'])}')),
+                        ]
+                      )),
+                    ],
+                  ),
+                ],
+              ],
+            );
+          },
+        ),
+      );
+
+      await Printing.layoutPdf(onLayout: (_) => pdf.save());
+    } catch (e) {
+      if (mounted) {
+        AppSnackbar.show(context, 'Failed to export PDF: $e', isError: true);
+      }
+    }
+  }
+
+  Future<void> _exportExcel(ReportSummary report) async {
+    final manager = ref.read(subscriptionManagerProvider.notifier);
+    if (!manager.checkFeatureAccess('excel_export')) {
+      AppSnackbar.show(
+        context,
+        context.l10n.excelPremiumMsg,
+        isError: true,
+      );
+      context.push(AppRoutes.subscription);
+      return;
+    }
+
+    try {
+      final excel = xl.Excel.createExcel();
+      final sheet = excel['Sheet1'];
+
+      sheet.appendRow([xl.TextCellValue('Hamro Pasal — Business Performance Report')]);
+      sheet.appendRow([xl.TextCellValue('Generated on: ${DateFormat('yyyy-MM-dd HH:mm').format(DateTime.now())}')]);
+      sheet.appendRow([]);
+
+      sheet.appendRow([xl.TextCellValue('Profit & Loss Summary')]);
+      sheet.appendRow([xl.TextCellValue('Metric'), xl.TextCellValue('Amount (Rs.)')]);
+      sheet.appendRow([xl.TextCellValue('Total Sales'), xl.DoubleCellValue(report.totalSales)]);
+      sheet.appendRow([xl.TextCellValue('Total Purchases'), xl.DoubleCellValue(report.totalPurchases)]);
+      sheet.appendRow([xl.TextCellValue('Total Expenses'), xl.DoubleCellValue(report.totalExpenses)]);
+      sheet.appendRow([xl.TextCellValue('Net Profit'), xl.DoubleCellValue(report.netProfit)]);
+      sheet.appendRow([]);
+
+      if (report.topProducts.isNotEmpty) {
+        sheet.appendRow([xl.TextCellValue('Top Selling Products')]);
+        sheet.appendRow([xl.TextCellValue('Product Name'), xl.TextCellValue('Qty Sold'), xl.TextCellValue('Total Sales (Rs.)')]);
+        for (final p in report.topProducts) {
+          sheet.appendRow([
+            xl.TextCellValue(p['product_name'] as String),
+            xl.DoubleCellValue((p['quantity'] as num).toDouble()),
+            xl.DoubleCellValue((p['total_price'] as num).toDouble()),
+          ]);
+        }
+      }
+
+      final fileBytes = excel.save();
+      if (fileBytes != null) {
+        final tempDir = await getTemporaryDirectory();
+        final file = await File('${tempDir.path}/business_report_${DateFormat('yyyyMMdd').format(DateTime.now())}.xlsx').create();
+        await file.writeAsBytes(fileBytes);
+
+        await Share.shareXFiles(
+          [XFile(file.path)],
+          text: 'Hamro Pasal Business Report',
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        AppSnackbar.show(context, 'Failed to export Excel: $e', isError: true);
+      }
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -283,11 +427,11 @@ class _ReportsScreenState extends ConsumerState<ReportsScreen> {
                       runSpacing: 10,
                       children: [
                         OutlinedButton.icon(
-                            onPressed: () {},
+                            onPressed: () => _exportPdf(report),
                             icon: const Icon(Icons.picture_as_pdf_outlined),
                             label: const Text('Export PDF')),
                         OutlinedButton.icon(
-                            onPressed: () {},
+                            onPressed: () => _exportExcel(report),
                             icon: const Icon(Icons.table_chart_outlined),
                             label: const Text('Export Excel')),
                       ],

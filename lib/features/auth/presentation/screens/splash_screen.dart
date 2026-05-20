@@ -3,7 +3,9 @@ import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:hamro_pasal/core/router/app_router.dart';
+import 'package:hamro_pasal/core/services/app_lock_service.dart';
 import 'package:hamro_pasal/features/auth/presentation/providers/auth_provider.dart';
+import 'package:hamro_pasal/features/settings/presentation/screens/pin_lock_screen.dart';
 import 'package:loading_animation_widget/loading_animation_widget.dart';
 
 class SplashScreen extends ConsumerStatefulWidget {
@@ -63,7 +65,23 @@ class _SplashScreenState extends ConsumerState<SplashScreen>
 
     switch (authState.status) {
       case AuthStatus.authenticated:
-        context.go(AppRoutes.dashboard);
+        final hasPinLock = await AppLockService.isEnabled();
+        if (hasPinLock) {
+          if (!mounted) return;
+          final unlocked = await Navigator.push<bool>(
+            context,
+            MaterialPageRoute(
+              builder: (context) => const PinLockScreen(),
+            ),
+          );
+          if (unlocked == true && mounted) {
+            context.go(AppRoutes.dashboard);
+          }
+        } else {
+          if (mounted) {
+            context.go(AppRoutes.dashboard);
+          }
+        }
         break;
       case AuthStatus.needsBusinessSetup:
         context.go(AppRoutes.businessSetup);

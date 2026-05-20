@@ -297,4 +297,52 @@ class AppStrings {
   String get updatedSuccessfully => _s('Updated successfully', 'सफलतापूर्वक अपडेट');
   String get confirmDelete => _s('Confirm Delete', 'मेटाउने पुष्टि');
   String get deleteWarning => _s('This action cannot be undone.', 'यो कार्य फिर्ता गर्न सकिँदैन।');
+
+  // ── App Lock / PIN Lock ───────────────────────────────────
+  String get appLock => _s('App Lock', 'एप लक');
+  String get enterPin => _s('Enter PIN', 'पिन कोड राख्नुहोस्');
+  String get confirmPin => _s('Confirm PIN', 'पिन कोड पुष्टि गर्नुहोस्');
+  String get pinsDoNotMatch => _s('PINs do not match. Try again.', 'पिनहरू मिलेनन्। पुनः प्रयास गर्नुहोस्।');
+  String get incorrectPin => _s('Incorrect PIN code', 'गलत पिन कोड');
+  String get appLockEnabled => _s('App Lock enabled successfully!', 'एप लक सफलतापूर्वक सक्रिय भयो!');
+  String get appLockDisabled => _s('App Lock disabled successfully!', 'एप लक सफलतापूर्वक बन्द भयो!');
+
+  // ── Premium features / Alerts ─────────────────────────────
+  String get premiumFeature => _s('PREMIUM FEATURE', 'प्रिमियम सुविधा');
+  String get upgradePrompt => _s('This feature is locked for your plan. Please upgrade to customize.', 'यो सुविधा तपाईंको योजनामा बन्द छ। प्रयोग गर्न कृपया अपग्रेड गर्नुहोस्।');
+  String get barcodePremiumMsg => _s('Barcode scanner is a premium feature. Please upgrade to Gold or Diamond.', 'बारकोड स्क्यानर एक प्रिमियम सुविधा हो। कृपया गोल्ड वा डाइमण्डमा अपग्रेड गर्नुहोस्।');
+  String get excelPremiumMsg => _s('Excel export is a Diamond plan feature. Please upgrade to Diamond.', 'एक्सेल निर्यात डाइमण्ड योजनाको सुविधा हो। कृपया डाइमण्डमा अपग्रेड गर्नुहोस्।');
+  String get reportPremiumMsg => _s('Report exporting is a premium feature. Please upgrade your plan.', 'रिपोर्ट निर्यात प्रिमियम सुविधा हो। कृपया आफ्नो योजना अपग्रेड गर्नुहोस्।');
+  String get staffPremiumMsg => _s('Staff management is a premium feature. Please upgrade your plan.', 'कर्मचारी व्यवस्थापन एक प्रिमियम सुविधा हो। कृपया आफ्नो योजना अपग्रेड गर्नुहोस्।');
+  String get appLockPremiumMsg => _s('App Lock is a premium feature. Please upgrade to Gold or Diamond plan.', 'एप लक एक प्रिमियम सुविधा हो। कृपया गोल्ड वा डाइमण्ड योजनामा अपग्रेड गर्नुहोस्।');
+  String get lowStockPremiumMsg => _s('Low Stock Alerts are a premium feature. Please upgrade your plan.', 'कम स्टक अलर्ट एक प्रिमियम सुविधा हो। कृपया आफ्नो योजना अपग्रेड गर्नुहोस्।');
+
+  // ── Subscription Upgrade Page ─────────────────────────────
+  String get chooseUpgradePlan => _s('Choose Your Upgrade Plan', 'आफ्नो अपग्रेड योजना छनौट गर्नुहोस्');
+  String get selectPlanSubtitle => _s('Select a subscription plan below to unlock premium POS features.', 'प्रिमियम POS सुविधाहरू अनलक गर्न तलको सदस्यता योजना छनौट गर्नुहोस्।');
+  String get payUpgrade => _s('Pay & Upgrade', 'तिर्नुहोस् र अपग्रेड गर्नुहोस्');
+  String get choosePaymentMethod => _s('CHOOSE PAYMENT METHOD', 'भुक्तानी विधि छनौट गर्नुहोस्');
+  String get bankDepositDetails => _s('BANK DEPOSIT DETAILS', 'बैंक डिपोजिट विवरण');
+  String get paymentProof => _s('PAYMENT PROOF (SCREENSHOT)', 'भुक्तानी प्रमाण (स्क्रिनसट)');
+  String get uploadScreenshot => _s('Upload Payment Receipt Screenshot', 'भुक्तानी रसिदको स्क्रिनसट अपलोड गर्नुहोस्');
+  String get submitProof => _s('Submit Proof', 'प्रमाण पेश गर्नुहोस्');
+  String get paymentSuccessMsg => _s('Payment submitted successfully! Awaiting admin approval.', 'भुक्तानी सफलतापूर्वक पेश भयो! प्रशासक स्वीकृतिको पर्खाइमा छ।');
+  String get scanQrToPay => _s('Scan or download this QR code to pay.', 'भुक्तानी गर्न यो QR कोड स्क्यान वा डाउनलोड गर्नुहोस्।');
+  String get esewaDetails => _s('ESEWA PAYMENT DETAILS', 'ईसेवा भुक्तानी विवरण');
+  String get khaltiDetails => _s('KHALTI PAYMENT DETAILS', 'खल्ती भुक्तानी विवरण');
+
+  String submitManualRequestFor(String planName) => _s(
+        'Submit manual payment request for $planName',
+        '$planName को लागि म्यानुअल भुक्तानी अनुरोध पेश गर्नुहोस्',
+      );
+
+  String get acName => _s('A/C Name:', 'खाताको नाम:');
+  String get acNo => _s('A/C No:', 'खाता नम्बर:');
+  String get branch => _s('Branch:', 'शाखा:');
+  String get scanQrToPayInstantly => _s('Scan QR to pay instantly.', 'तुरुन्त भुक्तानी गर्न QR स्क्यान गर्नुहोस्।');
+  String amountToPay(int amt) => _s('AMOUNT TO PAY: Rs. $amt', 'भुक्तानी गर्नुपर्ने रकम: रु. $amt');
+  String staffLimitMsg(int maxStaff) => _s(
+    'You have reached the staff limit ($maxStaff) for your current plan. Please upgrade.',
+    'तपाईंले आफ्नो वर्तमान योजनाको लागि कर्मचारी सीमा ($maxStaff) पार गर्नुभएको छ। कृपया अपग्रेड गर्नुहोस्।',
+  );
 }

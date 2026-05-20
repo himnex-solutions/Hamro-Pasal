@@ -14,6 +14,7 @@ import 'package:hamro_pasal/core/widgets/poly_mesh_background.dart';
 import 'package:hamro_pasal/features/dashboard/presentation/providers/dashboard_provider.dart';
 import 'package:hamro_pasal/features/dashboard/presentation/screens/personal_dashboard_screen.dart';
 import 'package:loading_animation_widget/loading_animation_widget.dart';
+import 'package:hamro_pasal/core/services/notification_service.dart';
 
 class DashboardScreen extends ConsumerWidget {
   const DashboardScreen({super.key});
@@ -272,6 +273,231 @@ class DashboardScreen extends ConsumerWidget {
   }
 }
 
+// ── In-App Notification Center Bottom Sheet ────────────────────
+void _showNotificationCenter(BuildContext context, WidgetRef ref) {
+  ref.read(inAppNotificationsProvider.notifier).loadNotifications();
+
+  showModalBottomSheet(
+    context: context,
+    backgroundColor: const Color(0xFF0F172A),
+    shape: const RoundedRectangleBorder(
+      borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+    ),
+    builder: (ctx) => Consumer(
+      builder: (context, ref, _) {
+        final notifications = ref.watch(inAppNotificationsProvider);
+
+        return Container(
+          padding: const EdgeInsets.symmetric(vertical: 16),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              // Header
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Row(
+                      children: [
+                        Container(
+                          width: 36,
+                          height: 36,
+                          decoration: BoxDecoration(
+                            color: const Color(0xFFF59E0B).withValues(alpha: 0.1),
+                            borderRadius: BorderRadius.circular(10),
+                          ),
+                          child: const Icon(Icons.notifications_rounded, color: Color(0xFFF59E0B), size: 20),
+                        ),
+                        const SizedBox(width: 12),
+                        Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            const Text(
+                              'Updates & Notifications',
+                              style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 15),
+                            ),
+                            Text(
+                              'Stay updated on your store activity',
+                              style: TextStyle(color: Colors.white.withValues(alpha: 0.4), fontSize: 11),
+                            ),
+                          ],
+                        ),
+                      ],
+                    ),
+                    if (notifications.isNotEmpty)
+                      TextButton(
+                        onPressed: () {
+                          ref.read(inAppNotificationsProvider.notifier).clearAll();
+                        },
+                        style: TextButton.styleFrom(foregroundColor: const Color(0xFFEF4444)),
+                        child: const Text('Clear All', style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold)),
+                      ),
+                  ],
+                ),
+              ),
+              const Divider(color: Colors.white12, height: 16),
+              // Body
+              if (notifications.isEmpty)
+                Container(
+                  padding: const EdgeInsets.symmetric(vertical: 64, horizontal: 32),
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Icon(Icons.notifications_none_rounded, size: 48, color: Colors.white.withValues(alpha: 0.1)),
+                      const SizedBox(height: 16),
+                      const Text(
+                        'No notifications yet',
+                        style: TextStyle(color: Colors.white70, fontWeight: FontWeight.bold, fontSize: 14),
+                      ),
+                      const SizedBox(height: 6),
+                      Text(
+                        'Updates about subscriptions, stock levels, and store status will appear here.',
+                        style: TextStyle(color: Colors.white.withValues(alpha: 0.4), fontSize: 11),
+                        textAlign: TextAlign.center,
+                      ),
+                    ],
+                  ),
+                )
+              else
+                Flexible(
+                  child: ListView.builder(
+                    itemCount: notifications.length,
+                    shrinkWrap: true,
+                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                    itemBuilder: (context, index) {
+                      final item = notifications[index];
+                      Color color = const Color(0xFF3B82F6);
+                      IconData icon = Icons.info_outline;
+
+                      switch (item.type) {
+                        case 'success':
+                          color = const Color(0xFF10B981);
+                          icon = Icons.check_circle_outline_rounded;
+                          break;
+                        case 'warning':
+                          color = const Color(0xFFF59E0B);
+                          icon = Icons.warning_amber_rounded;
+                          break;
+                        case 'error':
+                          color = const Color(0xFFEF4444);
+                          icon = Icons.error_outline_rounded;
+                          break;
+                      }
+
+                      return InkWell(
+                        onTap: () {
+                          ref.read(inAppNotificationsProvider.notifier).markAsRead(item.id);
+                        },
+                        borderRadius: BorderRadius.circular(16),
+                        child: Container(
+                          margin: const EdgeInsets.only(bottom: 8),
+                          padding: const EdgeInsets.all(12),
+                          decoration: BoxDecoration(
+                            color: item.isRead
+                                ? Colors.white.withValues(alpha: 0.02)
+                                : Colors.white.withValues(alpha: 0.05),
+                            borderRadius: BorderRadius.circular(16),
+                            border: Border.all(
+                              color: item.isRead
+                                  ? Colors.transparent
+                                  : color.withValues(alpha: 0.3),
+                              width: 1,
+                            ),
+                          ),
+                          child: Row(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Container(
+                                width: 32,
+                                height: 32,
+                                decoration: BoxDecoration(
+                                  color: color.withValues(alpha: 0.1),
+                                  shape: BoxShape.circle,
+                                ),
+                                child: Icon(icon, color: color, size: 16),
+                              ),
+                              const SizedBox(width: 12),
+                              Expanded(
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Row(
+                                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                      children: [
+                                        Text(
+                                          item.title,
+                                          style: TextStyle(
+                                            color: Colors.white,
+                                            fontWeight: item.isRead ? FontWeight.w600 : FontWeight.bold,
+                                            fontSize: 13,
+                                          ),
+                                        ),
+                                        if (!item.isRead)
+                                          Container(
+                                            width: 6,
+                                            height: 6,
+                                            decoration: BoxDecoration(
+                                              color: color,
+                                              shape: BoxShape.circle,
+                                            ),
+                                          ),
+                                      ],
+                                    ),
+                                    const SizedBox(height: 4),
+                                    Text(
+                                      item.body,
+                                      style: const TextStyle(color: Colors.white70, fontSize: 11.5),
+                                    ),
+                                    const SizedBox(height: 6),
+                                    Text(
+                                      _formatTime(item.timestamp),
+                                      style: const TextStyle(color: Colors.white38, fontSize: 9.5),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      );
+                    },
+                  ),
+                ),
+              if (notifications.any((n) => !n.isRead))
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(16, 8, 16, 12),
+                  child: ElevatedButton(
+                    onPressed: () {
+                      ref.read(inAppNotificationsProvider.notifier).markAllAsRead();
+                    },
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: const Color(0xFFF59E0B),
+                      foregroundColor: Colors.black,
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                      padding: const EdgeInsets.symmetric(vertical: 12),
+                    ),
+                    child: const Text('Mark All as Read', style: TextStyle(fontWeight: FontWeight.bold)),
+                  ),
+                ),
+            ],
+          ),
+        );
+      },
+    ),
+  );
+}
+
+String _formatTime(DateTime dt) {
+  final now = DateTime.now();
+  final diff = now.difference(dt);
+  if (diff.inMinutes < 1) return 'Just now';
+  if (diff.inMinutes < 60) return '${diff.inMinutes}m ago';
+  if (diff.inHours < 24) return '${diff.inHours}h ago';
+  return DateFormat('dd MMM, h:mm a').format(dt);
+}
+
 // ── App Bar ───────────────────────────────────────────────────
 class _DashAppBar extends ConsumerWidget {
   final DashboardStats stats;
@@ -312,7 +538,41 @@ class _DashAppBar extends ConsumerWidget {
           icon: const Icon(Icons.workspace_premium_outlined,
               size: 20, color: Colors.white70),
         ),
-        const SizedBox(width: 4),
+        Consumer(
+          builder: (context, ref, child) {
+            final list = ref.watch(inAppNotificationsProvider);
+            final unreadCount = list.where((n) => !n.isRead).length;
+
+            return Stack(
+              alignment: Alignment.center,
+              children: [
+                IconButton(
+                  tooltip: 'Notifications',
+                  onPressed: () => _showNotificationCenter(context, ref),
+                  icon: Icon(
+                    unreadCount > 0 ? Icons.notifications_active_rounded : Icons.notifications_outlined,
+                    size: 20,
+                    color: unreadCount > 0 ? const Color(0xFFF59E0B) : Colors.white70,
+                  ),
+                ),
+                if (unreadCount > 0)
+                  Positioned(
+                    top: 10,
+                    right: 10,
+                    child: Container(
+                      width: 8,
+                      height: 8,
+                      decoration: const BoxDecoration(
+                        color: Color(0xFFEF4444),
+                        shape: BoxShape.circle,
+                      ),
+                    ),
+                  ),
+              ],
+            );
+          },
+        ),
+        const SizedBox(width: 8),
       ],
       flexibleSpace: FlexibleSpaceBar(
         background: PolyMeshBackground(

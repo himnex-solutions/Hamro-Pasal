@@ -15,6 +15,9 @@ import 'package:hamro_pasal/features/settings/presentation/screens/business_prof
 import 'package:hamro_pasal/features/settings/presentation/screens/help_faq_screen.dart';
 import 'package:hamro_pasal/features/settings/presentation/screens/send_feedback_screen.dart';
 import 'package:hamro_pasal/features/settings/presentation/screens/legal_screens.dart';
+import 'package:hamro_pasal/core/services/app_lock_service.dart';
+import 'package:hamro_pasal/features/settings/presentation/screens/pin_lock_screen.dart';
+import 'package:hamro_pasal/features/subscription/data/services/subscription_manager.dart';
 
 class SettingsScreen extends ConsumerWidget {
   const SettingsScreen({super.key});
@@ -55,11 +58,23 @@ class SettingsScreen extends ConsumerWidget {
           const _ThemeToggleTile(),
           const _LanguageTile(), // ← working language picker
           _SettingsTile(
+            icon: Icons.receipt_long_outlined,
+            title: 'Invoice Customization',
+            subtitle: 'Color, prefix, fields & print size settings',
+            onTap: () => context.push(AppRoutes.invoiceSettings),
+          ),
+          _SettingsTile(
             icon: Icons.currency_rupee_outlined,
             title: l.currency2,
             subtitle: l.currencySubtitle,
             onTap: () {},
           ),
+
+          const SizedBox(height: 20),
+
+          // ── Security ──────────────────────────────────────
+          const _SectionHeader('Security'),
+          const _SecurityAppLockTile(),
 
           const SizedBox(height: 20),
 
@@ -655,6 +670,142 @@ class _ThemeToggleTile extends ConsumerWidget {
             onChanged: (_) =>
                 ref.read(themeModeProvider.notifier).toggleTheme(),
           ),
+        ),
+      ),
+    );
+  }
+}
+
+class _SecurityAppLockTile extends ConsumerStatefulWidget {
+  const _SecurityAppLockTile();
+
+  @override
+  ConsumerState<_SecurityAppLockTile> createState() => _SecurityAppLockTileState();
+}
+
+class _SecurityAppLockTileState extends ConsumerState<_SecurityAppLockTile> {
+  bool _isLockEnabled = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _checkLockStatus();
+  }
+
+  Future<void> _checkLockStatus() async {
+    final enabled = await AppLockService.isEnabled();
+    if (mounted) setState(() => _isLockEnabled = enabled);
+  }
+
+  Future<void> _toggleLock(bool enable) async {
+    final manager = ref.read(subscriptionManagerProvider.notifier);
+    final hasAccess = manager.checkFeatureAccess('app_lock');
+
+    if (!hasAccess) {
+      AppSnackbar.show(
+        context,
+        context.l10n.appLockPremiumMsg,
+        isError: true,
+      );
+      context.push(AppRoutes.subscription);
+      return;
+    }
+
+    if (enable) {
+      // 1. Prompt to create PIN
+      final pin = await Navigator.push<String>(
+        context,
+        MaterialPageRoute(
+          builder: (context) => PinLockScreen(
+            isConfirming: false,
+            onPinSuccess: (val) {
+              Navigator.pop(context, val);
+            },
+          ),
+        ),
+      );
+
+      if (pin != null && pin.isNotEmpty && mounted) {
+        // 2. Confirm PIN
+        final confirmedPin = await Navigator.push<String>(
+          context,
+          MaterialPageRoute(
+            builder: (context) => PinLockScreen(
+              isConfirming: true,
+              initialPin: pin,
+              onPinSuccess: (val) {
+                Navigator.pop(context, val);
+              },
+            ),
+          ),
+        );
+
+        if (confirmedPin != null && mounted) {
+          await AppLockService.enableLock(confirmedPin);
+          if (mounted) {
+            AppSnackbar.show(context, 'App Lock enabled successfully!', isSuccess: true);
+            setState(() => _isLockEnabled = true);
+          }
+        }
+      }
+    } else {
+      // Prompt to verify existing PIN before disabling
+      final verified = await Navigator.push<bool>(
+        context,
+        MaterialPageRoute(
+          builder: (context) => const PinLockScreen(),
+        ),
+      );
+
+      if (verified == true && mounted) {
+        await AppLockService.disableLock();
+        if (mounted) {
+          AppSnackbar.show(context, 'App Lock disabled successfully!', isSuccess: true);
+          setState(() => _isLockEnabled = false);
+        }
+      }
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      margin: const EdgeInsets.symmetric(vertical: 4),
+      decoration: BoxDecoration(
+        color: Theme.of(context).cardTheme.color,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(
+            color: Theme.of(context).brightness == Brightness.dark
+                ? AppTheme.darkBorder
+                : Colors.white,
+            width: 1.5),
+        boxShadow: [
+          BoxShadow(
+            color: AppTheme.primaryColor.withValues(alpha: 0.05),
+            blurRadius: 15,
+            offset: const Offset(0, 5),
+          ),
+        ],
+      ),
+      child: ListTile(
+        leading: Container(
+          width: 40,
+          height: 40,
+          decoration: BoxDecoration(
+            color: AppTheme.primaryColor.withValues(alpha: 0.08),
+            borderRadius: BorderRadius.circular(10),
+          ),
+          child: const Icon(
+            Icons.lock_outline_rounded,
+            color: AppTheme.lightTextSecondary,
+            size: 20,
+          ),
+        ),
+        title: const Text('App PIN Lock'),
+        subtitle: Text(_isLockEnabled ? 'Secure lock enabled' : 'Lock disabled'),
+        trailing: Switch(
+          value: _isLockEnabled,
+          onChanged: _toggleLock,
         ),
       ),
     );

@@ -87,6 +87,7 @@ class Subscription {
 
 class SubscriptionPlan {
   final String id;
+  final String planCode;
   final String name;
   final String interval;
   final double price;
@@ -96,6 +97,7 @@ class SubscriptionPlan {
 
   const SubscriptionPlan({
     required this.id,
+    required this.planCode,
     required this.name,
     required this.interval,
     required this.price,
@@ -107,6 +109,7 @@ class SubscriptionPlan {
   factory SubscriptionPlan.fromJson(Map<String, dynamic> json) =>
       SubscriptionPlan(
         id: json['id'] as String,
+        planCode: json['plan_code'] as String? ?? '',
         name: json['name'] as String,
         interval: json['interval'] as String,
         price: (json['price'] as num).toDouble(),

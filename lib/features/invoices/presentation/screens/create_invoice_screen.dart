@@ -12,6 +12,11 @@ import 'package:hamro_pasal/core/theme/app_theme.dart';
 import 'package:hamro_pasal/core/widgets/app_button.dart';
 import 'package:hamro_pasal/core/widgets/app_snackbar.dart';
 import 'package:hamro_pasal/features/invoices/presentation/screens/invoices_screen.dart';
+import 'package:hamro_pasal/features/invoices/data/services/invoice_settings_service.dart';
+import 'package:hamro_pasal/core/router/app_router.dart';
+import 'package:hamro_pasal/features/subscription/data/services/subscription_manager.dart';
+import 'package:hamro_pasal/core/widgets/barcode_scanner_modal.dart';
+
 
 // ── Line Item Model ────────────────────────────────────────────
 class _LineItem {
@@ -86,7 +91,7 @@ class _CreateInvoiceScreenState extends ConsumerState<CreateInvoiceScreen> {
             .order('name'),
         _supabase
             .from('products')
-            .select('id, name, selling_price, stock_quantity')
+            .select('id, name, selling_price, stock_quantity, barcode')
             .eq('business_id', _businessId)
             .eq('is_active', true)
             .order('name'),
@@ -126,12 +131,14 @@ class _CreateInvoiceScreenState extends ConsumerState<CreateInvoiceScreen> {
       final invoiceId = const Uuid().v4();
       final now = DateTime.now().toIso8601String();
 
-      // Generate invoice number: INV-YYYYMMDD-XXXX
+      // Generate invoice number using custom prefix setting
+      final settings = ref.read(invoiceSettingsProvider);
+      final prefix = settings.prefix;
       final dateStr = DateFormat('yyyyMMdd').format(_invoiceDate);
       final rand = (DateTime.now().millisecondsSinceEpoch % 10000)
           .toString()
           .padLeft(4, '0');
-      final invoiceNumber = 'INV-$dateStr-$rand';
+      final invoiceNumber = '$prefix-$dateStr-$rand';
 
       // Insert invoice
       await _supabase.from('invoices').insert({
@@ -190,6 +197,56 @@ class _CreateInvoiceScreenState extends ConsumerState<CreateInvoiceScreen> {
     }
   }
 
+  Future<void> _scanBarcodeProduct() async {
+    final manager = ref.read(subscriptionManagerProvider.notifier);
+    final hasAccess = manager.checkFeatureAccess('barcode_scanner');
+
+    if (!hasAccess) {
+      AppSnackbar.show(
+        context,
+        context.l10n.barcodePremiumMsg,
+        isError: true,
+      );
+      context.push(AppRoutes.subscription);
+      return;
+    }
+
+    final code = await BarcodeScannerModal.show(context);
+    if (!mounted) return;
+    if (code != null && code.isNotEmpty) {
+      final match = _products.firstWhere(
+        (p) => p['barcode'] == code,
+        orElse: () => {},
+      );
+
+      if (match.isEmpty) {
+        if (mounted) {
+          AppSnackbar.show(context, 'No product found with barcode "$code"', isError: true);
+        }
+        return;
+      }
+
+      setState(() {
+        _LineItem target;
+        if (_items.length == 1 && _items[0].productId.isEmpty && _items[0].productName.isEmpty) {
+          target = _items[0];
+        } else {
+          target = _LineItem();
+          _items.add(target);
+        }
+
+        target.productId = match['id'] as String;
+        target.productName = match['name'] as String;
+        target.unitPrice = (match['selling_price'] as num).toDouble();
+        target.quantity = 1;
+      });
+
+      if (mounted) {
+        AppSnackbar.show(context, 'Added ${match['name']}', isSuccess: true);
+      }
+    }
+  }
+
   // ── Date picker ────────────────────────────────────────────
   Future<void> _pickDate({required bool isDue}) async {
     final picked = await showDatePicker(
@@ -213,6 +270,7 @@ class _CreateInvoiceScreenState extends ConsumerState<CreateInvoiceScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final settings = ref.watch(invoiceSettingsProvider);
     final fmt = NumberFormat('#,##,##0.00');
     return Scaffold(
       appBar: AppBar(
@@ -321,10 +379,20 @@ class _CreateInvoiceScreenState extends ConsumerState<CreateInvoiceScreen> {
                   _SectionCard(
                     title: 'Items',
                     icon: Icons.inventory_2_outlined,
-                    trailing: TextButton.icon(
-                      onPressed: () => setState(() => _items.add(_LineItem())),
-                      icon: const Icon(Icons.add, size: 16),
-                      label: Text(context.l10n.addItem),
+                    trailing: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        IconButton(
+                          icon: const Icon(Icons.qr_code_scanner, size: 20, color: AppTheme.primaryColor),
+                          onPressed: _scanBarcodeProduct,
+                          tooltip: 'Scan Barcode',
+                        ),
+                        TextButton.icon(
+                          onPressed: () => setState(() => _items.add(_LineItem())),
+                          icon: const Icon(Icons.add, size: 16),
+                          label: Text(context.l10n.addItem),
+                        ),
+                      ],
                     ),
                     child: Column(
                       children: [
@@ -390,80 +458,83 @@ class _CreateInvoiceScreenState extends ConsumerState<CreateInvoiceScreen> {
                     ),
                   ).animate(delay: 100.ms).fadeIn(),
 
-                  const SizedBox(height: 16),
-
-                  // ── Tax & Discount ────────────────────────
-                  _SectionCard(
-                    title: 'Tax & Discount',
-                    icon: Icons.percent_outlined,
-                    child: Column(
-                      children: [
-                        Row(
-                          children: [
-                            Expanded(
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  const _FieldLabel('Tax (%)'),
-                                  TextFormField(
-                                    initialValue: '0',
-                                    keyboardType: TextInputType.number,
-                                    decoration: InputDecoration(
-                                      contentPadding:
-                                          const EdgeInsets.symmetric(
-                                              horizontal: 12, vertical: 10),
-                                      border: OutlineInputBorder(
-                                          borderRadius:
-                                              BorderRadius.circular(12)),
-                                      suffixText: '%',
-                                    ),
-                                    onChanged: (v) => setState(() =>
-                                        _taxPercent = double.tryParse(v) ?? 0),
+                  if (settings.showTax || settings.showDiscount) ...[
+                    const SizedBox(height: 16),
+                    _SectionCard(
+                      title: 'Tax & Discount',
+                      icon: Icons.percent_outlined,
+                      child: Column(
+                        children: [
+                          Row(
+                            children: [
+                              if (settings.showTax)
+                                Expanded(
+                                  child: Column(
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    children: [
+                                      const _FieldLabel('Tax (%)'),
+                                      TextFormField(
+                                        initialValue: '0',
+                                        keyboardType: TextInputType.number,
+                                        decoration: InputDecoration(
+                                          contentPadding:
+                                              const EdgeInsets.symmetric(
+                                                  horizontal: 12, vertical: 10),
+                                          border: OutlineInputBorder(
+                                              borderRadius:
+                                                  BorderRadius.circular(12)),
+                                          suffixText: '%',
+                                        ),
+                                        onChanged: (v) => setState(() =>
+                                            _taxPercent = double.tryParse(v) ?? 0),
+                                      ),
+                                    ],
                                   ),
-                                ],
-                              ),
-                            ),
-                            const SizedBox(width: 12),
-                            Expanded(
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  const _FieldLabel(
-                                      'Discount (${AppConstants.currencySymbol})'),
-                                  TextFormField(
-                                    initialValue: '0',
-                                    keyboardType: TextInputType.number,
-                                    decoration: InputDecoration(
-                                      contentPadding:
-                                          const EdgeInsets.symmetric(
-                                              horizontal: 12, vertical: 10),
-                                      border: OutlineInputBorder(
-                                          borderRadius:
-                                              BorderRadius.circular(12)),
-                                    ),
-                                    onChanged: (v) => setState(() =>
-                                        _discountAmount =
-                                            double.tryParse(v) ?? 0),
+                                ),
+                              if (settings.showTax && settings.showDiscount)
+                                const SizedBox(width: 12),
+                              if (settings.showDiscount)
+                                Expanded(
+                                  child: Column(
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    children: [
+                                      const _FieldLabel(
+                                          'Discount (${AppConstants.currencySymbol})'),
+                                      TextFormField(
+                                        initialValue: '0',
+                                        keyboardType: TextInputType.number,
+                                        decoration: InputDecoration(
+                                          contentPadding:
+                                              const EdgeInsets.symmetric(
+                                                  horizontal: 12, vertical: 10),
+                                          border: OutlineInputBorder(
+                                              borderRadius:
+                                                  BorderRadius.circular(12)),
+                                        ),
+                                        onChanged: (v) => setState(() =>
+                                            _discountAmount =
+                                                double.tryParse(v) ?? 0),
+                                      ),
+                                    ],
                                   ),
-                                ],
-                              ),
-                            ),
-                          ],
-                        ),
-                        const SizedBox(height: 12),
-                        if (_taxPercent > 0)
-                          _SummaryRow(
-                              'Tax (${_taxPercent.toStringAsFixed(1)}%)',
-                              '+${AppConstants.currencySymbol} ${fmt.format(_taxAmount)}',
-                              AppTheme.warningColor),
-                        if (_discountAmount > 0)
-                          _SummaryRow(
-                              'Discount',
-                              '-${AppConstants.currencySymbol} ${fmt.format(_discountAmount)}',
-                              AppTheme.successColor),
-                      ],
-                    ),
-                  ).animate(delay: 150.ms).fadeIn(),
+                                ),
+                            ],
+                          ),
+                          const SizedBox(height: 12),
+                          if (settings.showTax && _taxPercent > 0)
+                            _SummaryRow(
+                                'Tax (${_taxPercent.toStringAsFixed(1)}%)',
+                                '+${AppConstants.currencySymbol} ${fmt.format(_taxAmount)}',
+                                AppTheme.warningColor),
+                          if (settings.showDiscount && _discountAmount > 0)
+                            _SummaryRow(
+                                'Discount',
+                                '-${AppConstants.currencySymbol} ${fmt.format(_discountAmount)}',
+                                AppTheme.successColor),
+                        ],
+                      ),
+                    ).animate(delay: 150.ms).fadeIn(),
+                  ],
 
                   const SizedBox(height: 16),
 

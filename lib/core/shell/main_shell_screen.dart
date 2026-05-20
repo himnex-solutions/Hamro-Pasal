@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -8,6 +9,8 @@ import 'package:hamro_pasal/core/router/app_router.dart';
 import 'package:hamro_pasal/core/theme/app_theme.dart';
 import 'package:hamro_pasal/core/services/sync_service.dart';
 import 'package:hamro_pasal/features/auth/presentation/providers/auth_provider.dart';
+import 'package:hamro_pasal/features/subscription/data/services/subscription_manager.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 
 class MainShellScreen extends ConsumerStatefulWidget {
   final Widget child;
@@ -76,6 +79,119 @@ class _MainShellScreenState extends ConsumerState<MainShellScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final manager = ref.watch(subscriptionManagerProvider);
+    final isDesktopOrWeb = kIsWeb ||
+        defaultTargetPlatform == TargetPlatform.windows ||
+        defaultTargetPlatform == TargetPlatform.macOS ||
+        defaultTargetPlatform == TargetPlatform.linux;
+
+    if (isDesktopOrWeb && manager.planCode != 'diamond') {
+      return Scaffold(
+        body: Container(
+          decoration: const BoxDecoration(
+            gradient: LinearGradient(
+              colors: [Color(0xFF0F172A), Color(0xFF1E1B4B)],
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+            ),
+          ),
+          child: Center(
+            child: SingleChildScrollView(
+              padding: const EdgeInsets.all(32),
+              child: Container(
+                constraints: const BoxConstraints(maxWidth: 480),
+                padding: const EdgeInsets.all(40),
+                decoration: BoxDecoration(
+                  color: Theme.of(context).brightness == Brightness.dark
+                      ? Colors.white.withValues(alpha: 0.05)
+                      : Colors.white,
+                  borderRadius: BorderRadius.circular(24),
+                  border: Border.all(
+                    color: Theme.of(context).brightness == Brightness.dark
+                        ? Colors.white.withValues(alpha: 0.1)
+                        : Colors.black.withValues(alpha: 0.05),
+                  ),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withValues(alpha: 0.1),
+                      blurRadius: 30,
+                      offset: const Offset(0, 10),
+                    ),
+                  ],
+                ),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.all(16),
+                      decoration: BoxDecoration(
+                        color: AppTheme.primaryColor.withValues(alpha: 0.12),
+                        shape: BoxShape.circle,
+                      ),
+                      child: const Icon(
+                        Icons.computer_rounded,
+                        color: AppTheme.primaryColor,
+                        size: 48,
+                      ),
+                    ),
+                    const SizedBox(height: 24),
+                    Text(
+                      'Desktop & Web Access Restricted',
+                      style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+                            fontWeight: FontWeight.bold,
+                          ),
+                      textAlign: TextAlign.center,
+                    ),
+                    const SizedBox(height: 16),
+                    Text(
+                      'Accessing Hamro Pasal on Web and Desktop platforms is exclusive to Diamond members.',
+                      style: TextStyle(
+                        color: Theme.of(context).brightness == Brightness.dark
+                            ? Colors.white.withValues(alpha: 0.7)
+                            : AppTheme.lightTextSecondary,
+                        fontSize: 15,
+                        height: 1.5,
+                      ),
+                      textAlign: TextAlign.center,
+                    ),
+                    const SizedBox(height: 28),
+                    ElevatedButton.icon(
+                      onPressed: () {
+                        context.push(AppRoutes.subscription);
+                      },
+                      icon: const Icon(Icons.workspace_premium_rounded, color: Colors.white),
+                      label: const Text('Upgrade to Diamond'),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: AppTheme.primaryColor,
+                        foregroundColor: Colors.white,
+                        padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 14),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        elevation: 0,
+                      ),
+                    ),
+                    const SizedBox(height: 12),
+                    TextButton(
+                      onPressed: () async {
+                        await Supabase.instance.client.auth.signOut();
+                      },
+                      style: TextButton.styleFrom(
+                        foregroundColor: Theme.of(context).brightness == Brightness.dark
+                            ? Colors.white.withValues(alpha: 0.6)
+                            : AppTheme.lightTextHint,
+                      ),
+                      child: const Text('Sign Out'),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ),
+        ),
+      );
+    }
+
     final l = context.l10n;
     final location = GoRouterState.of(context).uri.path;
     final selectedIndex = _locationIndex(location);
