@@ -22,7 +22,7 @@ class DashboardStats {
     this.todayProfit = 0,
     this.lowStockCount = 0,
     this.recentTransactions = const [],
-    this.subscriptionStatus = 'trial_active',
+    this.subscriptionStatus = 'active',
     this.trialDaysLeft,
   });
 }
@@ -103,10 +103,10 @@ class DashboardNotifier extends AsyncNotifier<DashboardStats> {
           .eq('business_id', businessId)
           .maybeSingle();
 
-      String subStatus = AppConstants.statusTrialActive;
+      String subStatus = AppConstants.statusActive;
       int? trialDaysLeft;
       if (subRes != null) {
-        subStatus = subRes['status'] as String;
+        subStatus = subRes['status'] as String? ?? AppConstants.statusActive;
         if (subRes['trial_end_date'] != null) {
           final endDate = DateTime.parse(subRes['trial_end_date'] as String);
           trialDaysLeft = endDate.difference(now).inDays;

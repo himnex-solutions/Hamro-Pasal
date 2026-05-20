@@ -123,8 +123,6 @@ class _BusinessSetupScreenState extends ConsumerState<BusinessSetupScreen> {
 
       final businessId = const Uuid().v4();
       final now = DateTime.now().toIso8601String();
-      final trialEnd =
-          DateTime.now().add(const Duration(days: AppConstants.trialDays));
 
       // Create business
       await supabase.from('businesses').insert({
@@ -155,14 +153,14 @@ class _BusinessSetupScreenState extends ConsumerState<BusinessSetupScreen> {
         'joined_at': now,
       });
 
-      // Create subscription with 14-day trial
+      // Create default active business subscription
       await supabase.from('subscriptions').insert({
         'id': const Uuid().v4(),
         'business_id': businessId,
-        'status': AppConstants.statusTrialActive,
-        'trial_start_date': now,
-        'trial_end_date': trialEnd.toIso8601String(),
-        'is_trial_used': true,
+        'status': AppConstants.statusActive,
+        'trial_start_date': null,
+        'trial_end_date': null,
+        'is_trial_used': false,
         'created_at': now,
         'updated_at': now,
       });
@@ -179,7 +177,7 @@ class _BusinessSetupScreenState extends ConsumerState<BusinessSetupScreen> {
       });
 
       if (mounted) {
-        AppSnackbar.show(context, 'Business created! 14-day trial started.',
+        AppSnackbar.show(context, 'Business setup successfully!',
             isSuccess: true);
         context.go(AppRoutes.dashboard);
       }
@@ -226,7 +224,7 @@ class _BusinessSetupScreenState extends ConsumerState<BusinessSetupScreen> {
                                     .textTheme
                                     .titleLarge
                                     ?.copyWith(color: Colors.white)),
-                            Text('14-day free trial starts now!',
+                            Text('Basic Plan (Free Forever) Active',
                                 style: TextStyle(
                                     color: Colors.white.withValues(alpha: 0.8),
                                     fontSize: 13)),
@@ -383,27 +381,27 @@ class _BusinessSetupScreenState extends ConsumerState<BusinessSetupScreen> {
 
                 const SizedBox(height: 32),
 
-                // Trial info
+                // Plan info
                 Container(
                   padding: const EdgeInsets.all(14),
                   decoration: BoxDecoration(
-                    color: AppTheme.accentColor.withValues(alpha: 0.08),
+                    color: AppTheme.successColor.withValues(alpha: 0.08),
                     borderRadius: BorderRadius.circular(12),
                     border: Border.all(
-                        color: AppTheme.accentColor.withValues(alpha: 0.3)),
+                        color: AppTheme.successColor.withValues(alpha: 0.3)),
                   ),
                   child: Row(
                     children: [
-                      const Icon(Icons.rocket_launch_outlined,
-                          color: AppTheme.accentDark, size: 22),
+                      const Icon(Icons.check_circle_outline_rounded,
+                          color: AppTheme.successColor, size: 22),
                       const SizedBox(width: 10),
                       Expanded(
                         child: Text(
-                          'Your 14-day free trial includes all features. No payment required.',
+                          'You are on the Basic Plan (Free Forever). Upgrade anytime for advanced features.',
                           style: Theme.of(context)
                               .textTheme
                               .bodySmall
-                              ?.copyWith(color: AppTheme.accentDark),
+                              ?.copyWith(color: AppTheme.successColor),
                         ),
                       ),
                     ],
@@ -413,8 +411,8 @@ class _BusinessSetupScreenState extends ConsumerState<BusinessSetupScreen> {
                 const SizedBox(height: 24),
 
                 AppButton(
-                  label: 'Start My Free Trial',
-                  icon: Icons.rocket_launch_outlined,
+                  label: 'Setup My Business',
+                  icon: Icons.store_rounded,
                   onPressed: _createBusiness,
                   isLoading: _isLoading,
                 ).animate(delay: 400.ms).fadeIn(),

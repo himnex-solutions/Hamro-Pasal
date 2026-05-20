@@ -29,7 +29,7 @@ class PersonalStats {
     this.phone = '',
     this.businessName = '',
     this.businessType = '',
-    this.subscriptionStatus = 'trial_active',
+    this.subscriptionStatus = 'active',
     this.trialDaysLeft,
     this.totalBusinessSales = 0,
     this.totalBusinessExpenses = 0,
@@ -71,7 +71,7 @@ class PersonalDashboardNotifier extends AsyncNotifier<PersonalStats> {
 
       String businessName = '';
       String businessType = '';
-      String subStatus = AppConstants.statusTrialActive;
+      String subStatus = AppConstants.statusActive;
       int? trialDaysLeft;
       double totalSales = 0, totalExpenses = 0;
       int totalParties = 0, totalProducts = 0;
@@ -93,7 +93,7 @@ class PersonalDashboardNotifier extends AsyncNotifier<PersonalStats> {
             .eq('business_id', businessId)
             .maybeSingle();
         if (sub != null) {
-          subStatus = sub['status'] as String;
+          subStatus = sub['status'] as String? ?? AppConstants.statusActive;
           if (sub['trial_end_date'] != null) {
             final end = DateTime.parse(sub['trial_end_date'] as String);
             trialDaysLeft = end.difference(DateTime.now()).inDays;
@@ -518,7 +518,7 @@ class _LifetimeStatsGrid extends StatelessWidget {
       crossAxisCount: 2,
       crossAxisSpacing: 12,
       mainAxisSpacing: 12,
-      childAspectRatio: 1.5,
+      childAspectRatio: 1.35,
       shrinkWrap: true,
       physics: const NeverScrollableScrollPhysics(),
       children: [
@@ -551,7 +551,7 @@ class _StatTile extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.all(14),
+      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
       decoration: BoxDecoration(
         color: Theme.of(context).cardTheme.color,
         borderRadius: BorderRadius.circular(16),
@@ -581,20 +581,33 @@ class _StatTile extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          Icon(icon, color: color, size: 22),
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(value,
-                  style: Theme.of(context)
-                      .textTheme
-                      .titleMedium
-                      ?.copyWith(color: color, fontWeight: FontWeight.w700),
+          Icon(icon, color: color, size: 20),
+          const SizedBox(height: 4),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisAlignment: MainAxisAlignment.end,
+              children: [
+                FittedBox(
+                  fit: BoxFit.scaleDown,
+                  alignment: Alignment.centerLeft,
+                  child: Text(
+                    value,
+                    style: Theme.of(context)
+                        .textTheme
+                        .titleMedium
+                        ?.copyWith(color: color, fontWeight: FontWeight.w700),
+                  ),
+                ),
+                const SizedBox(height: 2),
+                Text(
+                  label,
+                  style: Theme.of(context).textTheme.bodySmall?.copyWith(fontSize: 11),
                   maxLines: 1,
-                  overflow: TextOverflow.ellipsis),
-              Text(label,
-                  style: Theme.of(context).textTheme.bodySmall, maxLines: 1),
-            ],
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ],
+            ),
           ),
         ],
       ),
