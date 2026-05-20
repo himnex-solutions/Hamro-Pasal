@@ -16,6 +16,7 @@ class AppTextField extends StatefulWidget {
   final void Function(String)? onSubmitted;
   final FocusNode? focusNode;
   final bool enabled;
+  final bool readOnly;
   final TextCapitalization textCapitalization;
   final TextInputAction? textInputAction;
 
@@ -34,6 +35,7 @@ class AppTextField extends StatefulWidget {
     this.onSubmitted,
     this.focusNode,
     this.enabled = true,
+    this.readOnly = false,
     this.textCapitalization = TextCapitalization.none,
     this.textInputAction,
   });
@@ -88,9 +90,15 @@ class _AppTextFieldState extends State<AppTextField> {
         onChanged: widget.onChanged,
         onFieldSubmitted: widget.onSubmitted,
         enabled: widget.enabled,
+        readOnly: widget.readOnly,
         textCapitalization: widget.textCapitalization,
         textInputAction: widget.textInputAction,
-        style: Theme.of(context).textTheme.bodyMedium,
+        style: widget.readOnly
+            ? Theme.of(context)
+                .textTheme
+                .bodyMedium
+                ?.copyWith(color: Theme.of(context).disabledColor)
+            : Theme.of(context).textTheme.bodyMedium,
         decoration: InputDecoration(
           labelText: widget.label,
           hintText: widget.hint,

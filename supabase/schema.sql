@@ -9,9 +9,9 @@ CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
 -- ─── 1. USER PROFILES ────────────────────────────────────────
 CREATE TABLE IF NOT EXISTS user_profiles (
   id          UUID PRIMARY KEY REFERENCES auth.users(id) ON DELETE CASCADE,
-  email       TEXT NOT NULL,
+  email       TEXT NOT NULL UNIQUE,
   full_name   TEXT,
-  phone       TEXT,
+  phone       TEXT        UNIQUE,   -- one account per phone number
   avatar_url  TEXT,
   created_at  TIMESTAMPTZ NOT NULL DEFAULT NOW(),
   updated_at  TIMESTAMPTZ NOT NULL DEFAULT NOW()
@@ -26,7 +26,7 @@ CREATE TABLE IF NOT EXISTS businesses (
   address     TEXT,
   phone       TEXT,
   email       TEXT,
-  pan_number  TEXT,
+  pan_number  TEXT UNIQUE,          -- one business per PAN number
   logo_url    TEXT,
   currency    TEXT NOT NULL DEFAULT 'NPR',
   created_at  TIMESTAMPTZ NOT NULL DEFAULT NOW(),
@@ -286,6 +286,39 @@ CREATE TABLE IF NOT EXISTS sync_queue (
 -- FUNCTIONS & TRIGGERS
 -- ============================================================
 
+-- Check if phone exists (Bypasses RLS for unauthenticated signups)
+CREATE OR REPLACE FUNCTION check_phone_exists(p_phone TEXT)
+RETURNS BOOLEAN
+SECURITY DEFINER
+SET search_path = public
+AS $$
+BEGIN
+  RETURN EXISTS (SELECT 1 FROM user_profiles WHERE phone = p_phone);
+END;
+$$ LANGUAGE plpgsql;
+
+-- Check if email exists (Bypasses RLS for unauthenticated signups)
+CREATE OR REPLACE FUNCTION check_email_exists(p_email TEXT)
+RETURNS BOOLEAN
+SECURITY DEFINER
+SET search_path = public
+AS $$
+BEGIN
+  RETURN EXISTS (SELECT 1 FROM user_profiles WHERE email = p_email);
+END;
+$$ LANGUAGE plpgsql;
+
+-- Check if PAN exists (Bypasses RLS)
+CREATE OR REPLACE FUNCTION check_pan_exists(p_pan TEXT)
+RETURNS BOOLEAN
+SECURITY DEFINER
+SET search_path = public
+AS $$
+BEGIN
+  RETURN EXISTS (SELECT 1 FROM businesses WHERE pan_number = p_pan);
+END;
+$$ LANGUAGE plpgsql;
+
 -- Auto-update updated_at timestamp
 CREATE OR REPLACE FUNCTION update_updated_at()
 RETURNS TRIGGER AS $$
@@ -313,28 +346,40 @@ END;
 $$ LANGUAGE plpgsql SECURITY DEFINER;
 
 -- Auto-create user profile on signup
+-- Also saves phone from raw_user_meta_data so the UNIQUE constraint fires
+-- immediately when a duplicate phone is attempted at the DB level.
 CREATE OR REPLACE FUNCTION handle_new_user()
 RETURNS TRIGGER
 SECURITY DEFINER
 SET search_path = public
 AS $$
+DECLARE
+  v_phone TEXT;
 BEGIN
-  INSERT INTO public.user_profiles (id, email, full_name, created_at, updated_at)
+  v_phone := NULLIF(TRIM(COALESCE(NEW.raw_user_meta_data->>'phone', '')), '');
+
+  INSERT INTO public.user_profiles (id, email, full_name, phone, created_at, updated_at)
   VALUES (
     NEW.id,
     COALESCE(NEW.email, ''),
     COALESCE(NEW.raw_user_meta_data->>'full_name', ''),
+    v_phone,
     NOW(),
     NOW()
   )
   ON CONFLICT (id) DO UPDATE SET
     email      = EXCLUDED.email,
     full_name  = COALESCE(EXCLUDED.full_name, public.user_profiles.full_name),
+    phone      = COALESCE(EXCLUDED.phone,     public.user_profiles.phone),
     updated_at = NOW();
   RETURN NEW;
-EXCEPTION WHEN OTHERS THEN
-  RAISE WARNING 'handle_new_user failed for %: %', NEW.id, SQLERRM;
-  RETURN NEW;
+EXCEPTION
+  WHEN unique_violation THEN
+    RAISE WARNING 'handle_new_user unique violation for %: %', NEW.id, SQLERRM;
+    RETURN NEW;
+  WHEN OTHERS THEN
+    RAISE WARNING 'handle_new_user failed for %: %', NEW.id, SQLERRM;
+    RETURN NEW;
 END;
 $$ LANGUAGE plpgsql;
 
@@ -457,6 +502,11 @@ CREATE INDEX idx_ledger_party ON ledger_entries(party_id, entry_date DESC);
 CREATE INDEX idx_stock_movements_product ON stock_movements(product_id, created_at DESC);
 CREATE INDEX idx_subscriptions_business ON subscriptions(business_id);
 CREATE INDEX idx_sync_queue_status ON sync_queue(business_id, status);
+
+-- Uniqueness look-up indexes (also back the UNIQUE constraints above)
+CREATE UNIQUE INDEX IF NOT EXISTS idx_user_profiles_email ON user_profiles(email);
+CREATE UNIQUE INDEX IF NOT EXISTS idx_user_profiles_phone ON user_profiles(phone) WHERE phone IS NOT NULL;
+CREATE UNIQUE INDEX IF NOT EXISTS idx_businesses_pan    ON businesses(pan_number) WHERE pan_number IS NOT NULL;
 
 -- ============================================================
 -- STORAGE BUCKETS (Run in Supabase Dashboard > Storage)

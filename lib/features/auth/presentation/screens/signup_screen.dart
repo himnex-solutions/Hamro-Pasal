@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/flutter_svg.dart';
@@ -25,29 +26,104 @@ class SignupScreen extends ConsumerStatefulWidget {
 
 class _SignupScreenState extends ConsumerState<SignupScreen> {
   final _formKey = GlobalKey<FormState>();
+  final _fullNameCtrl = TextEditingController();
+  final _phoneCtrl = TextEditingController();
   final _emailCtrl = TextEditingController();
   final _passwordCtrl = TextEditingController();
   final _confirmCtrl = TextEditingController();
+
+  // Focus nodes — needed to detect when the user leaves a field
+  final _phoneFocus = FocusNode();
+  final _emailFocus = FocusNode();
+
   bool _obscurePassword = true;
   bool _obscureConfirm = true;
   bool _rememberMe = false;
   bool _isLoading = false;
 
+  // Inline duplicate errors (set after focus-out async check)
+  String? _phoneError;
+  String? _emailError;
+  bool _checkingPhone = false;
+  bool _checkingEmail = false;
+
+  @override
+  void initState() {
+    super.initState();
+
+    // Check phone uniqueness when user leaves the phone field
+    _phoneFocus.addListener(() {
+      if (!_phoneFocus.hasFocus) _checkPhone();
+    });
+
+    // Check email uniqueness when user leaves the email field
+    _emailFocus.addListener(() {
+      if (!_emailFocus.hasFocus) _checkEmail();
+    });
+  }
+
+  /// Async check: is this phone already registered?
+  Future<void> _checkPhone() async {
+    final phone = _phoneCtrl.text.trim();
+    final digits = phone.replaceAll(RegExp(r'[^0-9]'), '');
+    if (digits.length != 10) return; // let the format validator handle it
+
+    setState(() => _checkingPhone = true);
+    final taken = await ref.read(authProvider.notifier).isPhoneTaken(phone);
+    if (!mounted) return;
+    setState(() {
+      _checkingPhone = false;
+      _phoneError = taken
+          ? 'This phone number is already registered. Please use a different number.'
+          : null;
+    });
+    _formKey.currentState?.validate(); // refresh inline error immediately
+  }
+
+  /// Async check: is this email already registered?
+  Future<void> _checkEmail() async {
+    final email = _emailCtrl.text.trim();
+    if (!email.contains('@')) return; // let the format validator handle it
+
+    setState(() => _checkingEmail = true);
+    final taken = await ref.read(authProvider.notifier).isEmailTaken(email);
+    if (!mounted) return;
+    setState(() {
+      _checkingEmail = false;
+      _emailError = taken
+          ? 'This email is already registered. Please sign in instead.'
+          : null;
+    });
+    _formKey.currentState?.validate(); // refresh inline error immediately
+  }
+
   @override
   void dispose() {
+    _fullNameCtrl.dispose();
+    _phoneCtrl.dispose();
     _emailCtrl.dispose();
     _passwordCtrl.dispose();
     _confirmCtrl.dispose();
+    _phoneFocus.dispose();
+    _emailFocus.dispose();
     super.dispose();
   }
 
   Future<void> _signup() async {
+    // Force async checks on both fields before final validate
+    if (_phoneFocus.hasFocus || _emailFocus.hasFocus) {
+      FocusScope.of(context).unfocus();
+      await Future.delayed(const Duration(milliseconds: 300));
+    }
     if (!_formKey.currentState!.validate()) return;
+    // Guard: block if inline duplicate errors are still set
+    if (_phoneError != null || _emailError != null) return;
     setState(() => _isLoading = true);
     final success = await ref.read(authProvider.notifier).signUp(
           email: _emailCtrl.text.trim(),
           password: _passwordCtrl.text,
-          fullName: '',
+          fullName: _fullNameCtrl.text.trim(),
+          phone: _phoneCtrl.text.trim(),
         );
     if (!mounted) return;
     setState(() => _isLoading = false);
@@ -60,11 +136,17 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
       );
       context.go(AppRoutes.login);
     } else {
-      AppSnackbar.show(
-        context,
-        ref.read(authProvider).errorMessage ?? 'Registration failed',
-        isError: true,
-      );
+      // Server-side duplicate errors (edge case: race condition)
+      final msg = ref.read(authProvider).errorMessage ?? 'Registration failed';
+      if (msg.toLowerCase().contains('phone')) {
+        setState(() => _phoneError = msg);
+        _formKey.currentState?.validate();
+      } else if (msg.toLowerCase().contains('email')) {
+        setState(() => _emailError = msg);
+        _formKey.currentState?.validate();
+      } else {
+        AppSnackbar.show(context, msg, isError: true);
+      }
     }
   }
 
@@ -199,18 +281,88 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
 
           const SizedBox(height: 20),
 
-          // Email
+          // Full Name
           _AuthField(
-            controller: _emailCtrl,
-            hint: 'Enter your email address',
-            prefixIcon: Icons.mail_outline_rounded,
-            keyboardType: TextInputType.emailAddress,
+            controller: _fullNameCtrl,
+            hint: 'Enter your full name',
+            prefixIcon: Icons.person_outline_rounded,
             textInputAction: TextInputAction.next,
             validator: (v) {
-              if (v == null || v.isEmpty) return 'Email is required';
-              if (!v.contains('@')) return 'Enter a valid email';
+              if (v == null || v.trim().isEmpty) return 'Full name is required';
+              if (v.trim().length < 2) return 'Name is too short';
               return null;
             },
+          ).animate().fadeIn(delay: 255.ms),
+
+          const SizedBox(height: 12),
+
+          // Phone Number
+          Stack(
+            children: [
+              _AuthField(
+                controller: _phoneCtrl,
+                focusNode: _phoneFocus,
+                hint: '98XXXXXXXX',
+                prefixIcon: Icons.phone_outlined,
+                keyboardType: TextInputType.phone,
+                textInputAction: TextInputAction.next,
+                inputFormatters: [
+                  FilteringTextInputFormatter.digitsOnly,
+                  LengthLimitingTextInputFormatter(10),
+                ],
+                validator: (v) {
+                  if (v == null || v.trim().isEmpty) return 'Phone number is required';
+                  final digits = v.trim().replaceAll(RegExp(r'[^0-9]'), '');
+                  if (digits.length != 10) return 'Phone number must be exactly 10 digits';
+                  if (_phoneError != null) return _phoneError;
+                  return null;
+                },
+              ),
+              if (_checkingPhone)
+                const Positioned(
+                  right: 16,
+                  top: 16,
+                  child: SizedBox(
+                    width: 16,
+                    height: 16,
+                    child: CircularProgressIndicator(
+                        strokeWidth: 2, color: _teal),
+                  ),
+                ),
+            ],
+          ).animate().fadeIn(delay: 265.ms),
+
+          const SizedBox(height: 12),
+
+          // Email
+          Stack(
+            children: [
+              _AuthField(
+                controller: _emailCtrl,
+                focusNode: _emailFocus,
+                hint: 'Enter your email address',
+                prefixIcon: Icons.mail_outline_rounded,
+                keyboardType: TextInputType.emailAddress,
+                textInputAction: TextInputAction.next,
+                validator: (v) {
+                  if (v == null || v.isEmpty) return 'Email is required';
+                  if (!v.contains('@')) return 'Enter a valid email';
+                  if (_emailError != null) return _emailError;
+                  return null;
+                },
+              ),
+              if (_checkingEmail)
+                const Positioned(
+                  right: 16,
+                  top: 16,
+                  child: SizedBox(
+                    width: 16,
+                    height: 16,
+                    child: CircularProgressIndicator(
+                        strokeWidth: 2, color: _teal),
+                  ),
+                ),
+            ],
           ).animate().fadeIn(delay: 270.ms),
 
           const SizedBox(height: 12),
@@ -647,6 +799,8 @@ class _AuthField extends StatefulWidget {
   final String? Function(String?)? validator;
   final void Function(String)? onSubmitted;
   final Widget? suffix;
+  final FocusNode? focusNode;
+  final List<TextInputFormatter>? inputFormatters;
 
   const _AuthField({
     required this.controller,
@@ -658,6 +812,8 @@ class _AuthField extends StatefulWidget {
     this.validator,
     this.onSubmitted,
     this.suffix,
+    this.focusNode,
+    this.inputFormatters,
   });
 
   @override
@@ -665,16 +821,36 @@ class _AuthField extends StatefulWidget {
 }
 
 class _AuthFieldState extends State<_AuthField> {
+  late FocusNode _internalFocus;
   bool _focused = false;
+
+  @override
+  void initState() {
+    super.initState();
+    // Use the external FocusNode if provided, otherwise create our own
+    _internalFocus = widget.focusNode ?? FocusNode();
+    _internalFocus.addListener(
+        () => setState(() => _focused = _internalFocus.hasFocus));
+  }
+
+  @override
+  void dispose() {
+    // Only dispose if we created the node ourselves
+    if (widget.focusNode == null) _internalFocus.dispose();
+    super.dispose();
+  }
+
   @override
   Widget build(BuildContext context) {
     return Focus(
       onFocusChange: (v) => setState(() => _focused = v),
       child: TextFormField(
         controller: widget.controller,
+        focusNode: _internalFocus,
         keyboardType: widget.keyboardType,
         obscureText: widget.obscureText,
         textInputAction: widget.textInputAction,
+        inputFormatters: widget.inputFormatters,
         validator: widget.validator,
         onFieldSubmitted: widget.onSubmitted,
         style: const TextStyle(

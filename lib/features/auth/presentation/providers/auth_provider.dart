@@ -218,18 +218,85 @@ class AuthNotifier extends StateNotifier<AuthState> {
     return false;
   }
 
+  // ── Uniqueness Checks ─────────────────────────────────────
+  /// Returns true if the phone is already registered in user_profiles.
+  Future<bool> isPhoneTaken(String phone) async {
+    try {
+      final res = await _supabase.rpc('check_phone_exists', params: {'p_phone': phone});
+      return res as bool;
+    } catch (_) {
+      return false;
+    }
+  }
+
+  /// Returns true if the email is already registered in user_profiles.
+  Future<bool> isEmailTaken(String email) async {
+    try {
+      final res = await _supabase.rpc('check_email_exists', params: {'p_email': email});
+      return res as bool;
+    } catch (_) {
+      return false;
+    }
+  }
+
+  /// Returns true if the PAN number is already registered in businesses.
+  Future<bool> isPanTaken(String pan) async {
+    try {
+      final res = await _supabase.rpc('check_pan_exists', params: {'p_pan': pan});
+      return res as bool;
+    } catch (_) {
+      return false;
+    }
+  }
+
   // ── Sign Up ───────────────────────────────────────────────
   Future<bool> signUp({
     required String email,
     required String password,
     required String fullName,
+    String phone = '',
   }) async {
     try {
-      await _supabase.auth.signUp(
+      // ① Pre-flight uniqueness checks (fast, user-friendly errors)
+      if (phone.isNotEmpty && await isPhoneTaken(phone)) {
+        state = AuthState.error(
+            'This phone number is already registered. Please use a different number.');
+        return false;
+      }
+      if (await isEmailTaken(email)) {
+        state = AuthState.error(
+            'This email is already registered. Please sign in instead.');
+        return false;
+      }
+
+      // ② Register with Supabase Auth
+      final res = await _supabase.auth.signUp(
         email: email,
         password: password,
-        data: {'full_name': fullName},
+        data: {
+          'full_name': fullName,
+          if (phone.isNotEmpty) 'phone': phone,
+        },
       );
+
+      // ③ Persist phone in user_profiles (trigger sets email+full_name;
+      //    we upsert phone separately so it lands even if trigger fires first)
+      final uid = res.user?.id;
+      if (uid != null && phone.isNotEmpty) {
+        try {
+          await _supabase.from('user_profiles').upsert(
+            {
+              'id': uid,
+              'email': email,
+              'full_name': fullName,
+              'phone': phone,
+              'updated_at': DateTime.now().toIso8601String(),
+            },
+            onConflict: 'id',
+          );
+        } catch (_) {} // non-fatal — trigger already wrote the row
+      }
+
       await _supabase.auth.signOut();
       state = AuthState.unauthenticated();
       return true;

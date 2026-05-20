@@ -8,6 +8,7 @@ import 'package:hamro_pasal/core/theme/app_theme.dart';
 import 'package:hamro_pasal/core/widgets/app_button.dart';
 import 'package:hamro_pasal/core/widgets/app_snackbar.dart';
 import 'package:hamro_pasal/core/widgets/app_text_field.dart';
+import 'package:hamro_pasal/features/auth/presentation/providers/auth_provider.dart';
 
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
@@ -29,6 +30,38 @@ class _BusinessSetupScreenState extends ConsumerState<BusinessSetupScreen> {
   final _panCtrl = TextEditingController();
   String _businessType = AppConstants.businessTypes.first;
   bool _isLoading = false;
+  bool _loadingProfile = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadUserPhone();
+  }
+
+  /// Fetches the signed-in user's phone from user_profiles and pre-fills
+  /// the business phone field. The field is then rendered as read-only.
+  Future<void> _loadUserPhone() async {
+    try {
+      final supabase = Supabase.instance.client;
+      final userId = supabase.auth.currentUser?.id;
+      if (userId == null) return;
+
+      final profile = await supabase
+          .from('user_profiles')
+          .select('phone')
+          .eq('id', userId)
+          .maybeSingle();
+
+      final phone = profile?['phone'] as String? ?? '';
+      if (phone.isNotEmpty) {
+        _phoneCtrl.text = phone;
+      }
+    } catch (_) {
+      // Non-fatal: user can still proceed without phone auto-fill
+    } finally {
+      if (mounted) setState(() => _loadingProfile = false);
+    }
+  }
 
   @override
   void dispose() {
@@ -45,6 +78,24 @@ class _BusinessSetupScreenState extends ConsumerState<BusinessSetupScreen> {
     try {
       final supabase = Supabase.instance.client;
       final userId = supabase.auth.currentUser!.id;
+
+      // ── PAN uniqueness check ──────────────────────────────────────
+      final pan = _panCtrl.text.trim();
+      if (pan.isNotEmpty) {
+        final panTaken =
+            await ref.read(authProvider.notifier).isPanTaken(pan);
+        if (panTaken) {
+          if (mounted) {
+            AppSnackbar.show(
+              context,
+              'This PAN number is already registered by another business.',
+              isError: true,
+            );
+          }
+          return;
+        }
+      }
+
       final businessId = const Uuid().v4();
       final now = DateTime.now().toIso8601String();
       final trialEnd =
@@ -59,8 +110,7 @@ class _BusinessSetupScreenState extends ConsumerState<BusinessSetupScreen> {
         'phone': _phoneCtrl.text.trim().isEmpty ? null : _phoneCtrl.text.trim(),
         'address':
             _addressCtrl.text.trim().isEmpty ? null : _addressCtrl.text.trim(),
-        'pan_number':
-            _panCtrl.text.trim().isEmpty ? null : _panCtrl.text.trim(),
+        'pan_number': pan.isEmpty ? null : pan,
         'currency': AppConstants.currency,
         'created_at': now,
         'updated_at': now,
@@ -201,13 +251,80 @@ class _BusinessSetupScreenState extends ConsumerState<BusinessSetupScreen> {
 
                 const SizedBox(height: 16),
 
-                _label(context, 'Phone Number'),
-                AppTextField(
-                  controller: _phoneCtrl,
-                  hint: '98XXXXXXXX',
-                  keyboardType: TextInputType.phone,
-                  prefixIcon: Icons.phone_outlined,
-                ).animate(delay: 200.ms).fadeIn(),
+                // ── Business Phone (auto-filled from user profile, read-only) ──
+                _label(context, 'Business Phone Number'),
+                if (_loadingProfile)
+                  const Padding(
+                    padding: EdgeInsets.symmetric(vertical: 14),
+                    child: Center(
+                      child: SizedBox(
+                        width: 20,
+                        height: 20,
+                        child: CircularProgressIndicator(strokeWidth: 2),
+                      ),
+                    ),
+                  )
+                else
+                  Stack(
+                    children: [
+                      AppTextField(
+                        controller: _phoneCtrl,
+                        hint: '98XXXXXXXX',
+                        keyboardType: TextInputType.phone,
+                        prefixIcon: Icons.phone_outlined,
+                        // Read-only: phone is always the owner's registered phone
+                        readOnly: true,
+                      ),
+                      // Lock badge overlay
+                      Positioned(
+                        right: 12,
+                        top: 0,
+                        bottom: 0,
+                        child: Center(
+                          child: Tooltip(
+                            message: 'Automatically filled from your account',
+                            child: Icon(
+                              Icons.lock_outline_rounded,
+                              size: 18,
+                              color: Theme.of(context)
+                                  .colorScheme
+                                  .primary
+                                  .withValues(alpha: 0.6),
+                            ),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ).animate(delay: 200.ms).fadeIn(),
+
+                // Info chip below phone field
+                if (!_loadingProfile)
+                  Padding(
+                    padding: const EdgeInsets.only(top: 6, left: 4, bottom: 4),
+                    child: Row(
+                      children: [
+                        Icon(Icons.info_outline,
+                            size: 13,
+                            color: Theme.of(context)
+                                .colorScheme
+                                .primary
+                                .withValues(alpha: 0.7)),
+                        const SizedBox(width: 4),
+                        Flexible(
+                          child: Text(
+                            'Phone number is linked to your account and cannot be changed here.',
+                            style: TextStyle(
+                              fontSize: 11,
+                              color: Theme.of(context)
+                                  .colorScheme
+                                  .primary
+                                  .withValues(alpha: 0.7),
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
 
                 const SizedBox(height: 16),
 
@@ -228,6 +345,15 @@ class _BusinessSetupScreenState extends ConsumerState<BusinessSetupScreen> {
                   hint: '9-digit PAN number',
                   keyboardType: TextInputType.number,
                   prefixIcon: Icons.badge_outlined,
+                  validator: (v) {
+                    if (v == null || v.trim().isEmpty) return null; // optional
+                    final digits =
+                        v.trim().replaceAll(RegExp(r'[^0-9]'), '');
+                    if (digits.length != 9) {
+                      return 'PAN number must be exactly 9 digits';
+                    }
+                    return null;
+                  },
                 ).animate(delay: 300.ms).fadeIn(),
 
                 const SizedBox(height: 32),
