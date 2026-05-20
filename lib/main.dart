@@ -10,6 +10,7 @@ import 'package:hamro_pasal/core/constants/supabase_constants.dart';
 import 'package:hamro_pasal/core/services/local_db_service.dart';
 import 'package:hamro_pasal/core/services/notification_service.dart';
 import 'package:hamro_pasal/core/providers/locale_provider.dart';
+import 'package:hamro_pasal/core/widgets/connectivity_overlay.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 void main() async {
@@ -25,6 +26,10 @@ void main() async {
   await Supabase.initialize(
     url: SupabaseConstants.supabaseUrl,
     anonKey: SupabaseConstants.supabaseAnonKey,
+    authOptions: const FlutterAuthClientOptions(
+      authFlowType: AuthFlowType.pkce,
+      autoRefreshToken: true,
+    ),
   );
 
   await LocalDbService.initialize();
@@ -63,6 +68,7 @@ class HamroPasalApp extends ConsumerWidget {
         GlobalCupertinoLocalizations.delegate,
       ],
       routerConfig: router,
+      builder: (context, child) => ConnectivityOverlay(child: child!),
     );
   }
 }

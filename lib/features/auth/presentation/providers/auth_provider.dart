@@ -50,21 +50,105 @@ class AuthNotifier extends StateNotifier<AuthState> {
 
   final _supabase = Supabase.instance.client;
 
+  // True while _init() is running. Prevents a signedOut event that the SDK
+  // emits during token-refresh on cold start from being mistaken for a
+  // deliberate sign-out and logging the user out.
+  bool _isInitializing = true;
+
   // ── Initialization ────────────────────────────────────────
   Future<void> _init() async {
-    final session = _supabase.auth.currentSession;
-    if (session == null) {
-      state = AuthState.unauthenticated();
-      return;
+    // PRIMARY strategy: listen to onAuthStateChange.
+    //
+    // The Supabase SDK fires AuthChangeEvent.initialSession when it has
+    // finished reading the persisted session from SharedPreferences.
+    // Using this event (instead of reading currentSession directly) is the
+    // only reliable way to handle cold-start after the app is killed from
+    // the background — because currentSession can return null for a brief
+    // moment while the SDK is still restoring the token from storage.
+    bool initialEventHandled = false;
+
+    _supabase.auth.onAuthStateChange.listen((data) async {
+      final event = data.event;
+      final session = data.session;
+
+      // ── First event on cold start ─────────────────────────
+      if (event == AuthChangeEvent.initialSession) {
+        initialEventHandled = true;
+        if (session != null) {
+          try {
+            final deviceId = await _getOrCreateDeviceId();
+            await _heartbeat(deviceId);
+          } catch (_) {}
+          final hasBusinessId = await _checkBusinessSetup();
+          state = hasBusinessId
+              ? AuthState.authenticated()
+              : AuthState.needsSetup();
+        } else {
+          state = AuthState.unauthenticated();
+        }
+        return;
+      }
+
+      // ── Subsequent events (live) ──────────────────────────
+      // IMPORTANT: ignore signedOut while we are still initializing.
+      // On cold start the SDK fires  initialSession(expired) → signedOut → tokenRefreshed.
+      // If we react to signedOut here we log the user out before the refresh completes.
+      if (_isInitializing && event == AuthChangeEvent.signedOut) return;
+
+      if (event == AuthChangeEvent.signedIn && session != null) {
+        // Session was restored or user signed in on a trusted device
+        if (state.status == AuthStatus.unauthenticated ||
+            state.status == AuthStatus.initial) {
+          final hasBusinessId = await _checkBusinessSetup();
+          state = hasBusinessId
+              ? AuthState.authenticated()
+              : AuthState.needsSetup();
+        }
+      } else if (event == AuthChangeEvent.tokenRefreshed && session != null) {
+        // Token silently refreshed — stay authenticated
+        if (state.status == AuthStatus.unauthenticated) {
+          final hasBusinessId = await _checkBusinessSetup();
+          state = hasBusinessId
+              ? AuthState.authenticated()
+              : AuthState.needsSetup();
+        }
+      } else if (event == AuthChangeEvent.signedOut) {
+        // Only move to unauthenticated if the user was authenticated,
+        // not on normal initialization flows (OTP sign-out, signUp sign-out).
+        if (state.status == AuthStatus.authenticated) {
+          state = AuthState.unauthenticated();
+        }
+      }
+    });
+
+    // Fallback: if the SDK doesn't fire initialSession within 3 s
+    // (e.g. fully offline with no cached session), read currentSession.
+    int waited = 0;
+    while (!initialEventHandled && waited < 3000) {
+      await Future.delayed(const Duration(milliseconds: 50));
+      waited += 50;
     }
-    // Returning user with existing session — update heartbeat
-    try {
-      final deviceId = await _getOrCreateDeviceId();
-      await _heartbeat(deviceId);
-    } catch (_) {}
-    final hasBusinessId = await _checkBusinessSetup();
-    state = hasBusinessId ? AuthState.authenticated() : AuthState.needsSetup();
+
+    if (!initialEventHandled) {
+      final session = _supabase.auth.currentSession;
+      if (session != null) {
+        try {
+          final deviceId = await _getOrCreateDeviceId();
+          await _heartbeat(deviceId);
+        } catch (_) {}
+        final hasBusinessId = await _checkBusinessSetup();
+        state =
+            hasBusinessId ? AuthState.authenticated() : AuthState.needsSetup();
+      } else {
+        state = AuthState.unauthenticated();
+      }
+    }
+
+    // Initialization complete — from this point a signedOut event means the
+    // user actively signed out (or their refresh token expired permanently).
+    _isInitializing = false;
   }
+
 
   // ── Device ID ─────────────────────────────────────────────
   /// Returns a stable per-browser/device UUID stored in SharedPreferences
