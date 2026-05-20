@@ -133,101 +133,135 @@ class _CalculatorScreenState extends State<CalculatorScreen>
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final bgColor = isDark ? AppTheme.darkBg : const Color(0xFF0A1628);
 
-    return Scaffold(
-      backgroundColor: bgColor,
-      appBar: AppBar(
+    return Focus(
+      autofocus: true,
+      onKeyEvent: (node, event) {
+        if (event is KeyDownEvent) {
+          final key = event.logicalKey;
+          final char = event.character;
+
+          if (key == LogicalKeyboardKey.enter || key == LogicalKeyboardKey.numpadEnter) {
+            _onButton('=');
+            return KeyEventResult.handled;
+          } else if (key == LogicalKeyboardKey.backspace) {
+            _onButton('⌫');
+            return KeyEventResult.handled;
+          } else if (key == LogicalKeyboardKey.escape || key == LogicalKeyboardKey.delete) {
+            _onButton('C');
+            return KeyEventResult.handled;
+          }
+
+          if (char == '*') {
+            _onButton('×');
+            return KeyEventResult.handled;
+          } else if (char == '/') {
+            _onButton('÷');
+            return KeyEventResult.handled;
+          }
+
+          if (char != null && '0123456789.+-()%'.contains(char)) {
+            _onButton(char);
+            return KeyEventResult.handled;
+          }
+        }
+        return KeyEventResult.ignored;
+      },
+      child: Scaffold(
         backgroundColor: bgColor,
-        elevation: 0,
-        title: const Text(
-          'Calculator',
-          style: TextStyle(
-            color: Colors.white,
-            fontWeight: FontWeight.w700,
-            fontSize: 20,
-          ),
-        ),
-        iconTheme: const IconThemeData(color: Colors.white70),
-        actions: [
-          if (_history.isNotEmpty)
-            IconButton(
-              icon: const Icon(Icons.history_rounded, color: Colors.white70),
-              tooltip: 'History',
-              onPressed: _showHistory,
+        appBar: AppBar(
+          backgroundColor: bgColor,
+          elevation: 0,
+          title: const Text(
+            'Calculator',
+            style: TextStyle(
+              color: Colors.white,
+              fontWeight: FontWeight.w700,
+              fontSize: 20,
             ),
-        ],
-      ),
-      body: Column(
-        children: [
-          // ── Display ──────────────────────────────────────────
-          Expanded(
-            flex: 2,
-            child: Container(
-              width: double.infinity,
-              padding: const EdgeInsets.fromLTRB(24, 16, 24, 24),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.end,
-                mainAxisAlignment: MainAxisAlignment.end,
-                children: [
-                  // Expression
-                  AnimatedSwitcher(
-                    duration: const Duration(milliseconds: 200),
-                    child: Text(
-                      _expression.isEmpty ? '' : _expression,
-                      key: ValueKey(_expression),
-                      style: TextStyle(
-                        fontSize: 22,
-                        color: Colors.white.withValues(alpha: 0.5),
-                        fontWeight: FontWeight.w400,
-                      ),
-                      textAlign: TextAlign.right,
-                      maxLines: 2,
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                  ),
-                  const SizedBox(height: 8),
-                  // Result
-                  AnimatedBuilder(
-                    animation: _resultScaleAnim,
-                    builder: (_, child) => Transform.scale(
-                      scale: _resultScaleAnim.value,
-                      child: child,
-                    ),
-                    child: FittedBox(
-                      fit: BoxFit.scaleDown,
-                      alignment: Alignment.centerRight,
+          ),
+          iconTheme: const IconThemeData(color: Colors.white70),
+          actions: [
+            if (_history.isNotEmpty)
+              IconButton(
+                icon: const Icon(Icons.history_rounded, color: Colors.white70),
+                tooltip: 'History',
+                onPressed: _showHistory,
+              ),
+          ],
+        ),
+        body: Column(
+          children: [
+            // ── Display ──────────────────────────────────────────
+            Expanded(
+              flex: 2,
+              child: Container(
+                width: double.infinity,
+                padding: const EdgeInsets.fromLTRB(24, 16, 24, 24),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.end,
+                  mainAxisAlignment: MainAxisAlignment.end,
+                  children: [
+                    // Expression
+                    AnimatedSwitcher(
+                      duration: const Duration(milliseconds: 200),
                       child: Text(
-                        _result,
+                        _expression.isEmpty ? '' : _expression,
+                        key: ValueKey(_expression),
                         style: TextStyle(
-                          fontSize: 64,
-                          color: _result == 'Error'
-                              ? AppTheme.errorColor
-                              : Colors.white,
-                          fontWeight: FontWeight.w300,
-                          letterSpacing: -1,
+                          fontSize: 22,
+                          color: Colors.white.withValues(alpha: 0.5),
+                          fontWeight: FontWeight.w400,
+                        ),
+                        textAlign: TextAlign.right,
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                    // Result
+                    AnimatedBuilder(
+                      animation: _resultScaleAnim,
+                      builder: (_, child) => Transform.scale(
+                        scale: _resultScaleAnim.value,
+                        child: child,
+                      ),
+                      child: FittedBox(
+                        fit: BoxFit.scaleDown,
+                        alignment: Alignment.centerRight,
+                        child: Text(
+                          _result,
+                          style: TextStyle(
+                            fontSize: 64,
+                            color: _result == 'Error'
+                                ? AppTheme.errorColor
+                                : Colors.white,
+                            fontWeight: FontWeight.w300,
+                            letterSpacing: -1,
+                          ),
                         ),
                       ),
                     ),
-                  ),
-                ],
+                  ],
+                ),
               ),
             ),
-          ),
 
-          // ── Divider ──────────────────────────────────────────
-          Container(
-            height: 1,
-            color: Colors.white.withValues(alpha: 0.08),
-          ),
-
-          // ── Keypad ───────────────────────────────────────────
-          Expanded(
-            flex: 3,
-            child: Container(
-              padding: const EdgeInsets.all(16),
-              child: _Keypad(onButton: _onButton),
+            // ── Divider ──────────────────────────────────────────
+            Container(
+              height: 1,
+              color: Colors.white.withValues(alpha: 0.08),
             ),
-          ),
-        ],
+
+            // ── Keypad ───────────────────────────────────────────
+            Expanded(
+              flex: 3,
+              child: Container(
+                padding: const EdgeInsets.all(16),
+                child: _Keypad(onButton: _onButton),
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
