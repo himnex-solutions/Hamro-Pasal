@@ -2,7 +2,8 @@ import 'dart:convert';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:timezone/data/latest.dart' as tz;
+import 'package:timezone/timezone.dart' as tz;
+import 'package:timezone/data/latest.dart' as tz_data;
 
 // ── In-App Notification Model ─────────────────────────────────
 class InAppNotification {
@@ -113,7 +114,7 @@ class NotificationService {
   static const String _kKey = InAppNotificationsNotifier.kKey;
 
   static Future<void> initialize() async {
-    tz.initializeTimeZones();
+    tz_data.initializeTimeZones();
     const androidSettings = AndroidInitializationSettings('@mipmap/ic_launcher');
     const iosSettings = DarwinInitializationSettings(
       requestAlertPermission: true,
@@ -316,6 +317,56 @@ class NotificationService {
       iOS: DarwinNotificationDetails(),
     );
     await _plugin.show(8, title, body, details);
+  }
+
+  static Future<void> scheduleCreditReminder({
+    required String type,
+    required String? partyName,
+    required double amount,
+    required DateTime scheduledDate,
+  }) async {
+    final isIncome = type == 'sale' || type == 'income';
+    final title = isIncome ? '⏰ Collect Payment' : '⏰ Pay Credit';
+    final targetParty = (partyName != null && partyName.trim().isNotEmpty) ? partyName : 'Customer/Supplier';
+    final body = isIncome
+        ? 'Reminder: Collect Rs. ${amount.toInt()} from $targetParty today.'
+        : 'Reminder: Pay Rs. ${amount.toInt()} to $targetParty today.';
+
+    // Create in-app notification immediately
+    final dateStr = '${scheduledDate.day}/${scheduledDate.month}/${scheduledDate.year} at ${scheduledDate.hour}:${scheduledDate.minute.toString().padLeft(2, '0')}';
+    await _saveNotification(
+      '📅 Reminder Scheduled',
+      'You will be reminded to collect/pay Rs. ${amount.toInt()} for $targetParty on $dateStr.',
+      'info',
+    );
+
+    // Schedule local notification
+    final tzScheduled = tz.TZDateTime.from(scheduledDate, tz.local);
+
+    const details = NotificationDetails(
+      android: AndroidNotificationDetails(
+        'scheduled_credit_alerts',
+        'Scheduled Credit Reminders',
+        channelDescription: 'Scheduled alerts when transaction is done on credit',
+        importance: Importance.high,
+        priority: Priority.high,
+        icon: '@mipmap/ic_launcher',
+      ),
+      iOS: DarwinNotificationDetails(),
+    );
+
+    // Clean unique integer ID for notifications
+    final intNotifId = (scheduledDate.millisecondsSinceEpoch ~/ 1000) & 0x7FFFFFFF;
+
+    await _plugin.zonedSchedule(
+      intNotifId,
+      title,
+      body,
+      tzScheduled,
+      details,
+      androidScheduleMode: AndroidScheduleMode.exactAllowWhileIdle,
+      uiLocalNotificationDateInterpretation: UILocalNotificationDateInterpretation.absoluteTime,
+    );
   }
 
   static Future<void> cancelAll() async {
