@@ -13,6 +13,9 @@ import 'package:hamro_pasal/features/parties/data/models/party_model.dart';
 import 'package:hamro_pasal/features/inventory/data/models/product_model.dart';
 import 'package:hamro_pasal/features/subscription/data/services/subscription_manager.dart';
 import 'package:hamro_pasal/features/transactions/presentation/screens/transactions_screen.dart';
+import 'package:hamro_pasal/features/parties/presentation/screens/parties_screen.dart';
+import 'package:hamro_pasal/features/parties/presentation/screens/party_detail_screen.dart';
+import 'package:hamro_pasal/features/dashboard/presentation/providers/dashboard_provider.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:uuid/uuid.dart';
@@ -93,7 +96,13 @@ class _AddTransactionScreenState extends ConsumerState<AddTransactionScreen> {
     return double.tryParse(_amountCtrl.text) ?? 0;
   }
 
-  double get _paidAmount => double.tryParse(_paidCtrl.text) ?? _totalAmount;
+  double get _paidAmount {
+    if (_paymentMethod == AppConstants.paymentCredit) return 0;
+    if (_paymentMethod == AppConstants.paymentPartial) {
+      return double.tryParse(_paidCtrl.text) ?? 0;
+    }
+    return _totalAmount;
+  }
   double get _dueAmount =>
       (_totalAmount - _paidAmount).clamp(0, double.infinity);
 
@@ -179,6 +188,66 @@ class _AddTransactionScreenState extends ConsumerState<AddTransactionScreen> {
         }
       }
 
+      // Update Party Balance and Insert Ledger Entry
+      if (_selectedParty != null) {
+        double balanceChange = 0;
+
+        if (_txType == AppConstants.txSale) {
+          if (_paymentMethod == AppConstants.paymentCredit ||
+              _paymentMethod == AppConstants.paymentPartial) {
+            balanceChange = _dueAmount;
+          }
+        } else if (_txType == AppConstants.txIncome) {
+          balanceChange = -_paidAmount;
+        } else if (_txType == AppConstants.txPurchase) {
+          if (_paymentMethod == AppConstants.paymentCredit ||
+              _paymentMethod == AppConstants.paymentPartial) {
+            balanceChange = -_dueAmount;
+          }
+        } else if (_txType == AppConstants.txExpense) {
+          balanceChange = _paidAmount;
+          if (_paymentMethod == AppConstants.paymentCredit ||
+              _paymentMethod == AppConstants.paymentPartial) {
+            balanceChange -= _dueAmount;
+          }
+        }
+
+        if (balanceChange != 0) {
+          final entryType = balanceChange > 0 ? 'debit' : 'credit';
+
+          // Fetch current party balance
+          final partyRow = await Supabase.instance.client
+              .from('parties')
+              .select('current_balance')
+              .eq('id', _selectedParty!.id)
+              .single();
+          final currentBal = (partyRow['current_balance'] as num).toDouble();
+          final newBal = currentBal + balanceChange;
+
+          // Update party current_balance
+          await Supabase.instance.client
+              .from('parties')
+              .update({'current_balance': newBal})
+              .eq('id', _selectedParty!.id);
+
+          // Insert ledger entry
+          await Supabase.instance.client.from('ledger_entries').insert({
+            'id': const Uuid().v4(),
+            'business_id': businessId,
+            'party_id': _selectedParty!.id,
+            'transaction_id': txId,
+            'entry_type': entryType,
+            'amount': balanceChange.abs(),
+            'balance_after': newBal,
+            'description': _noteCtrl.text.trim().isNotEmpty
+                ? _noteCtrl.text.trim()
+                : '${_txType[0].toUpperCase()}${_txType.substring(1)} (${_paymentMethod[0].toUpperCase()}${_paymentMethod.substring(1)})',
+            'entry_date': _txDate.toIso8601String(),
+            'created_at': now,
+          });
+        }
+      }
+
       // Increment daily counter on success
       await DailyLimitService.instance.increment(planCode, 'transactions');
 
@@ -195,6 +264,12 @@ class _AddTransactionScreenState extends ConsumerState<AddTransactionScreen> {
 
       if (mounted) {
         ref.invalidate(transactionsProvider);
+        ref.invalidate(dashboardProvider);
+        if (_selectedParty != null) {
+          ref.invalidate(partiesProvider);
+          ref.invalidate(partyDetailProvider(_selectedParty!.id));
+          ref.invalidate(partyLedgerProvider(_selectedParty!.id));
+        }
         AppSnackbar.show(context, 'Transaction saved!', isSuccess: true);
         context.pop();
       }

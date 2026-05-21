@@ -108,7 +108,19 @@ class PersonalDashboardNotifier extends AsyncNotifier<PersonalStats> {
         for (final tx in txRes as List) {
           final amount = (tx['amount'] as num).toDouble();
           if (tx['type'] == AppConstants.txSale) totalSales += amount;
-          if (tx['type'] == AppConstants.txExpense) totalExpenses += amount;
+          if (tx['type'] == AppConstants.txExpense ||
+              tx['type'] == AppConstants.txPurchase) {
+            totalExpenses += amount;
+          }
+        }
+
+        // Lifetime general expenses from the expenses table
+        final expRes = await supabase
+            .from('expenses')
+            .select('amount')
+            .eq('business_id', businessId);
+        for (final exp in expRes as List) {
+          totalExpenses += (exp['amount'] as num).toDouble();
         }
 
         // Counts

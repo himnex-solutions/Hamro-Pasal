@@ -91,6 +91,17 @@ class ReportNotifier extends FamilyAsyncNotifier<ReportSummary, ReportPeriod> {
       }
     }
 
+    // Fetch general expenses from expenses table for the period
+    final expRes = await supabase
+        .from('expenses')
+        .select('amount')
+        .eq('business_id', businessId)
+        .gte('expense_date', start.toIso8601String());
+
+    for (final exp in expRes as List) {
+      expenses += (exp['amount'] as num).toDouble();
+    }
+
     // Top products by qty sold
     final itemsRes = await supabase
         .from('transaction_items')

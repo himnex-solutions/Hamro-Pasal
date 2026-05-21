@@ -57,7 +57,21 @@ class DashboardNotifier extends AsyncNotifier<DashboardStats> {
       for (final tx in txRes as List) {
         final amount = (tx['amount'] as num).toDouble();
         if (tx['type'] == AppConstants.txSale) todaySales += amount;
-        if (tx['type'] == AppConstants.txExpense) todayExpenses += amount;
+        if (tx['type'] == AppConstants.txExpense ||
+            tx['type'] == AppConstants.txPurchase) {
+          todayExpenses += amount;
+        }
+      }
+
+      // Today's general expenses from the expenses table
+      final expRes = await supabase
+          .from('expenses')
+          .select('amount')
+          .eq('business_id', businessId)
+          .gte('expense_date', todayStart);
+
+      for (final exp in expRes as List) {
+        todayExpenses += (exp['amount'] as num).toDouble();
       }
 
       // Party balances (receivables/payables)

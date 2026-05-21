@@ -16,6 +16,7 @@ import 'package:hamro_pasal/features/subscription/data/services/subscription_man
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:uuid/uuid.dart';
+import 'package:hamro_pasal/features/dashboard/presentation/providers/dashboard_provider.dart';
 
 IconData getCategoryIcon(String categoryName) {
   switch (categoryName.toLowerCase()) {
@@ -473,6 +474,7 @@ class _AddExpenseScreenState extends ConsumerState<AddExpenseScreen> {
 
       if (mounted) {
         ref.invalidate(expensesProvider);
+        ref.invalidate(dashboardProvider);
         AppSnackbar.show(context, 'Expense added!', isSuccess: true);
         context.pop();
       }
