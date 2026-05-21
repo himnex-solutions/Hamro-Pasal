@@ -290,6 +290,34 @@ class NotificationService {
     await _plugin.show(7, title, body, details);
   }
 
+  static Future<void> showCreditReminderAlert({
+    required String type,
+    required String? partyName,
+    required double amount,
+  }) async {
+    final isIncome = type == 'sale' || type == 'income';
+    final title = isIncome ? '💰 Collect Payment' : '💸 Pay Credit';
+    final targetParty = (partyName != null && partyName.trim().isNotEmpty) ? partyName : 'Customer/Supplier';
+    final body = isIncome
+        ? 'Reminder: Collect Rs. ${amount.toInt()} from $targetParty soon.'
+        : 'Reminder: Pay Rs. ${amount.toInt()} to $targetParty soon.';
+
+    await _saveNotification(title, body, 'warning');
+
+    const details = NotificationDetails(
+      android: AndroidNotificationDetails(
+        'credit_alerts',
+        'Credit Reminders',
+        channelDescription: 'Alerts when transaction is done on credit',
+        importance: Importance.high,
+        priority: Priority.high,
+        icon: '@mipmap/ic_launcher',
+      ),
+      iOS: DarwinNotificationDetails(),
+    );
+    await _plugin.show(8, title, body, details);
+  }
+
   static Future<void> cancelAll() async {
     await _plugin.cancelAll();
   }

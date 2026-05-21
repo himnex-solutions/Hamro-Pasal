@@ -18,6 +18,8 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:uuid/uuid.dart';
 import 'package:intl/intl.dart';
 
+import 'package:hamro_pasal/core/services/notification_service.dart';
+
 class AddTransactionScreen extends ConsumerStatefulWidget {
   const AddTransactionScreen({super.key});
 
@@ -179,6 +181,17 @@ class _AddTransactionScreenState extends ConsumerState<AddTransactionScreen> {
 
       // Increment daily counter on success
       await DailyLimitService.instance.increment(planCode, 'transactions');
+
+      // Trigger Credit Reminder if Payment Method is Credit or Partial with remaining due
+      if (_paymentMethod == AppConstants.paymentCredit || 
+          (_paymentMethod == AppConstants.paymentPartial && _dueAmount > 0)) {
+        await NotificationService.showCreditReminderAlert(
+          type: _txType,
+          partyName: _selectedParty?.name,
+          amount: _dueAmount > 0 ? _dueAmount : _totalAmount,
+        );
+        ref.read(inAppNotificationsProvider.notifier).loadNotifications();
+      }
 
       if (mounted) {
         ref.invalidate(transactionsProvider);
