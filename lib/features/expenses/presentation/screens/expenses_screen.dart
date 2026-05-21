@@ -10,6 +10,9 @@ import 'package:hamro_pasal/core/theme/app_theme.dart';
 import 'package:hamro_pasal/core/widgets/app_button.dart';
 import 'package:hamro_pasal/core/widgets/app_snackbar.dart';
 import 'package:hamro_pasal/core/widgets/app_text_field.dart';
+import 'package:hamro_pasal/core/services/daily_limit_service.dart';
+import 'package:hamro_pasal/core/widgets/plan_limit_dialog.dart';
+import 'package:hamro_pasal/features/subscription/data/services/subscription_manager.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:uuid/uuid.dart';
@@ -436,6 +439,25 @@ class _AddExpenseScreenState extends ConsumerState<AddExpenseScreen> {
       final prefs = await SharedPreferences.getInstance();
       final businessId =
           prefs.getString(AppConstants.kSelectedBusinessId) ?? '';
+
+      // ── Subscription limit check ──────────────────────────
+      final planCode = ref.read(subscriptionManagerProvider).planCode;
+      final limitResult = await DailyLimitService.instance
+          .checkLimit(planCode, 'expenses');
+      if (!limitResult.allowed) {
+        if (mounted) {
+          await PlanLimitDialog.showDailyLimitReached(
+            context,
+            planCode: planCode,
+            action: 'expenses',
+            limit: limitResult.limit!,
+            used: limitResult.used,
+          );
+        }
+        return;
+      }
+      // ─────────────────────────────────────────────────────
+
       final now = DateTime.now().toIso8601String();
       await Supabase.instance.client.from('expenses').insert({
         'id': const Uuid().v4(),
@@ -446,6 +468,9 @@ class _AddExpenseScreenState extends ConsumerState<AddExpenseScreen> {
         'expense_date': _date.toIso8601String(),
         'created_at': now,
       });
+      // Increment daily counter on success
+      await DailyLimitService.instance.increment(planCode, 'expenses');
+
       if (mounted) {
         ref.invalidate(expensesProvider);
         AppSnackbar.show(context, 'Expense added!', isSuccess: true);

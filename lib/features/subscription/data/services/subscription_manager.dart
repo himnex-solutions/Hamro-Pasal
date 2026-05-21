@@ -70,11 +70,12 @@ class SubscriptionState {
 }
 
 final subscriptionManagerProvider = StateNotifierProvider<SubscriptionManager, SubscriptionState>((ref) {
-  return SubscriptionManager();
+  return SubscriptionManager(ref);
 });
 
 class SubscriptionManager extends StateNotifier<SubscriptionState> {
-  SubscriptionManager() : super(SubscriptionState.basic()) {
+  final Ref ref;
+  SubscriptionManager(this.ref) : super(SubscriptionState.basic()) {
     _init();
   }
 
@@ -155,10 +156,12 @@ class SubscriptionManager extends StateNotifier<SubscriptionState> {
             
             if (status == 'approved') {
               await NotificationService.showSubscriptionApprovedAlert(plan);
+              ref.read(inAppNotificationsProvider.notifier).loadNotifications();
               await syncSubscription();
             } else if (status == 'rejected') {
               final reason = newRec['rejection_reason'] as String? ?? 'No reason provided';
               await NotificationService.showSubscriptionRejectedAlert(plan, reason);
+              ref.read(inAppNotificationsProvider.notifier).loadNotifications();
             }
           },
         )

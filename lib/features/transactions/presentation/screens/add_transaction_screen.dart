@@ -3,12 +3,15 @@ import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:hamro_pasal/core/constants/app_constants.dart';
+import 'package:hamro_pasal/core/services/daily_limit_service.dart';
 import 'package:hamro_pasal/core/theme/app_theme.dart';
 import 'package:hamro_pasal/core/widgets/app_button.dart';
 import 'package:hamro_pasal/core/widgets/app_snackbar.dart';
 import 'package:hamro_pasal/core/widgets/app_text_field.dart';
+import 'package:hamro_pasal/core/widgets/plan_limit_dialog.dart';
 import 'package:hamro_pasal/features/parties/data/models/party_model.dart';
 import 'package:hamro_pasal/features/inventory/data/models/product_model.dart';
+import 'package:hamro_pasal/features/subscription/data/services/subscription_manager.dart';
 import 'package:hamro_pasal/features/transactions/presentation/screens/transactions_screen.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
@@ -107,6 +110,25 @@ class _AddTransactionScreenState extends ConsumerState<AddTransactionScreen> {
       final prefs = await SharedPreferences.getInstance();
       final businessId =
           prefs.getString(AppConstants.kSelectedBusinessId) ?? '';
+
+      // ── Subscription limit check ──────────────────────────
+      final planCode = ref.read(subscriptionManagerProvider).planCode;
+      final limitResult = await DailyLimitService.instance
+          .checkLimit(planCode, 'transactions');
+      if (!limitResult.allowed) {
+        if (mounted) {
+          await PlanLimitDialog.showDailyLimitReached(
+            context,
+            planCode: planCode,
+            action: 'transactions',
+            limit: limitResult.limit!,
+            used: limitResult.used,
+          );
+        }
+        return;
+      }
+      // ─────────────────────────────────────────────────────
+
       final txId = const Uuid().v4();
       final now = DateTime.now().toIso8601String();
 
@@ -154,6 +176,9 @@ class _AddTransactionScreenState extends ConsumerState<AddTransactionScreen> {
           });
         }
       }
+
+      // Increment daily counter on success
+      await DailyLimitService.instance.increment(planCode, 'transactions');
 
       if (mounted) {
         ref.invalidate(transactionsProvider);

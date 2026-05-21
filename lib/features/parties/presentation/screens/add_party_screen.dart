@@ -3,14 +3,18 @@ import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:hamro_pasal/core/constants/app_constants.dart';
+import 'package:hamro_pasal/core/services/daily_limit_service.dart';
 import 'package:hamro_pasal/core/theme/app_theme.dart';
 import 'package:hamro_pasal/core/widgets/app_button.dart';
 import 'package:hamro_pasal/core/widgets/app_snackbar.dart';
 import 'package:hamro_pasal/core/widgets/app_text_field.dart';
+import 'package:hamro_pasal/core/widgets/plan_limit_dialog.dart';
 import 'package:hamro_pasal/features/parties/presentation/screens/parties_screen.dart';
+import 'package:hamro_pasal/features/subscription/data/services/subscription_manager.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:uuid/uuid.dart';
+
 
 class AddPartyScreen extends ConsumerStatefulWidget {
   const AddPartyScreen({super.key});
@@ -50,6 +54,25 @@ class _AddPartyScreenState extends ConsumerState<AddPartyScreen> {
       final prefs = await SharedPreferences.getInstance();
       final businessId =
           prefs.getString(AppConstants.kSelectedBusinessId) ?? '';
+
+      // ── Subscription limit check ──────────────────────────
+      final planCode = ref.read(subscriptionManagerProvider).planCode;
+      final limitResult = await DailyLimitService.instance
+          .checkLimit(planCode, 'parties');
+      if (!limitResult.allowed) {
+        if (mounted) {
+          await PlanLimitDialog.showDailyLimitReached(
+            context,
+            planCode: planCode,
+            action: 'parties',
+            limit: limitResult.limit!,
+            used: limitResult.used,
+          );
+        }
+        return;
+      }
+      // ─────────────────────────────────────────────────────
+
       final opening = double.tryParse(_openingBalCtrl.text) ?? 0;
       final now = DateTime.now().toIso8601String();
       await Supabase.instance.client.from('parties').insert({
@@ -67,6 +90,10 @@ class _AddPartyScreenState extends ConsumerState<AddPartyScreen> {
         'created_at': now,
         'updated_at': now,
       });
+
+      // Increment daily counter on success
+      await DailyLimitService.instance.increment(planCode, 'parties');
+
       if (mounted) {
         ref.invalidate(partiesProvider);
         AppSnackbar.show(context, 'Party added successfully!', isSuccess: true);
@@ -78,6 +105,8 @@ class _AddPartyScreenState extends ConsumerState<AddPartyScreen> {
       if (mounted) setState(() => _isLoading = false);
     }
   }
+
+
 
   @override
   Widget build(BuildContext context) {

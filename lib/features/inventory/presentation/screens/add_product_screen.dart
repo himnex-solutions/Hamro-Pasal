@@ -11,14 +11,14 @@ import 'package:hamro_pasal/core/widgets/app_snackbar.dart';
 import 'package:hamro_pasal/core/widgets/app_text_field.dart';
 import 'package:hamro_pasal/features/inventory/data/models/product_model.dart';
 import 'package:hamro_pasal/features/inventory/presentation/screens/inventory_screen.dart';
+import 'package:hamro_pasal/core/services/daily_limit_service.dart';
+import 'package:hamro_pasal/core/widgets/plan_limit_dialog.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:uuid/uuid.dart';
 import 'dart:io';
 import 'package:hamro_pasal/core/widgets/barcode_scanner_modal.dart';
 import 'package:hamro_pasal/features/subscription/data/services/subscription_manager.dart';
-import 'package:hamro_pasal/core/router/app_router.dart';
-import 'package:hamro_pasal/core/l10n/app_strings.dart';
 
 class AddProductScreen extends ConsumerStatefulWidget {
   const AddProductScreen({super.key});
@@ -56,12 +56,10 @@ class _AddProductScreenState extends ConsumerState<AddProductScreen> {
     final hasAccess = manager.checkFeatureAccess('barcode_scanner');
 
     if (!hasAccess) {
-      AppSnackbar.show(
+      PlanLimitDialog.showDiamondFeatureRequired(
         context,
-        context.l10n.barcodePremiumMsg,
-        isError: true,
+        featureName: 'Barcode Scanning',
       );
-      context.push(AppRoutes.subscription);
       return;
     }
 
@@ -110,6 +108,25 @@ class _AddProductScreenState extends ConsumerState<AddProductScreen> {
       final prefs = await SharedPreferences.getInstance();
       final businessId =
           prefs.getString(AppConstants.kSelectedBusinessId) ?? '';
+
+      // ── Subscription limit check ──────────────────────────
+      final planCode = ref.read(subscriptionManagerProvider).planCode;
+      final limitResult = await DailyLimitService.instance
+          .checkLimit(planCode, 'products');
+      if (!limitResult.allowed) {
+        if (mounted) {
+          await PlanLimitDialog.showDailyLimitReached(
+            context,
+            planCode: planCode,
+            action: 'products',
+            limit: limitResult.limit!,
+            used: limitResult.used,
+          );
+        }
+        return;
+      }
+      // ─────────────────────────────────────────────────────
+
       final productId = const Uuid().v4();
       final imageUrl = await _uploadImage(productId);
       final now = DateTime.now().toIso8601String();
@@ -131,6 +148,9 @@ class _AddProductScreenState extends ConsumerState<AddProductScreen> {
         'created_at': now,
         'updated_at': now,
       });
+
+      // Increment daily counter on success
+      await DailyLimitService.instance.increment(planCode, 'products');
 
       if (mounted) {
         ref.invalidate(inventoryProvider);

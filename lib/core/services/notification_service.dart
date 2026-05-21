@@ -172,7 +172,7 @@ class NotificationService {
 
   static Future<void> showTrialReminderAlert(int daysLeft) async {
     const title = 'Free Trial Ending Soon';
-    final body = '$daysLeft days left in your free trial. Subscribe to keep your data.';
+    final body = '$daysLeft day(s) left in your free trial!';
 
     await _saveNotification(title, body, 'info');
 
@@ -212,7 +212,7 @@ class NotificationService {
 
   static Future<void> showSubscriptionApprovedAlert(String plan) async {
     const title = '🎉 Subscription Approved!';
-    final body = 'Your upgrade request to the $plan Plan is now active. Enjoy premium features!';
+    final body = '$plan Plan is now active. Welcome aboard! 🎉';
 
     await _saveNotification(title, body, 'success');
 
@@ -232,7 +232,7 @@ class NotificationService {
 
   static Future<void> showSubscriptionRejectedAlert(String plan, String reason) async {
     const title = '❌ Upgrade Request Rejected';
-    final body = 'Your payment for $plan was rejected. Reason: $reason';
+    final body = '$plan payment rejected. Tap to resubmit.';
 
     await _saveNotification(title, body, 'error');
 
@@ -252,7 +252,7 @@ class NotificationService {
 
   static Future<void> showSubscriptionExpiryAlert(int daysLeft) async {
     const title = '⚠️ Subscription Expiring Soon';
-    final body = 'Your membership expires in $daysLeft days. Renew now to avoid interruption.';
+    final body = 'Expires in $daysLeft day(s). Renew to continue.';
 
     await _saveNotification(title, body, 'warning');
 
@@ -272,7 +272,7 @@ class NotificationService {
 
   static Future<void> showUpgradeReminderAlert() async {
     const title = '🚀 Grow Your Business';
-    const body = 'Upgrade to Gold or Diamond plan to unlock Barcode scanning, Thermal printing, and more!';
+    const body = 'Unlock barcode scanner, printer & more. Upgrade now!';
 
     await _saveNotification(title, body, 'info');
 

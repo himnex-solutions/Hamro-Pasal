@@ -422,6 +422,114 @@ class _PremiumPlanCard extends StatelessWidget {
     required this.onSelect,
   });
 
+  Widget _buildLimitsSection(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    
+    // Map of limits per plan
+    final Map<String, List<Map<String, dynamic>>> limits = {
+      'basic': [
+        {'label': 'Add Party', 'limit': 'Max 5 / day', 'icon': Icons.people_outline},
+        {'label': 'Add Transaction', 'limit': 'Max 10 / day', 'icon': Icons.receipt_long_outlined},
+        {'label': 'Add Expense', 'limit': 'Max 10 / day', 'icon': Icons.wallet_outlined},
+        {'label': 'Add Product', 'limit': 'Max 5 / day', 'icon': Icons.inventory_2_outlined},
+      ],
+      'gold': [
+        {'label': 'Add Party', 'limit': 'Max 10 / day', 'icon': Icons.people_outline},
+        {'label': 'Add Transaction', 'limit': 'Max 50 / day', 'icon': Icons.receipt_long_outlined},
+        {'label': 'Add Expense', 'limit': 'Max 50 / day', 'icon': Icons.wallet_outlined},
+        {'label': 'Add Product', 'limit': 'Max 20 / day', 'icon': Icons.inventory_2_outlined},
+      ],
+      'diamond': [
+        {'label': 'Add Party', 'limit': 'Unlimited', 'icon': Icons.people_outline},
+        {'label': 'Add Transaction', 'limit': 'Unlimited', 'icon': Icons.receipt_long_outlined},
+        {'label': 'Add Expense', 'limit': 'Unlimited', 'icon': Icons.wallet_outlined},
+        {'label': 'Add Product', 'limit': 'Unlimited', 'icon': Icons.inventory_2_outlined},
+      ],
+    };
+
+    final planLimits = limits[plan.planCode] ?? limits['basic']!;
+    
+    Color activeColor = AppTheme.primaryColor;
+    if (plan.planCode == 'gold') activeColor = const Color(0xFFF59E0B);
+    if (plan.planCode == 'diamond') activeColor = const Color(0xFF8B5CF6);
+
+    return Container(
+      margin: const EdgeInsets.only(bottom: 16),
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: activeColor.withValues(alpha: 0.05),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(
+          color: activeColor.withValues(alpha: 0.15),
+          width: 1,
+        ),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Icon(Icons.speed_rounded, size: 16, color: activeColor),
+              const SizedBox(width: 8),
+              Text(
+                'DAILY USAGE LIMITS',
+                style: TextStyle(
+                  fontSize: 10,
+                  fontWeight: FontWeight.w800,
+                  color: activeColor,
+                  letterSpacing: 1.1,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 10),
+          ...planLimits.map((limitItem) {
+            final String lStr = limitItem['limit'] as String;
+            final isUnlimited = lStr.toLowerCase() == 'unlimited';
+            return Padding(
+              padding: const EdgeInsets.symmetric(vertical: 4),
+              child: Row(
+                children: [
+                  Icon(
+                    limitItem['icon'] as IconData,
+                    size: 15,
+                    color: isDark ? Colors.white54 : Colors.black54,
+                  ),
+                  const SizedBox(width: 10),
+                  Text(
+                    limitItem['label'] as String,
+                    style: TextStyle(
+                      fontSize: 12,
+                      color: isDark ? Colors.white70 : Colors.black87,
+                    ),
+                  ),
+                  const Spacer(),
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                    decoration: BoxDecoration(
+                      color: isUnlimited 
+                          ? AppTheme.successColor.withValues(alpha: 0.12)
+                          : activeColor.withValues(alpha: 0.1),
+                      borderRadius: BorderRadius.circular(6),
+                    ),
+                    child: Text(
+                      lStr,
+                      style: TextStyle(
+                        fontSize: 11,
+                        fontWeight: FontWeight.w700,
+                        color: isUnlimited ? AppTheme.successColor : activeColor,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            );
+          }),
+        ],
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     Color activeColor = AppTheme.primaryColor;
@@ -520,6 +628,10 @@ class _PremiumPlanCard extends StatelessWidget {
                 const SizedBox(height: 16),
                 const Divider(),
                 const SizedBox(height: 12),
+                
+                // Gorgeous limits box
+                _buildLimitsSection(context),
+                
                 ...plan.features.map((f) => Padding(
                       padding: const EdgeInsets.symmetric(vertical: 4),
                       child: Row(

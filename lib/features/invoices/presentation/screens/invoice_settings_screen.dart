@@ -8,8 +8,9 @@ import 'package:hamro_pasal/core/widgets/app_snackbar.dart';
 import 'package:hamro_pasal/core/widgets/app_text_field.dart';
 import 'package:hamro_pasal/features/invoices/data/services/invoice_settings_service.dart';
 import 'package:hamro_pasal/features/subscription/data/services/subscription_manager.dart';
-import 'package:hamro_pasal/core/router/app_router.dart';
 import 'package:hamro_pasal/core/l10n/app_strings.dart';
+
+import 'package:hamro_pasal/core/widgets/plan_limit_dialog.dart';
 
 class InvoiceSettingsScreen extends ConsumerStatefulWidget {
   const InvoiceSettingsScreen({super.key});
@@ -74,12 +75,18 @@ class _InvoiceSettingsScreenState extends ConsumerState<InvoiceSettingsScreen> {
   }
 
   void _showUpgradeDialog(String feature) {
-    AppSnackbar.show(
+    String label = feature;
+    if (feature == 'transaction_prefixes') {
+      label = 'Custom Invoice Prefix';
+    } else if (feature == 'invoice_customization') {
+      label = 'Invoice Style Customization';
+    } else if (feature == 'thermal_printing') {
+      label = 'Thermal Printing Template';
+    }
+    PlanLimitDialog.showDiamondFeatureRequired(
       context,
-      'This feature is locked for your plan. Please upgrade to customize.',
-      isError: true,
+      featureName: label,
     );
-    context.push(AppRoutes.subscription);
   }
 
   @override
