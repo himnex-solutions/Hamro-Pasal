@@ -2,12 +2,13 @@ import 'package:flutter/material.dart';
 
 class PolyMeshBackground extends StatelessWidget {
   final Widget? child;
+  final Color? accentColor;
   
   // ── Color tokens ────────────
   static const _bgDark1 = Color(0xFF07242B);   // top-left of background gradient
   static const _bgDark2 = Color(0xFF0F4850);   // bottom-right of background gradient
 
-  const PolyMeshBackground({super.key, this.child});
+  const PolyMeshBackground({super.key, this.child, this.accentColor});
 
   @override
   Widget build(BuildContext context) {
@@ -22,7 +23,7 @@ class PolyMeshBackground extends StatelessWidget {
       child: Stack(
         children: [
           Positioned.fill(
-            child: CustomPaint(painter: PolyMeshPainter()),
+            child: CustomPaint(painter: PolyMeshPainter(accentColor: accentColor)),
           ),
           if (child != null) child!,
         ],
@@ -36,18 +37,32 @@ class PolyMeshBackground extends StatelessWidget {
 // ─────────────────────────────────────────────────────────────
 
 class PolyMeshPainter extends CustomPainter {
+  final Color? accentColor;
+
+  PolyMeshPainter({this.accentColor});
+
   @override
   void paint(Canvas canvas, Size size) {
     final W = size.width;
     final H = size.height;
+
+    // Use accentColor if provided, otherwise fallback to the default website brand teal/cyan colors
+    final primaryOrbColor = accentColor ?? const Color(0xFF1FE0F0);
+    final secondaryOrbColor = accentColor ?? const Color(0xFF38EAF7);
+    final midOrbColor = accentColor ?? const Color(0xFF0CCEDF);
+    final beamColor = accentColor ?? const Color(0xFF1FE0F0);
+    final waveColor1 = accentColor ?? const Color(0xFF0ECFDD);
+    final waveColor2 = accentColor ?? const Color(0xFF0BBAC8);
+    final ringColor = accentColor ?? const Color(0xFF1DD8E8);
+    final sparkleColor = accentColor ?? const Color(0xFF1DD8E8);
 
     // ── 1. Primary hero orb — top-left, large, rich teal ─────
     _drawOrb(canvas,
       center: Offset(W * -0.05, H * 0.05),
       radius: W * 0.80,
       colors: [
-        const Color(0xFF1FE0F0).withValues(alpha: 0.55),
-        const Color(0xFF0DA8B8).withValues(alpha: 0.22),
+        primaryOrbColor.withValues(alpha: 0.55),
+        primaryOrbColor.withValues(alpha: 0.22),
         Colors.transparent,
       ],
       stops: const [0.0, 0.45, 1.0],
@@ -58,8 +73,8 @@ class PolyMeshPainter extends CustomPainter {
       center: Offset(W * 1.05, H * -0.02),
       radius: W * 0.55,
       colors: [
-        const Color(0xFF38EAF7).withValues(alpha: 0.38),
-        const Color(0xFF0B7A87).withValues(alpha: 0.14),
+        secondaryOrbColor.withValues(alpha: 0.38),
+        secondaryOrbColor.withValues(alpha: 0.14),
         Colors.transparent,
       ],
       stops: const [0.0, 0.50, 1.0],
@@ -70,8 +85,8 @@ class PolyMeshPainter extends CustomPainter {
       center: Offset(W * 0.20, H * 0.42),
       radius: W * 0.50,
       colors: [
-        const Color(0xFF0CCEDF).withValues(alpha: 0.18),
-        const Color(0xFF0A3D6B).withValues(alpha: 0.08),
+        midOrbColor.withValues(alpha: 0.18),
+        midOrbColor.withValues(alpha: 0.08),
         Colors.transparent,
       ],
       stops: const [0.0, 0.55, 1.0],
@@ -89,7 +104,7 @@ class PolyMeshPainter extends CustomPainter {
       Paint()
         ..shader = LinearGradient(
           colors: [
-            const Color(0xFF1FE0F0).withValues(alpha: 0.22),
+            beamColor.withValues(alpha: 0.22),
             Colors.transparent,
           ],
           begin: Alignment.topCenter,
@@ -101,14 +116,14 @@ class PolyMeshPainter extends CustomPainter {
     _drawWave(canvas, W, H,
       y1: 0.16, cp1x: 0.28, cp1y: 0.09,
       cp2x: 0.65, cp2y: 0.23, y2: 0.20,
-      color: const Color(0xFF0ECFDD).withValues(alpha: 0.13),
+      color: waveColor1.withValues(alpha: 0.13),
     );
 
     // ── 6. Second wave band (offset) ──────────────────────────
     _drawWave(canvas, W, H,
       y1: 0.24, cp1x: 0.30, cp1y: 0.14,
       cp2x: 0.68, cp2y: 0.30, y2: 0.28,
-      color: const Color(0xFF0BBAC8).withValues(alpha: 0.09),
+      color: waveColor2.withValues(alpha: 0.09),
     );
 
     // ── 7. Bottom dark swoosh ──────────────────────────────────
@@ -133,11 +148,11 @@ class PolyMeshPainter extends CustomPainter {
 
     // ── 8. Concentric glowing rings — left anchor ─────────────
     _drawRing(canvas, Offset(W * -0.02, H * 0.14), W * 0.46,
-        const Color(0xFF1DD8E8).withValues(alpha: 0.18), 1.4);
+        ringColor.withValues(alpha: 0.18), 1.4);
     _drawRing(canvas, Offset(W * -0.02, H * 0.14), W * 0.62,
-        const Color(0xFF1DD8E8).withValues(alpha: 0.10), 0.9);
+        ringColor.withValues(alpha: 0.10), 0.9);
     _drawRing(canvas, Offset(W * -0.02, H * 0.14), W * 0.80,
-        const Color(0xFF1DD8E8).withValues(alpha: 0.05), 0.6);
+        ringColor.withValues(alpha: 0.05), 0.6);
 
     // ── 9. Scattered sparkle dots ─────────────────────────────
     final sparkles = [
@@ -161,13 +176,13 @@ class PolyMeshPainter extends CustomPainter {
       canvas.drawCircle(
         Offset(s.$1, s.$2),
         s.$3 * 2.8,
-        Paint()..color = const Color(0xFF1DD8E8).withValues(alpha: 0.10),
+        Paint()..color = sparkleColor.withValues(alpha: 0.10),
       );
       // Bright core
       canvas.drawCircle(
         Offset(s.$1, s.$2),
         s.$3,
-        Paint()..color = const Color(0xFF6FF6FF).withValues(alpha: 0.75),
+        Paint()..color = (accentColor != null ? Color.alphaBlend(accentColor!.withValues(alpha: 0.4), Colors.white) : const Color(0xFF6FF6FF)).withValues(alpha: 0.75),
       );
     }
 
@@ -179,7 +194,7 @@ class PolyMeshPainter extends CustomPainter {
         ..shader = LinearGradient(
           colors: [
             Colors.transparent,
-            const Color(0xFF1DD8E8).withValues(alpha: 0.25),
+            ringColor.withValues(alpha: 0.25),
             Colors.transparent,
           ],
           stops: const [0.0, 0.5, 1.0],
@@ -229,5 +244,7 @@ class PolyMeshPainter extends CustomPainter {
   }
 
   @override
-  bool shouldRepaint(covariant CustomPainter _) => false;
+  bool shouldRepaint(covariant PolyMeshPainter oldDelegate) {
+    return oldDelegate.accentColor != accentColor;
+  }
 }
