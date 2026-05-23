@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
+import 'package:hamro_pasal/core/theme/app_theme.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 class AdminBusinessesScreen extends StatefulWidget {
@@ -36,7 +37,7 @@ class _AdminBusinessesScreenState extends State<AdminBusinessesScreen> {
       setState(() => _loading = false);
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Error: $e'), backgroundColor: const Color(0xFFEF4444)),
+          SnackBar(content: Text('Error: $e'), backgroundColor: AppTheme.errorColor),
         );
       }
     }
@@ -63,13 +64,13 @@ class _AdminBusinessesScreenState extends State<AdminBusinessesScreen> {
       await _fetchBusinesses();
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Business deleted'), backgroundColor: Color(0xFF10B981)),
+          const SnackBar(content: Text('Business deleted'), backgroundColor: AppTheme.successColor),
         );
       }
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Error: $e'), backgroundColor: const Color(0xFFEF4444)),
+          SnackBar(content: Text('Error: $e'), backgroundColor: AppTheme.errorColor),
         );
       }
     }
@@ -85,7 +86,7 @@ class _AdminBusinessesScreenState extends State<AdminBusinessesScreen> {
     final result = await showDialog<bool>(
       context: context,
       builder: (ctx) => AlertDialog(
-        backgroundColor: const Color(0xFF131929),
+        backgroundColor: AppTheme.darkCard,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
         title: const Text('Edit Business', style: TextStyle(color: Colors.white, fontWeight: FontWeight.w700)),
         content: SingleChildScrollView(
@@ -112,7 +113,7 @@ class _AdminBusinessesScreenState extends State<AdminBusinessesScreen> {
           ElevatedButton(
             onPressed: () => Navigator.pop(ctx, true),
             style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFFF59E0B), foregroundColor: Colors.black),
+                backgroundColor: AppTheme.primaryColor, foregroundColor: Colors.white),
             child: const Text('Save', style: TextStyle(fontWeight: FontWeight.w700)),
           ),
         ],
@@ -130,13 +131,13 @@ class _AdminBusinessesScreenState extends State<AdminBusinessesScreen> {
       await _fetchBusinesses();
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Business updated'), backgroundColor: Color(0xFF10B981)),
+          const SnackBar(content: Text('Business updated'), backgroundColor: AppTheme.successColor),
         );
       }
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Error: $e'), backgroundColor: const Color(0xFFEF4444)),
+          SnackBar(content: Text('Error: $e'), backgroundColor: AppTheme.errorColor),
         );
       }
     }
@@ -146,7 +147,7 @@ class _AdminBusinessesScreenState extends State<AdminBusinessesScreen> {
     return await showDialog<bool>(
           context: context,
           builder: (ctx) => AlertDialog(
-            backgroundColor: const Color(0xFF131929),
+            backgroundColor: AppTheme.darkCard,
             shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
             title: Text(title, style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w700)),
             content: Text(message, style: const TextStyle(color: Colors.white70)),
@@ -154,7 +155,7 @@ class _AdminBusinessesScreenState extends State<AdminBusinessesScreen> {
               TextButton(onPressed: () => Navigator.pop(ctx, false), child: const Text('Cancel', style: TextStyle(color: Colors.white54))),
               ElevatedButton(
                 onPressed: () => Navigator.pop(ctx, true),
-                style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFFEF4444), foregroundColor: Colors.white),
+                style: ElevatedButton.styleFrom(backgroundColor: AppTheme.errorColor, foregroundColor: Colors.white),
                 child: const Text('Delete'),
               ),
             ],
@@ -166,9 +167,9 @@ class _AdminBusinessesScreenState extends State<AdminBusinessesScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFF070C18),
+      backgroundColor: AppTheme.darkBg,
       appBar: AppBar(
-        backgroundColor: const Color(0xFF0E1525),
+        backgroundColor: AppTheme.darkSurface,
         elevation: 0,
         title: const Text('Businesses', style: TextStyle(color: Colors.white, fontWeight: FontWeight.w700)),
         actions: [
@@ -188,21 +189,21 @@ class _AdminBusinessesScreenState extends State<AdminBusinessesScreen> {
               decoration: InputDecoration(
                 hintText: 'Search businesses…',
                 hintStyle: TextStyle(color: Colors.white.withValues(alpha: 0.3)),
-                prefixIcon: const Icon(Icons.search, color: Color(0xFFF59E0B)),
+                prefixIcon: const Icon(Icons.search, color: AppTheme.primaryLight),
                 filled: true,
-                fillColor: const Color(0xFF0E1525),
+                fillColor: AppTheme.darkSurface,
                 border: OutlineInputBorder(borderRadius: BorderRadius.circular(12),
-                    borderSide: BorderSide(color: Colors.white.withValues(alpha: 0.1))),
+                    borderSide: const BorderSide(color: AppTheme.darkBorder)),
                 enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12),
-                    borderSide: BorderSide(color: Colors.white.withValues(alpha: 0.1))),
+                    borderSide: const BorderSide(color: AppTheme.darkBorder)),
                 focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(12),
-                    borderSide: const BorderSide(color: Color(0xFFF59E0B))),
+                    borderSide: const BorderSide(color: AppTheme.primaryLight)),
               ),
             ),
           ),
           Expanded(
             child: _loading
-                ? const Center(child: CircularProgressIndicator(color: Color(0xFFF59E0B)))
+                ? const Center(child: CircularProgressIndicator(color: AppTheme.primaryLight))
                 : _filtered.isEmpty
                     ? const Center(child: Text('No businesses found', style: TextStyle(color: Colors.white38)))
                     : ListView.separated(
@@ -237,9 +238,9 @@ class _BusinessRow extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: const Color(0xFF0E1525),
+        color: AppTheme.darkCard,
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: Colors.white.withValues(alpha: 0.06), width: 1),
+        border: Border.all(color: AppTheme.darkBorder, width: 1),
       ),
       child: Row(
         children: [
@@ -247,10 +248,10 @@ class _BusinessRow extends StatelessWidget {
             width: 42,
             height: 42,
             decoration: BoxDecoration(
-              color: const Color(0xFF10B981).withValues(alpha: 0.15),
+              color: AppTheme.accentColor.withValues(alpha: 0.15),
               borderRadius: BorderRadius.circular(10),
             ),
-            child: const Icon(Icons.store_rounded, color: Color(0xFF10B981), size: 22),
+            child: const Icon(Icons.store_rounded, color: AppTheme.accentColor, size: 22),
           ),
           const SizedBox(width: 12),
           Expanded(
@@ -264,21 +265,21 @@ class _BusinessRow extends StatelessWidget {
                 Row(
                   children: [
                     if (biz['type'] != null)
-                      _Tag(label: biz['type'], color: const Color(0xFF3B82F6)),
+                      _Tag(label: biz['type'], color: AppTheme.primaryLight),
                     const SizedBox(width: 6),
-                    _Tag(label: biz['currency'] ?? 'NPR', color: const Color(0xFF10B981)),
+                    _Tag(label: biz['currency'] ?? 'NPR', color: AppTheme.successColor),
                   ],
                 ),
               ],
             ),
           ),
           IconButton(
-            icon: const Icon(Icons.edit_outlined, color: Color(0xFF3B82F6), size: 20),
+            icon: const Icon(Icons.edit_outlined, color: AppTheme.primaryLight, size: 20),
             onPressed: onEdit,
             tooltip: 'Edit',
           ),
           IconButton(
-            icon: const Icon(Icons.delete_outline_rounded, color: Color(0xFFEF4444), size: 20),
+            icon: const Icon(Icons.delete_outline_rounded, color: AppTheme.errorColor, size: 20),
             onPressed: onDelete,
             tooltip: 'Delete',
           ),
@@ -322,15 +323,15 @@ class _DialogField extends StatelessWidget {
       decoration: InputDecoration(
         labelText: label,
         labelStyle: TextStyle(color: Colors.white.withValues(alpha: 0.5)),
-        prefixIcon: Icon(icon, color: const Color(0xFFF59E0B), size: 18),
+        prefixIcon: Icon(icon, color: AppTheme.primaryLight, size: 18),
         filled: true,
-        fillColor: const Color(0xFF0A0F1E),
+        fillColor: AppTheme.darkSurface,
         border: OutlineInputBorder(borderRadius: BorderRadius.circular(10),
-            borderSide: BorderSide(color: Colors.white.withValues(alpha: 0.1))),
+            borderSide: const BorderSide(color: AppTheme.darkBorder)),
         enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(10),
-            borderSide: BorderSide(color: Colors.white.withValues(alpha: 0.1))),
+            borderSide: const BorderSide(color: AppTheme.darkBorder)),
         focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(10),
-            borderSide: const BorderSide(color: Color(0xFFF59E0B))),
+            borderSide: const BorderSide(color: AppTheme.primaryLight)),
       ),
     );
   }

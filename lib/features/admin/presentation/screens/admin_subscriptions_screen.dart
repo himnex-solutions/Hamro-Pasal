@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
+import 'package:hamro_pasal/core/theme/app_theme.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:intl/intl.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -319,7 +320,7 @@ class _AdminSubscriptionsScreenState extends State<AdminSubscriptionsScreen> {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
             content: Text('Payment approved! Notification triggered to user device.'),
-            backgroundColor: Color(0xFF10B981),
+            backgroundColor: AppTheme.successColor,
           ),
         );
         _fetchData();
@@ -327,7 +328,7 @@ class _AdminSubscriptionsScreenState extends State<AdminSubscriptionsScreen> {
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Approval failed: $e'), backgroundColor: const Color(0xFFEF4444)),
+          SnackBar(content: Text('Approval failed: $e'), backgroundColor: AppTheme.errorColor),
         );
       }
     }
@@ -338,7 +339,7 @@ class _AdminSubscriptionsScreenState extends State<AdminSubscriptionsScreen> {
     final confirm = await showDialog<bool>(
       context: context,
       builder: (ctx) => AlertDialog(
-        backgroundColor: const Color(0xFF131929),
+        backgroundColor: AppTheme.darkCard,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
         title: const Text('Reject Payment Request', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
         content: Column(
@@ -355,13 +356,13 @@ class _AdminSubscriptionsScreenState extends State<AdminSubscriptionsScreen> {
                 hintText: 'e.g. screenshot is blur / payment not received.',
                 hintStyle: TextStyle(color: Colors.white.withValues(alpha: 0.3)),
                 filled: true,
-                fillColor: const Color(0xFF0A0F1E),
+                fillColor: AppTheme.darkSurface,
                 border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(10),
-                    borderSide: BorderSide(color: Colors.white.withValues(alpha: 0.1))),
+                    borderSide: const BorderSide(color: AppTheme.darkBorder)),
                 focusedBorder: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(10),
-                    borderSide: const BorderSide(color: Color(0xFFEF4444))),
+                    borderSide: const BorderSide(color: AppTheme.errorColor)),
               ),
             ),
           ],
@@ -373,7 +374,7 @@ class _AdminSubscriptionsScreenState extends State<AdminSubscriptionsScreen> {
           ),
           ElevatedButton(
             onPressed: () => Navigator.pop(ctx, true),
-            style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFFEF4444), foregroundColor: Colors.white),
+            style: ElevatedButton.styleFrom(backgroundColor: AppTheme.errorColor, foregroundColor: Colors.white),
             child: const Text('Reject', style: TextStyle(fontWeight: FontWeight.bold)),
           ),
         ],
@@ -385,7 +386,7 @@ class _AdminSubscriptionsScreenState extends State<AdminSubscriptionsScreen> {
       if (reason.isEmpty) {
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('Rejection reason is required'), backgroundColor: Color(0xFFEF4444)),
+            const SnackBar(content: Text('Rejection reason is required'), backgroundColor: AppTheme.errorColor),
           );
         }
         return;
@@ -399,14 +400,14 @@ class _AdminSubscriptionsScreenState extends State<AdminSubscriptionsScreen> {
 
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('Payment request rejected. User notified.'), backgroundColor: Color(0xFFEF4444)),
+            const SnackBar(content: Text('Payment request rejected. User notified.'), backgroundColor: AppTheme.errorColor),
           );
           _fetchData();
         }
       } catch (e) {
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text('Rejection failed: $e'), backgroundColor: const Color(0xFFEF4444)),
+            SnackBar(content: Text('Rejection failed: $e'), backgroundColor: AppTheme.errorColor),
           );
         }
       }
@@ -426,7 +427,7 @@ class _AdminSubscriptionsScreenState extends State<AdminSubscriptionsScreen> {
       context: context,
       builder: (ctx) => StatefulBuilder(
         builder: (dialogCtx, setDialogState) => AlertDialog(
-          backgroundColor: const Color(0xFF131929),
+          backgroundColor: AppTheme.darkCard,
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
           title: const Text('Manage User Subscription', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
           content: SingleChildScrollView(
@@ -440,13 +441,13 @@ class _AdminSubscriptionsScreenState extends State<AdminSubscriptionsScreen> {
                 Container(
                   padding: const EdgeInsets.symmetric(horizontal: 12),
                   decoration: BoxDecoration(
-                    color: const Color(0xFF0A0F1E),
+                    color: AppTheme.darkSurface,
                     borderRadius: BorderRadius.circular(10),
-                    border: Border.all(color: Colors.white10),
+                    border: Border.all(color: AppTheme.darkBorder),
                   ),
                   child: DropdownButtonHideUnderline(
                     child: DropdownButton<String>(
-                      dropdownColor: const Color(0xFF131929),
+                      dropdownColor: AppTheme.darkCard,
                       value: currentPlan,
                       isExpanded: true,
                       style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w600),
@@ -468,13 +469,13 @@ class _AdminSubscriptionsScreenState extends State<AdminSubscriptionsScreen> {
                 Container(
                   padding: const EdgeInsets.symmetric(horizontal: 12),
                   decoration: BoxDecoration(
-                    color: const Color(0xFF0A0F1E),
+                    color: AppTheme.darkSurface,
                     borderRadius: BorderRadius.circular(10),
-                    border: Border.all(color: Colors.white10),
+                    border: Border.all(color: AppTheme.darkBorder),
                   ),
                   child: DropdownButtonHideUnderline(
                     child: DropdownButton<String>(
-                      dropdownColor: const Color(0xFF131929),
+                      dropdownColor: AppTheme.darkCard,
                       value: currentStatus,
                       isExpanded: true,
                       style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w600),
@@ -514,7 +515,7 @@ class _AdminSubscriptionsScreenState extends State<AdminSubscriptionsScreen> {
                         icon: const Icon(Icons.calendar_month, size: 14),
                         label: const Text('Pick Date', style: TextStyle(fontSize: 11)),
                         style: ElevatedButton.styleFrom(
-                          backgroundColor: const Color(0xFF0A0F1E),
+                          backgroundColor: AppTheme.darkSurface,
                           foregroundColor: Colors.white,
                           padding: const EdgeInsets.symmetric(vertical: 10),
                         ),
@@ -530,7 +531,7 @@ class _AdminSubscriptionsScreenState extends State<AdminSubscriptionsScreen> {
                           hintText: '+ Days (e.g. 30)',
                           hintStyle: TextStyle(color: Colors.white24, fontSize: 11),
                           filled: true,
-                          fillColor: Color(0xFF0A0F1E),
+                          fillColor: AppTheme.darkSurface,
                           contentPadding: EdgeInsets.symmetric(horizontal: 10, vertical: 10),
                           border: InputBorder.none,
                         ),
@@ -570,15 +571,15 @@ class _AdminSubscriptionsScreenState extends State<AdminSubscriptionsScreen> {
 
                   _fetchData();
                 } catch (e) {
-                  setState(() => _loading = false);
+                  setState(() => _loading = true);
                   if (mounted) {
                     ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(content: Text('Failed to update subscription: $e'), backgroundColor: const Color(0xFFEF4444)),
+                      SnackBar(content: Text('Failed to update subscription: $e'), backgroundColor: AppTheme.errorColor),
                     );
                   }
                 }
               },
-              style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFFF59E0B), foregroundColor: Colors.black),
+              style: ElevatedButton.styleFrom(backgroundColor: AppTheme.primaryColor, foregroundColor: Colors.white),
               child: const Text('Save Changes', style: TextStyle(fontWeight: FontWeight.bold)),
             ),
           ],
@@ -591,7 +592,7 @@ class _AdminSubscriptionsScreenState extends State<AdminSubscriptionsScreen> {
     showDialog(
       context: context,
       builder: (ctx) => Dialog(
-        backgroundColor: const Color(0xFF0E1525),
+        backgroundColor: AppTheme.darkCard,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
         child: Container(
           constraints: const BoxConstraints(
@@ -637,7 +638,7 @@ class _AdminSubscriptionsScreenState extends State<AdminSubscriptionsScreen> {
                           child: Column(
                             mainAxisAlignment: MainAxisAlignment.center,
                             children: [
-                              Icon(Icons.image_not_supported_outlined, color: Color(0xFFEF4444), size: 48),
+                              Icon(Icons.image_not_supported_outlined, color: AppTheme.errorColor, size: 48),
                               SizedBox(height: 12),
                               Text(
                                 'Unable to Preview Image',
@@ -690,8 +691,8 @@ class _AdminSubscriptionsScreenState extends State<AdminSubscriptionsScreen> {
                     icon: const Icon(Icons.open_in_new_rounded, size: 14),
                     label: const Text('Open in New Tab', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 11)),
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: const Color(0xFFF59E0B),
-                      foregroundColor: Colors.black,
+                      backgroundColor: AppTheme.primaryColor,
+                      foregroundColor: Colors.white,
                       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
                       padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
                     ),
@@ -750,14 +751,25 @@ class _AdminSubscriptionsScreenState extends State<AdminSubscriptionsScreen> {
     return list;
   }
 
+  Color _getPlanColor(String planCode) {
+    switch (planCode.toLowerCase()) {
+      case 'gold':
+        return AppTheme.warningColor;
+      case 'diamond':
+        return AppTheme.primaryLight;
+      default:
+        return Colors.white54;
+    }
+  }
+
   // ── Main UI Build ────────────────────────────────────────────────
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFF070C18),
+      backgroundColor: AppTheme.darkBg,
       appBar: AppBar(
-        backgroundColor: const Color(0xFF0E1525),
+        backgroundColor: AppTheme.darkSurface,
         elevation: 0,
         title: const Text('Admin Dashboard',
             style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 16)),
@@ -778,8 +790,8 @@ class _AdminSubscriptionsScreenState extends State<AdminSubscriptionsScreen> {
             _fetchFeatureControlData();
           }
         },
-        backgroundColor: const Color(0xFF0E1525),
-        selectedItemColor: const Color(0xFFF59E0B),
+        backgroundColor: AppTheme.darkSurface,
+        selectedItemColor: AppTheme.primaryLight,
         unselectedItemColor: Colors.white38,
         type: BottomNavigationBarType.fixed,
         selectedLabelStyle: const TextStyle(fontWeight: FontWeight.bold, fontSize: 11),
@@ -792,7 +804,7 @@ class _AdminSubscriptionsScreenState extends State<AdminSubscriptionsScreen> {
         ],
       ),
       body: _loading && _subs.isEmpty
-          ? const Center(child: CircularProgressIndicator(color: Color(0xFFF59E0B)))
+          ? const Center(child: CircularProgressIndicator(color: AppTheme.primaryLight))
           : AnimatedSwitcher(
               duration: const Duration(milliseconds: 200),
               child: _buildActiveTab(),
@@ -844,9 +856,9 @@ class _AdminSubscriptionsScreenState extends State<AdminSubscriptionsScreen> {
             mainAxisSpacing: 12,
             children: [
               _buildMetricCard('Total Subscribers', '$_totalSubscribers', Icons.people_rounded, const Color(0xFF3B82F6)),
-              _buildMetricCard('Active Plans', '$_activePlansCount', Icons.check_circle_rounded, const Color(0xFF10B981)),
-              _buildMetricCard('Expired Plans', '$_expiredPlansCount', Icons.cancel_rounded, const Color(0xFFEF4444)),
-              _buildMetricCard('Revenue Summary', 'Rs. ${_totalRevenue.toInt()}', Icons.monetization_on_rounded, const Color(0xFFF59E0B)),
+              _buildMetricCard('Active Plans', '$_activePlansCount', Icons.check_circle_rounded, AppTheme.successColor),
+              _buildMetricCard('Expired Plans', '$_expiredPlansCount', Icons.cancel_rounded, AppTheme.errorColor),
+              _buildMetricCard('Revenue Summary', 'Rs. ${_totalRevenue.toInt()}', Icons.monetization_on_rounded, AppTheme.accentColor),
             ],
           ),
           const SizedBox(height: 24),
@@ -855,9 +867,9 @@ class _AdminSubscriptionsScreenState extends State<AdminSubscriptionsScreen> {
           Container(
             padding: const EdgeInsets.all(20),
             decoration: BoxDecoration(
-              color: const Color(0xFF0E1525),
+              color: AppTheme.darkCard,
               borderRadius: BorderRadius.circular(16),
-              border: Border.all(color: Colors.white.withValues(alpha: 0.05)),
+              border: Border.all(color: AppTheme.darkBorder),
             ),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -869,9 +881,9 @@ class _AdminSubscriptionsScreenState extends State<AdminSubscriptionsScreen> {
                 const SizedBox(height: 20),
                 _buildDistributionBar('Basic Free Plan', _planDistribution['basic'] ?? 0, _totalSubscribers, Colors.grey),
                 const SizedBox(height: 14),
-                _buildDistributionBar('Gold Premium Plan', _planDistribution['gold'] ?? 0, _totalSubscribers, const Color(0xFFF59E0B)),
+                _buildDistributionBar('Gold Premium Plan', _planDistribution['gold'] ?? 0, _totalSubscribers, AppTheme.warningColor),
                 const SizedBox(height: 14),
-                _buildDistributionBar('Diamond Enterprise Plan', _planDistribution['diamond'] ?? 0, _totalSubscribers, const Color(0xFF8B5CF6)),
+                _buildDistributionBar('Diamond Enterprise Plan', _planDistribution['diamond'] ?? 0, _totalSubscribers, AppTheme.primaryLight),
               ],
             ),
           ).animate().fadeIn(),
@@ -884,9 +896,9 @@ class _AdminSubscriptionsScreenState extends State<AdminSubscriptionsScreen> {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: const Color(0xFF0E1525),
+        color: AppTheme.darkCard,
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: Colors.white.withValues(alpha: 0.05)),
+        border: Border.all(color: AppTheme.darkBorder),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -969,14 +981,14 @@ class _AdminSubscriptionsScreenState extends State<AdminSubscriptionsScreen> {
                   label: Text(code.toUpperCase()),
                   selected: _paymentPlanFilter == code,
                   onSelected: (_) => setState(() => _paymentPlanFilter = code),
-                  selectedColor: const Color(0xFFF59E0B),
-                  backgroundColor: const Color(0xFF0E1525),
-                  labelStyle: TextStyle(
-                    color: _paymentPlanFilter == code ? Colors.black : Colors.white70,
+                  selectedColor: AppTheme.primaryLight,
+                  backgroundColor: AppTheme.darkSurface,
+                  labelStyle: const TextStyle(
+                    color: Colors.white,
                     fontWeight: FontWeight.bold,
                     fontSize: 10,
                   ),
-                  side: BorderSide(color: _paymentPlanFilter == code ? const Color(0xFFF59E0B) : Colors.white10),
+                  side: BorderSide(color: _paymentPlanFilter == code ? AppTheme.primaryLight : AppTheme.darkBorder),
                 ),
               )),
             ],
@@ -1004,9 +1016,9 @@ class _AdminSubscriptionsScreenState extends State<AdminSubscriptionsScreen> {
                     return Container(
                       padding: const EdgeInsets.all(16),
                       decoration: BoxDecoration(
-                        color: const Color(0xFF0E1525),
+                        color: AppTheme.darkCard,
                         borderRadius: BorderRadius.circular(16),
-                        border: Border.all(color: Colors.white.withValues(alpha: 0.05)),
+                        border: Border.all(color: AppTheme.darkBorder),
                       ),
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
@@ -1021,7 +1033,7 @@ class _AdminSubscriptionsScreenState extends State<AdminSubscriptionsScreen> {
                                     Text(userName, style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 14)),
                                     Text(phone, style: const TextStyle(color: Colors.white38, fontSize: 11)),
                                     const SizedBox(height: 8),
-                                    Text('Requested: $plan', style: const TextStyle(color: Color(0xFFF59E0B), fontWeight: FontWeight.bold, fontSize: 13)),
+                                    Text('Requested: $plan', style: const TextStyle(color: AppTheme.primaryLight, fontWeight: FontWeight.bold, fontSize: 13)),
                                     Text('Amount: Rs. ${amount.toInt()}', style: const TextStyle(color: Colors.white70, fontSize: 12)),
                                     const SizedBox(height: 4),
                                     Text('Submitted: $date', style: const TextStyle(color: Colors.white38, fontSize: 10)),
@@ -1045,7 +1057,7 @@ class _AdminSubscriptionsScreenState extends State<AdminSubscriptionsScreen> {
                                           child: const Column(
                                             mainAxisAlignment: MainAxisAlignment.center,
                                             children: [
-                                              Icon(Icons.image_not_supported_outlined, color: Color(0xFFF59E0B), size: 22),
+                                              Icon(Icons.image_not_supported_outlined, color: AppTheme.primaryLight, size: 22),
                                               SizedBox(height: 4),
                                               Text(
                                                 'View Proof',
@@ -1072,7 +1084,7 @@ class _AdminSubscriptionsScreenState extends State<AdminSubscriptionsScreen> {
                                     icon: const Icon(Icons.check_circle_outline, size: 16),
                                     label: const Text('Approve Upgrade', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 11)),
                                     style: ElevatedButton.styleFrom(
-                                      backgroundColor: const Color(0xFF10B981),
+                                      backgroundColor: AppTheme.successColor,
                                       foregroundColor: Colors.white,
                                       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
                                       padding: const EdgeInsets.symmetric(vertical: 10),
@@ -1086,8 +1098,8 @@ class _AdminSubscriptionsScreenState extends State<AdminSubscriptionsScreen> {
                                     icon: const Icon(Icons.cancel_outlined, size: 16),
                                     label: const Text('Reject Request', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 11)),
                                     style: OutlinedButton.styleFrom(
-                                      foregroundColor: const Color(0xFFEF4444),
-                                      side: const BorderSide(color: Color(0xFFEF4444)),
+                                      foregroundColor: AppTheme.errorColor,
+                                      side: const BorderSide(color: AppTheme.errorColor),
                                       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
                                       padding: const EdgeInsets.symmetric(vertical: 10),
                                     ),
@@ -1100,17 +1112,17 @@ class _AdminSubscriptionsScreenState extends State<AdminSubscriptionsScreen> {
                             Container(
                               padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
                               decoration: BoxDecoration(
-                                color: status == 'approved' ? const Color(0xFF10B981).withValues(alpha: 0.1) : const Color(0xFFEF4444).withValues(alpha: 0.1),
+                                color: status == 'approved' ? AppTheme.successColor.withValues(alpha: 0.1) : AppTheme.errorColor.withValues(alpha: 0.1),
                                 borderRadius: BorderRadius.circular(8),
                               ),
                               child: Row(
                                 children: [
-                                  Icon(status == 'approved' ? Icons.check_circle : Icons.error, color: status == 'approved' ? const Color(0xFF10B981) : const Color(0xFFEF4444), size: 16),
+                                  Icon(status == 'approved' ? Icons.check_circle : Icons.error, color: status == 'approved' ? AppTheme.successColor : AppTheme.errorColor, size: 16),
                                   const SizedBox(width: 8),
                                   Text(
                                     status == 'approved' ? 'APPROVED' : 'REJECTED: ${req['rejection_reason'] ?? ""}',
                                     style: TextStyle(
-                                      color: status == 'approved' ? const Color(0xFF10B981) : const Color(0xFFEF4444),
+                                      color: status == 'approved' ? AppTheme.successColor : AppTheme.errorColor,
                                       fontWeight: FontWeight.bold,
                                       fontSize: 10,
                                     ),
@@ -1148,9 +1160,16 @@ class _AdminSubscriptionsScreenState extends State<AdminSubscriptionsScreen> {
                   hintStyle: TextStyle(color: Colors.white.withValues(alpha: 0.3), fontSize: 13),
                   prefixIcon: const Icon(Icons.search, color: Colors.white38),
                   filled: true,
-                  fillColor: const Color(0xFF0E1525),
+                  fillColor: AppTheme.darkSurface,
                   contentPadding: const EdgeInsets.symmetric(vertical: 12),
-                  border: OutlineInputBorder(borderRadius: BorderRadius.circular(12), borderSide: BorderSide.none),
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12),
+                    borderSide: const BorderSide(color: AppTheme.darkBorder),
+                  ),
+                  focusedBorder: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12),
+                    borderSide: const BorderSide(color: AppTheme.primaryLight),
+                  ),
                 ),
                 onChanged: (val) {
                   setState(() {
@@ -1173,14 +1192,14 @@ class _AdminSubscriptionsScreenState extends State<AdminSubscriptionsScreen> {
                         label: Text(st.toUpperCase()),
                         selected: _userStatusFilter == st,
                         onSelected: (_) => setState(() => _userStatusFilter = st),
-                        selectedColor: const Color(0xFFF59E0B),
-                        backgroundColor: const Color(0xFF0E1525),
-                        labelStyle: TextStyle(
-                          color: _userStatusFilter == st ? Colors.black : Colors.white70,
+                        selectedColor: AppTheme.primaryLight,
+                        backgroundColor: AppTheme.darkSurface,
+                        labelStyle: const TextStyle(
+                          color: Colors.white,
                           fontWeight: FontWeight.bold,
                           fontSize: 9,
                         ),
-                        side: BorderSide(color: _userStatusFilter == st ? const Color(0xFFF59E0B) : Colors.white10),
+                        side: BorderSide(color: _userStatusFilter == st ? AppTheme.primaryLight : AppTheme.darkBorder),
                       ),
                     )),
                   ],
@@ -1220,12 +1239,14 @@ class _AdminSubscriptionsScreenState extends State<AdminSubscriptionsScreen> {
                     if (status == 'suspended') statusColor = const Color(0xFFEF4444);
                     if (status == 'expired') statusColor = Colors.grey;
 
+                    final planColor = _getPlanColor(sub['plan_code'] as String? ?? 'basic');
+
                     return Container(
                       padding: const EdgeInsets.all(16),
                       decoration: BoxDecoration(
-                        color: const Color(0xFF0E1525),
+                        color: AppTheme.darkCard,
                         borderRadius: BorderRadius.circular(16),
-                        border: Border.all(color: Colors.white.withValues(alpha: 0.05)),
+                        border: Border.all(color: AppTheme.darkBorder),
                       ),
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
@@ -1250,7 +1271,7 @@ class _AdminSubscriptionsScreenState extends State<AdminSubscriptionsScreen> {
                           Row(
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: [
-                              Text('Plan: $plan', style: const TextStyle(color: Color(0xFFF59E0B), fontWeight: FontWeight.bold, fontSize: 12)),
+                              Text('Plan: $plan', style: TextStyle(color: planColor, fontWeight: FontWeight.bold, fontSize: 12)),
                               Text('Expires: $expiryStr', style: const TextStyle(color: Colors.white54, fontSize: 11)),
                             ],
                           ),
@@ -1269,8 +1290,8 @@ class _AdminSubscriptionsScreenState extends State<AdminSubscriptionsScreen> {
                               icon: const Icon(Icons.settings_suggest, size: 14),
                               label: const Text('Manage & Change Plan', style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold)),
                               style: OutlinedButton.styleFrom(
-                                foregroundColor: const Color(0xFFF59E0B),
-                                side: const BorderSide(color: Color(0xFFF59E0B)),
+                                foregroundColor: AppTheme.primaryLight,
+                                side: const BorderSide(color: AppTheme.primaryLight),
                                 shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
                               ),
                             ),
@@ -1300,13 +1321,13 @@ class _AdminSubscriptionsScreenState extends State<AdminSubscriptionsScreen> {
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 16),
             decoration: BoxDecoration(
-              color: const Color(0xFF0E1525),
+              color: AppTheme.darkSurface,
               borderRadius: BorderRadius.circular(12),
-              border: Border.all(color: Colors.white.withValues(alpha: 0.05)),
+              border: Border.all(color: AppTheme.darkBorder),
             ),
             child: DropdownButtonHideUnderline(
               child: DropdownButton<String>(
-                dropdownColor: const Color(0xFF131929),
+                dropdownColor: AppTheme.darkCard,
                 value: _selectedPlanCode,
                 isExpanded: true,
                 style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w600),
@@ -1331,9 +1352,9 @@ class _AdminSubscriptionsScreenState extends State<AdminSubscriptionsScreen> {
           Container(
             padding: const EdgeInsets.all(16),
             decoration: BoxDecoration(
-              color: const Color(0xFF0E1525),
+              color: AppTheme.darkCard,
               borderRadius: BorderRadius.circular(16),
-              border: Border.all(color: Colors.white.withValues(alpha: 0.05)),
+              border: Border.all(color: AppTheme.darkBorder),
             ),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -1354,7 +1375,7 @@ class _AdminSubscriptionsScreenState extends State<AdminSubscriptionsScreen> {
                         ),
                         Text('$_maxStaffCtrl', style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
                         IconButton(
-                          icon: const Icon(Icons.add_circle_outline, color: Color(0xFFF59E0B)),
+                          icon: const Icon(Icons.add_circle_outline, color: AppTheme.primaryLight),
                           onPressed: () => setState(() => _maxStaffCtrl++),
                         ),
                       ],
@@ -1375,7 +1396,7 @@ class _AdminSubscriptionsScreenState extends State<AdminSubscriptionsScreen> {
                         ),
                         Text('$_maxBizCtrl', style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
                         IconButton(
-                          icon: const Icon(Icons.add_circle_outline, color: Color(0xFFF59E0B)),
+                          icon: const Icon(Icons.add_circle_outline, color: AppTheme.primaryLight),
                           onPressed: () => setState(() => _maxBizCtrl++),
                         ),
                       ],
@@ -1413,7 +1434,7 @@ class _AdminSubscriptionsScreenState extends State<AdminSubscriptionsScreen> {
                         style: const TextStyle(color: Colors.white70, fontSize: 13, fontWeight: FontWeight.w600),
                       ),
                       value: isAllowed,
-                      activeThumbColor: const Color(0xFFF59E0B),
+                      activeThumbColor: AppTheme.primaryLight,
                       onChanged: (val) {
                         setState(() {
                           _planPermissions[idx]['is_allowed'] = val;
@@ -1429,8 +1450,8 @@ class _AdminSubscriptionsScreenState extends State<AdminSubscriptionsScreen> {
             child: ElevatedButton(
               onPressed: _saveFeatureControl,
               style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFFF59E0B),
-                foregroundColor: Colors.black,
+                backgroundColor: AppTheme.primaryColor,
+                foregroundColor: Colors.white,
                 padding: const EdgeInsets.symmetric(vertical: 14),
                 shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
               ),

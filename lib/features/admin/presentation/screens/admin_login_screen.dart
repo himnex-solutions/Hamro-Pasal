@@ -3,6 +3,8 @@ import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:hamro_pasal/core/router/app_router.dart';
+import 'package:hamro_pasal/core/theme/app_theme.dart';
+import 'package:hamro_pasal/core/widgets/poly_mesh_background.dart';
 import 'package:hamro_pasal/features/admin/presentation/providers/admin_auth_provider.dart';
 
 class AdminLoginScreen extends ConsumerStatefulWidget {
@@ -43,7 +45,7 @@ class _AdminLoginScreenState extends ConsumerState<AdminLoginScreen> {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(err),
-          backgroundColor: const Color(0xFFEF4444),
+          backgroundColor: AppTheme.errorColor,
           behavior: SnackBarBehavior.floating,
         ),
       );
@@ -53,166 +55,172 @@ class _AdminLoginScreenState extends ConsumerState<AdminLoginScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFF0A0F1E),
-      body: Center(
-        child: SingleChildScrollView(
-          padding: const EdgeInsets.all(24),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              // Logo badge
-              Container(
-                width: 80,
-                height: 80,
-                decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(20),
-                  gradient: const LinearGradient(
-                    colors: [Color(0xFFF59E0B), Color(0xFFEF4444)],
-                    begin: Alignment.topLeft,
-                    end: Alignment.bottomRight,
-                  ),
-                  boxShadow: [
-                    BoxShadow(
-                      color: const Color(0xFFF59E0B).withValues(alpha: 0.4),
-                      blurRadius: 30,
-                      spreadRadius: 5,
-                    ),
-                  ],
-                ),
-                child: const Icon(Icons.shield_rounded,
-                    color: Colors.white, size: 40),
-              )
-                  .animate()
-                  .scale(
-                      begin: const Offset(0.5, 0.5),
-                      duration: 600.ms,
-                      curve: Curves.elasticOut)
-                  .fadeIn(),
-              const SizedBox(height: 24),
-
-              // Title
-              const Text(
-                'Admin Portal',
-                style: TextStyle(
-                  color: Colors.white,
-                  fontSize: 28,
-                  fontWeight: FontWeight.w800,
-                  letterSpacing: 1,
-                ),
-              ).animate(delay: 200.ms).fadeIn().slideY(begin: 0.3),
-              const SizedBox(height: 6),
-              Text(
-                'Hamro Pasal — Restricted Access',
-                style: TextStyle(
-                  color: Colors.white.withValues(alpha: 0.5),
-                  fontSize: 13,
-                ),
-              ).animate(delay: 300.ms).fadeIn(),
-              const SizedBox(height: 40),
-
-              // Card
-              Container(
-                constraints: const BoxConstraints(maxWidth: 420),
-                padding: const EdgeInsets.all(32),
-                decoration: BoxDecoration(
-                  color: const Color(0xFF131929),
-                  borderRadius: BorderRadius.circular(20),
-                  border: Border.all(
-                      color: Colors.white.withValues(alpha: 0.07), width: 1),
-                  boxShadow: [
-                    BoxShadow(
-                      color: Colors.black.withValues(alpha: 0.4),
-                      blurRadius: 40,
-                      offset: const Offset(0, 20),
-                    ),
-                  ],
-                ),
-                child: Form(
-                  key: _formKey,
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.stretch,
-                    children: [
-                      // Email
-                      _AdminField(
-                        controller: _emailCtrl,
-                        label: 'Admin Email',
-                        icon: Icons.email_outlined,
-                        keyboardType: TextInputType.emailAddress,
-                        validator: (v) => (v == null || !v.contains('@'))
-                            ? 'Enter a valid email'
-                            : null,
-                      ),
-                      const SizedBox(height: 16),
-
-                      // Password
-                      _AdminField(
-                        controller: _passCtrl,
-                        label: 'Password',
-                        icon: Icons.lock_outline,
-                        obscure: _obscure,
-                        suffix: IconButton(
-                          icon: Icon(
-                            _obscure
-                                ? Icons.visibility_off_outlined
-                                : Icons.visibility_outlined,
-                            color: Colors.white38,
-                            size: 20,
-                          ),
-                          onPressed: () =>
-                              setState(() => _obscure = !_obscure),
-                        ),
-                        validator: (v) => (v == null || v.length < 6)
-                            ? 'Enter password'
-                            : null,
-                      ),
-                      const SizedBox(height: 28),
-
-                      // Login button
-                      SizedBox(
-                        height: 50,
-                        child: ElevatedButton(
-                          onPressed: _loading ? null : _login,
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: const Color(0xFFF59E0B),
-                            foregroundColor: Colors.black,
-                            shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(12)),
-                            elevation: 0,
-                          ),
-                          child: _loading
-                              ? const SizedBox(
-                                  width: 22,
-                                  height: 22,
-                                  child: CircularProgressIndicator(
-                                    strokeWidth: 2.5,
-                                    color: Colors.black,
-                                  ),
-                                )
-                              : const Text(
-                                  'Sign In as Admin',
-                                  style: TextStyle(
-                                    fontWeight: FontWeight.w700,
-                                    fontSize: 15,
-                                  ),
-                                ),
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ).animate(delay: 400.ms).fadeIn().slideY(begin: 0.2),
-              const SizedBox(height: 32),
-
-              Text(
-                '⚠️  Unauthorized access is strictly prohibited',
-                style: TextStyle(
-                  color: Colors.white.withValues(alpha: 0.3),
-                  fontSize: 11,
-                ),
-              ).animate(delay: 600.ms).fadeIn(),
-            ],
+      backgroundColor: AppTheme.darkBg,
+      body: Stack(
+        children: [
+          // ── Elegant Floating Mesh Background ──
+          const Positioned.fill(
+            child: PolyMeshBackground(),
           ),
-        ),
+
+          // ── Centered form content ──
+          Center(
+            child: SingleChildScrollView(
+              padding: const EdgeInsets.all(24),
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  // Logo badge
+                  Container(
+                    width: 80,
+                    height: 80,
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(20),
+                      gradient: AppTheme.primaryGradient,
+                      boxShadow: AppTheme.glowShadow(
+                        AppTheme.primaryColor,
+                        opacity: 0.35,
+                      ),
+                    ),
+                    child: const Icon(
+                      Icons.admin_panel_settings_rounded,
+                      color: Colors.white,
+                      size: 40,
+                    ),
+                  )
+                      .animate()
+                      .scale(
+                          begin: const Offset(0.5, 0.5),
+                          duration: 600.ms,
+                          curve: Curves.elasticOut)
+                      .fadeIn(),
+                  const SizedBox(height: 24),
+
+                  // Title
+                  const Text(
+                    'Admin Portal',
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontSize: 28,
+                      fontWeight: FontWeight.w800,
+                      letterSpacing: 1,
+                    ),
+                  ).animate(delay: 200.ms).fadeIn().slideY(begin: 0.3),
+                  const SizedBox(height: 6),
+                  Text(
+                    'Hamro Pasal — Restricted Access',
+                    style: TextStyle(
+                      color: Colors.white.withValues(alpha: 0.5),
+                      fontSize: 13,
+                    ),
+                  ).animate(delay: 300.ms).fadeIn(),
+                  const SizedBox(height: 40),
+
+                  // Card
+                  Container(
+                    constraints: const BoxConstraints(maxWidth: 420),
+                    padding: const EdgeInsets.all(32),
+                    decoration: BoxDecoration(
+                      color: AppTheme.darkCard,
+                      borderRadius: BorderRadius.circular(20),
+                      border: Border.all(
+                          color: AppTheme.darkBorder, width: 1),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withValues(alpha: 0.4),
+                          blurRadius: 40,
+                          offset: const Offset(0, 20),
+                        ),
+                      ],
+                    ),
+                    child: Form(
+                      key: _formKey,
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.stretch,
+                        children: [
+                          // Email
+                          _AdminField(
+                            controller: _emailCtrl,
+                            label: 'Admin Email',
+                            icon: Icons.email_outlined,
+                            keyboardType: TextInputType.emailAddress,
+                            validator: (v) => (v == null || !v.contains('@'))
+                                ? 'Enter a valid email'
+                                : null,
+                          ),
+                          const SizedBox(height: 16),
+
+                          // Password
+                          _AdminField(
+                            controller: _passCtrl,
+                            label: 'Password',
+                            icon: Icons.lock_outline,
+                            obscure: _obscure,
+                            suffix: IconButton(
+                              icon: Icon(
+                                _obscure
+                                    ? Icons.visibility_off_outlined
+                                    : Icons.visibility_outlined,
+                                color: Colors.white38,
+                                size: 20,
+                              ),
+                              onPressed: () =>
+                                  setState(() => _obscure = !_obscure),
+                            ),
+                            validator: (v) => (v == null || v.length < 6)
+                                ? 'Enter password'
+                                : null,
+                          ),
+                          const SizedBox(height: 28),
+
+                          // Login button
+                          SizedBox(
+                            height: 50,
+                            child: ElevatedButton(
+                              onPressed: _loading ? null : _login,
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: AppTheme.primaryColor,
+                                foregroundColor: Colors.white,
+                                shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(12)),
+                                elevation: 0,
+                              ),
+                              child: _loading
+                                  ? const SizedBox(
+                                      width: 22,
+                                      height: 22,
+                                      child: CircularProgressIndicator(
+                                        strokeWidth: 2.5,
+                                        color: Colors.white,
+                                      ),
+                                    )
+                                  : const Text(
+                                      'Sign In as Admin',
+                                      style: TextStyle(
+                                        fontWeight: FontWeight.w700,
+                                        fontSize: 15,
+                                      ),
+                                    ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ).animate(delay: 400.ms).fadeIn().slideY(begin: 0.2),
+                  const SizedBox(height: 32),
+
+                  Text(
+                    '⚠️  Unauthorized access is strictly prohibited',
+                    style: TextStyle(
+                      color: Colors.white.withValues(alpha: 0.3),
+                      fontSize: 11,
+                    ),
+                  ).animate(delay: 600.ms).fadeIn(),
+                ],
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }
@@ -248,32 +256,32 @@ class _AdminField extends StatelessWidget {
       decoration: InputDecoration(
         labelText: label,
         labelStyle: TextStyle(color: Colors.white.withValues(alpha: 0.5)),
-        prefixIcon: Icon(icon, color: const Color(0xFFF59E0B), size: 20),
+        prefixIcon: Icon(icon, color: AppTheme.primaryLight, size: 20),
         suffixIcon: suffix,
         filled: true,
-        fillColor: const Color(0xFF0A0F1E),
+        fillColor: AppTheme.darkSurface,
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
-          borderSide: BorderSide(color: Colors.white.withValues(alpha: 0.1)),
+          borderSide: const BorderSide(color: AppTheme.darkBorder),
         ),
         enabledBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
-          borderSide: BorderSide(color: Colors.white.withValues(alpha: 0.1)),
+          borderSide: const BorderSide(color: AppTheme.darkBorder),
         ),
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
           borderSide:
-              const BorderSide(color: Color(0xFFF59E0B), width: 1.5),
+              const BorderSide(color: AppTheme.primaryLight, width: 1.5),
         ),
         errorBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
-          borderSide: const BorderSide(color: Color(0xFFEF4444)),
+          borderSide: const BorderSide(color: AppTheme.errorColor),
         ),
         focusedErrorBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
-          borderSide: const BorderSide(color: Color(0xFFEF4444)),
+          borderSide: const BorderSide(color: AppTheme.errorColor),
         ),
-        errorStyle: const TextStyle(color: Color(0xFFEF4444)),
+        errorStyle: const TextStyle(color: AppTheme.errorColor),
       ),
     );
   }

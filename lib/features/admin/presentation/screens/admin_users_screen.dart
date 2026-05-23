@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
+import 'package:hamro_pasal/core/theme/app_theme.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 class AdminUsersScreen extends StatefulWidget {
@@ -36,7 +37,7 @@ class _AdminUsersScreenState extends State<AdminUsersScreen> {
       setState(() => _loading = false);
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Error: $e'), backgroundColor: const Color(0xFFEF4444)),
+          SnackBar(content: Text('Error: $e'), backgroundColor: AppTheme.errorColor),
         );
       }
     }
@@ -64,13 +65,13 @@ class _AdminUsersScreenState extends State<AdminUsersScreen> {
       await _fetchUsers();
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('User deleted'), backgroundColor: Color(0xFF10B981)),
+          const SnackBar(content: Text('User deleted'), backgroundColor: AppTheme.successColor),
         );
       }
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Error: $e'), backgroundColor: const Color(0xFFEF4444)),
+          SnackBar(content: Text('Error: $e'), backgroundColor: AppTheme.errorColor),
         );
       }
     }
@@ -84,7 +85,7 @@ class _AdminUsersScreenState extends State<AdminUsersScreen> {
     final result = await showDialog<bool>(
       context: context,
       builder: (ctx) => AlertDialog(
-        backgroundColor: const Color(0xFF131929),
+        backgroundColor: AppTheme.darkCard,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
         title: const Text('Edit User', style: TextStyle(color: Colors.white, fontWeight: FontWeight.w700)),
         content: Column(
@@ -100,8 +101,8 @@ class _AdminUsersScreenState extends State<AdminUsersScreen> {
                   title: const Text('Admin Access', style: TextStyle(color: Colors.white)),
                   subtitle: const Text('Grant admin portal access', style: TextStyle(color: Colors.white54, fontSize: 12)),
                   value: isAdmin,
-                  activeTrackColor: const Color(0xFFF59E0B).withValues(alpha: 0.5),
-                  activeThumbColor: const Color(0xFFF59E0B),
+                  activeTrackColor: AppTheme.primaryLight.withValues(alpha: 0.5),
+                  activeThumbColor: AppTheme.primaryLight,
                   contentPadding: EdgeInsets.zero,
                   onChanged: (val) => setStateSB(() => isAdmin = val),
                 );
@@ -113,7 +114,7 @@ class _AdminUsersScreenState extends State<AdminUsersScreen> {
           TextButton(onPressed: () => Navigator.pop(ctx, false), child: const Text('Cancel', style: TextStyle(color: Colors.white54))),
           ElevatedButton(
             onPressed: () => Navigator.pop(ctx, true),
-            style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFFF59E0B), foregroundColor: Colors.black),
+            style: ElevatedButton.styleFrom(backgroundColor: AppTheme.primaryColor, foregroundColor: Colors.white),
             child: const Text('Save', style: TextStyle(fontWeight: FontWeight.w700)),
           ),
         ],
@@ -129,13 +130,13 @@ class _AdminUsersScreenState extends State<AdminUsersScreen> {
       await _fetchUsers();
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('User updated'), backgroundColor: Color(0xFF10B981)),
+          const SnackBar(content: Text('User updated'), backgroundColor: AppTheme.successColor),
         );
       }
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Error: $e'), backgroundColor: const Color(0xFFEF4444)),
+          SnackBar(content: Text('Error: $e'), backgroundColor: AppTheme.errorColor),
         );
       }
     }
@@ -145,7 +146,7 @@ class _AdminUsersScreenState extends State<AdminUsersScreen> {
     return await showDialog<bool>(
           context: context,
           builder: (ctx) => AlertDialog(
-            backgroundColor: const Color(0xFF131929),
+            backgroundColor: AppTheme.darkCard,
             shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
             title: Text(title, style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w700)),
             content: Text(message, style: const TextStyle(color: Colors.white70)),
@@ -153,7 +154,7 @@ class _AdminUsersScreenState extends State<AdminUsersScreen> {
               TextButton(onPressed: () => Navigator.pop(ctx, false), child: const Text('Cancel', style: TextStyle(color: Colors.white54))),
               ElevatedButton(
                 onPressed: () => Navigator.pop(ctx, true),
-                style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFFEF4444), foregroundColor: Colors.white),
+                style: ElevatedButton.styleFrom(backgroundColor: AppTheme.errorColor, foregroundColor: Colors.white),
                 child: const Text('Confirm'),
               ),
             ],
@@ -165,9 +166,9 @@ class _AdminUsersScreenState extends State<AdminUsersScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFF070C18),
+      backgroundColor: AppTheme.darkBg,
       appBar: AppBar(
-        backgroundColor: const Color(0xFF0E1525),
+        backgroundColor: AppTheme.darkSurface,
         elevation: 0,
         title: const Text('Users', style: TextStyle(color: Colors.white, fontWeight: FontWeight.w700)),
         actions: [
@@ -188,20 +189,20 @@ class _AdminUsersScreenState extends State<AdminUsersScreen> {
               decoration: InputDecoration(
                 hintText: 'Search users by name or email…',
                 hintStyle: TextStyle(color: Colors.white.withValues(alpha: 0.3)),
-                prefixIcon: const Icon(Icons.search, color: Color(0xFFF59E0B)),
+                prefixIcon: const Icon(Icons.search, color: AppTheme.primaryLight),
                 filled: true,
-                fillColor: const Color(0xFF0E1525),
+                fillColor: AppTheme.darkSurface,
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(12),
-                  borderSide: BorderSide(color: Colors.white.withValues(alpha: 0.1)),
+                  borderSide: const BorderSide(color: AppTheme.darkBorder),
                 ),
                 enabledBorder: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(12),
-                  borderSide: BorderSide(color: Colors.white.withValues(alpha: 0.1)),
+                  borderSide: const BorderSide(color: AppTheme.darkBorder),
                 ),
                 focusedBorder: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(12),
-                  borderSide: const BorderSide(color: Color(0xFFF59E0B)),
+                  borderSide: const BorderSide(color: AppTheme.primaryLight),
                 ),
               ),
             ),
@@ -210,7 +211,7 @@ class _AdminUsersScreenState extends State<AdminUsersScreen> {
           // Table
           Expanded(
             child: _loading
-                ? const Center(child: CircularProgressIndicator(color: Color(0xFFF59E0B)))
+                ? const Center(child: CircularProgressIndicator(color: AppTheme.primaryLight))
                 : _filtered.isEmpty
                     ? const Center(
                         child: Text('No users found', style: TextStyle(color: Colors.white38)))
@@ -250,12 +251,12 @@ class _UserRow extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: const Color(0xFF0E1525),
+        color: AppTheme.darkCard,
         borderRadius: BorderRadius.circular(12),
         border: Border.all(
           color: isAdmin
-              ? const Color(0xFFF59E0B).withValues(alpha: 0.3)
-              : Colors.white.withValues(alpha: 0.06),
+              ? AppTheme.primaryLight.withValues(alpha: 0.4)
+              : AppTheme.darkBorder,
           width: 1,
         ),
       ),
@@ -263,10 +264,10 @@ class _UserRow extends StatelessWidget {
         children: [
           CircleAvatar(
             radius: 20,
-            backgroundColor: const Color(0xFFF59E0B).withValues(alpha: 0.15),
+            backgroundColor: AppTheme.primaryLight.withValues(alpha: 0.15),
             child: Text(
               displayName.substring(0, 1).toUpperCase(),
-              style: const TextStyle(color: Color(0xFFF59E0B), fontWeight: FontWeight.w700),
+              style: const TextStyle(color: AppTheme.primaryLight, fontWeight: FontWeight.w700),
             ),
           ),
           const SizedBox(width: 12),
@@ -285,10 +286,10 @@ class _UserRow extends StatelessWidget {
                       Container(
                         padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
                         decoration: BoxDecoration(
-                          color: const Color(0xFFF59E0B).withValues(alpha: 0.2),
+                          color: AppTheme.primaryLight.withValues(alpha: 0.2),
                           borderRadius: BorderRadius.circular(4),
                         ),
-                        child: const Text('ADMIN', style: TextStyle(color: Color(0xFFF59E0B), fontSize: 9, fontWeight: FontWeight.w800)),
+                        child: const Text('ADMIN', style: TextStyle(color: AppTheme.primaryLight, fontSize: 9, fontWeight: FontWeight.w800)),
                       ),
                     ],
                   ],
@@ -301,12 +302,12 @@ class _UserRow extends StatelessWidget {
           ),
           // Actions
           IconButton(
-            icon: const Icon(Icons.edit_outlined, color: Color(0xFF3B82F6), size: 20),
+            icon: const Icon(Icons.edit_outlined, color: AppTheme.primaryLight, size: 20),
             onPressed: onEdit,
             tooltip: 'Edit User',
           ),
           IconButton(
-            icon: const Icon(Icons.delete_outline_rounded, color: Color(0xFFEF4444), size: 20),
+            icon: const Icon(Icons.delete_outline_rounded, color: AppTheme.errorColor, size: 20),
             onPressed: onDelete,
             tooltip: 'Delete User',
           ),
@@ -331,15 +332,15 @@ class _DialogField extends StatelessWidget {
       decoration: InputDecoration(
         labelText: label,
         labelStyle: TextStyle(color: Colors.white.withValues(alpha: 0.5)),
-        prefixIcon: Icon(icon, color: const Color(0xFFF59E0B), size: 18),
+        prefixIcon: Icon(icon, color: AppTheme.primaryLight, size: 18),
         filled: true,
-        fillColor: const Color(0xFF0A0F1E),
+        fillColor: AppTheme.darkSurface,
         border: OutlineInputBorder(borderRadius: BorderRadius.circular(10),
-            borderSide: BorderSide(color: Colors.white.withValues(alpha: 0.1))),
+            borderSide: const BorderSide(color: AppTheme.darkBorder)),
         enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(10),
-            borderSide: BorderSide(color: Colors.white.withValues(alpha: 0.1))),
+            borderSide: const BorderSide(color: AppTheme.darkBorder)),
         focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(10),
-            borderSide: const BorderSide(color: Color(0xFFF59E0B))),
+            borderSide: const BorderSide(color: AppTheme.primaryLight)),
       ),
     );
   }

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
+import 'package:hamro_pasal/core/theme/app_theme.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 class AdminFeedbackScreen extends StatefulWidget {
@@ -17,9 +18,9 @@ class _AdminFeedbackScreenState extends State<AdminFeedbackScreen> {
   RealtimeChannel? _channel;
 
   static const _statusColors = {
-    'pending':  Color(0xFFF59E0B),
-    'reviewed': Color(0xFF3B82F6),
-    'resolved': Color(0xFF10B981),
+    'pending':  AppTheme.warningColor,
+    'reviewed': AppTheme.infoColor,
+    'resolved': AppTheme.successColor,
   };
 
   static const _statusIcons = {
@@ -93,7 +94,7 @@ class _AdminFeedbackScreenState extends State<AdminFeedbackScreen> {
       context: context,
       builder: (ctx) => StatefulBuilder(
         builder: (ctx, setLocal) => Dialog(
-          backgroundColor: const Color(0xFF0E1525),
+          backgroundColor: AppTheme.darkCard,
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
           child: ConstrainedBox(
             constraints: const BoxConstraints(maxWidth: 560),
@@ -115,7 +116,7 @@ class _AdminFeedbackScreenState extends State<AdminFeedbackScreen> {
                             Text(
                               fb['category'] ?? 'General',
                               style: const TextStyle(
-                                color: Color(0xFFF59E0B),
+                                color: AppTheme.primaryLight,
                                 fontWeight: FontWeight.w700,
                                 fontSize: 13,
                               ),
@@ -143,7 +144,7 @@ class _AdminFeedbackScreenState extends State<AdminFeedbackScreen> {
                   Container(
                     padding: const EdgeInsets.all(12),
                     decoration: BoxDecoration(
-                      color: Colors.white.withValues(alpha: 0.04),
+                      color: AppTheme.darkSurface,
                       borderRadius: BorderRadius.circular(10),
                     ),
                     child: Row(
@@ -176,10 +177,10 @@ class _AdminFeedbackScreenState extends State<AdminFeedbackScreen> {
                     width: double.infinity,
                     padding: const EdgeInsets.all(14),
                     decoration: BoxDecoration(
-                      color: Colors.white.withValues(alpha: 0.04),
+                      color: AppTheme.darkSurface,
                       borderRadius: BorderRadius.circular(10),
                       border: Border.all(
-                          color: Colors.white.withValues(alpha: 0.08)),
+                          color: AppTheme.darkBorder),
                     ),
                     child: Text(
                       fb['message'] ?? '',
@@ -248,21 +249,21 @@ class _AdminFeedbackScreenState extends State<AdminFeedbackScreen> {
                       hintText: 'Add internal notes...',
                       hintStyle: const TextStyle(color: Colors.white24),
                       filled: true,
-                      fillColor: Colors.white.withValues(alpha: 0.04),
+                      fillColor: AppTheme.darkSurface,
                       border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(10),
                         borderSide:
-                            BorderSide(color: Colors.white.withValues(alpha: 0.1)),
+                            const BorderSide(color: AppTheme.darkBorder),
                       ),
                       enabledBorder: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(10),
                         borderSide:
-                            BorderSide(color: Colors.white.withValues(alpha: 0.1)),
+                            const BorderSide(color: AppTheme.darkBorder),
                       ),
                       focusedBorder: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(10),
                         borderSide: const BorderSide(
-                            color: Color(0xFFF59E0B), width: 1.5),
+                            color: AppTheme.primaryLight, width: 1.5),
                       ),
                     ),
                   ),
@@ -299,8 +300,8 @@ class _AdminFeedbackScreenState extends State<AdminFeedbackScreen> {
                         }
                       },
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: const Color(0xFFF59E0B),
-                        foregroundColor: Colors.black,
+                        backgroundColor: AppTheme.primaryColor,
+                        foregroundColor: Colors.white,
                         shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(10)),
                       ),
@@ -334,9 +335,9 @@ class _AdminFeedbackScreenState extends State<AdminFeedbackScreen> {
     final pending = _feedbacks.where((f) => f['status'] == 'pending').length;
 
     return Scaffold(
-      backgroundColor: const Color(0xFF070C18),
+      backgroundColor: AppTheme.darkBg,
       appBar: AppBar(
-        backgroundColor: const Color(0xFF0E1525),
+        backgroundColor: AppTheme.darkSurface,
         foregroundColor: Colors.white,
         title: Row(
           children: [
@@ -348,13 +349,13 @@ class _AdminFeedbackScreenState extends State<AdminFeedbackScreen> {
                 padding:
                     const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
                 decoration: BoxDecoration(
-                  color: const Color(0xFFF59E0B),
+                  color: AppTheme.primaryLight,
                   borderRadius: BorderRadius.circular(20),
                 ),
                 child: Text(
                   '$pending new',
                   style: const TextStyle(
-                    color: Colors.black,
+                    color: Colors.white,
                     fontSize: 11,
                     fontWeight: FontWeight.w800,
                   ),
@@ -399,13 +400,13 @@ class _AdminFeedbackScreenState extends State<AdminFeedbackScreen> {
                               horizontal: 14, vertical: 6),
                           decoration: BoxDecoration(
                             color: _filter == f.$1
-                                ? const Color(0xFFF59E0B).withValues(alpha: 0.15)
-                                : Colors.white.withValues(alpha: 0.05),
+                                ? AppTheme.primaryLight.withValues(alpha: 0.15)
+                                : AppTheme.darkSurface,
                             borderRadius: BorderRadius.circular(20),
                             border: Border.all(
                               color: _filter == f.$1
-                                  ? const Color(0xFFF59E0B).withValues(alpha: 0.5)
-                                  : Colors.white12,
+                                  ? AppTheme.primaryLight
+                                  : AppTheme.darkBorder,
                             ),
                           ),
                           child: Row(
@@ -414,7 +415,7 @@ class _AdminFeedbackScreenState extends State<AdminFeedbackScreen> {
                               Icon(f.$3,
                                   size: 14,
                                   color: _filter == f.$1
-                                      ? const Color(0xFFF59E0B)
+                                      ? AppTheme.primaryLight
                                       : Colors.white38),
                               const SizedBox(width: 6),
                               Text(
@@ -423,7 +424,7 @@ class _AdminFeedbackScreenState extends State<AdminFeedbackScreen> {
                                   fontSize: 12,
                                   fontWeight: FontWeight.w600,
                                   color: _filter == f.$1
-                                      ? const Color(0xFFF59E0B)
+                                      ? AppTheme.primaryLight
                                       : Colors.white38,
                                 ),
                               ),
@@ -440,7 +441,7 @@ class _AdminFeedbackScreenState extends State<AdminFeedbackScreen> {
       ),
       body: _loading
           ? const Center(
-              child: CircularProgressIndicator(color: Color(0xFFF59E0B)))
+              child: CircularProgressIndicator(color: AppTheme.primaryLight))
           : _filtered.isEmpty
               ? Center(
                   child: Column(
@@ -474,12 +475,12 @@ class _AdminFeedbackScreenState extends State<AdminFeedbackScreen> {
                         margin: const EdgeInsets.only(bottom: 10),
                         padding: const EdgeInsets.all(16),
                         decoration: BoxDecoration(
-                          color: const Color(0xFF0E1525),
+                          color: AppTheme.darkCard,
                           borderRadius: BorderRadius.circular(14),
                           border: Border.all(
                             color: status == 'pending'
-                                ? const Color(0xFFF59E0B).withValues(alpha: 0.3)
-                                : Colors.white.withValues(alpha: 0.07),
+                                ? AppTheme.warningColor.withValues(alpha: 0.3)
+                                : AppTheme.darkBorder,
                           ),
                         ),
                         child: Column(
@@ -586,7 +587,7 @@ class _StarRating extends StatelessWidget {
         return Icon(
           i < rating ? Icons.star_rounded : Icons.star_outline_rounded,
           size: 14,
-          color: i < rating ? const Color(0xFFF59E0B) : Colors.white24,
+          color: i < rating ? AppTheme.warningColor : Colors.white24,
         );
       }),
     );

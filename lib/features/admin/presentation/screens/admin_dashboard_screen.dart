@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:hamro_pasal/core/theme/app_theme.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 // ── Provider ──────────────────────────────────────────────────
@@ -26,9 +27,9 @@ class AdminDashboardScreen extends ConsumerWidget {
     final statsAsync = ref.watch(adminStatsProvider);
 
     return Scaffold(
-      backgroundColor: const Color(0xFF070C18),
+      backgroundColor: AppTheme.darkBg,
       appBar: AppBar(
-        backgroundColor: const Color(0xFF0E1525),
+        backgroundColor: AppTheme.darkSurface,
         elevation: 0,
         title: const Text(
           'Admin Dashboard',
@@ -45,7 +46,7 @@ class AdminDashboardScreen extends ConsumerWidget {
       ),
       body: statsAsync.when(
         loading: () => const Center(
-          child: CircularProgressIndicator(color: Color(0xFFF59E0B)),
+          child: CircularProgressIndicator(color: AppTheme.primaryLight),
         ),
         error: (e, _) => _ErrorView(error: e.toString()),
         data: (stats) => _DashboardBody(stats: stats),
@@ -95,31 +96,31 @@ class _DashboardBody extends StatelessWidget {
                 label: 'Businesses',
                 value: totalBusinesses.toString(),
                 icon: Icons.store_rounded,
-                color: const Color(0xFF10B981),
+                color: AppTheme.successColor,
               ).animate().fadeIn(delay: 150.ms).slideY(begin: 0.2),
               _StatCard(
                 label: 'Active Trials',
                 value: activeTrials.toString(),
                 icon: Icons.hourglass_top_rounded,
-                color: const Color(0xFFF59E0B),
+                color: AppTheme.warningColor,
               ).animate().fadeIn(delay: 200.ms).slideY(begin: 0.2),
               _StatCard(
                 label: 'Subscriptions',
                 value: activeSubscriptions.toString(),
                 icon: Icons.card_membership_rounded,
-                color: const Color(0xFF8B5CF6),
+                color: AppTheme.primaryLight,
               ).animate().fadeIn(delay: 250.ms).slideY(begin: 0.2),
               _StatCard(
                 label: 'Expired',
                 value: expiredSubs.toString(),
                 icon: Icons.cancel_outlined,
-                color: const Color(0xFFEF4444),
+                color: AppTheme.errorColor,
               ).animate().fadeIn(delay: 300.ms).slideY(begin: 0.2),
               _StatCard(
                 label: 'Total Revenue',
                 value: 'NPR ${totalRevenue.toStringAsFixed(0)}',
                 icon: Icons.payments_rounded,
-                color: const Color(0xFF14B8A6),
+                color: AppTheme.accentColor,
               ).animate().fadeIn(delay: 350.ms).slideY(begin: 0.2),
             ],
           ),
@@ -142,12 +143,12 @@ class _DashboardBody extends StatelessWidget {
               _QuickAction(
                 label: 'New Announcement',
                 icon: Icons.campaign_rounded,
-                color: Color(0xFFF59E0B),
+                color: AppTheme.warningColor,
               ),
               _QuickAction(
                 label: 'Run Trial Expiry Check',
                 icon: Icons.timer_rounded,
-                color: Color(0xFFEF4444),
+                color: AppTheme.errorColor,
               ),
               _QuickAction(
                 label: 'Export User Data',
@@ -182,9 +183,16 @@ class _StatCard extends StatelessWidget {
       width: 200,
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        color: const Color(0xFF0E1525),
+        color: AppTheme.darkCard,
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: color.withValues(alpha: 0.2), width: 1),
+        border: Border.all(color: AppTheme.darkBorder, width: 1),
+        boxShadow: [
+          BoxShadow(
+            color: color.withValues(alpha: 0.05),
+            blurRadius: 10,
+            offset: const Offset(0, 4),
+          ),
+        ],
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -271,7 +279,7 @@ class _ErrorView extends StatelessWidget {
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
           const Icon(Icons.error_outline_rounded,
-              color: Color(0xFFEF4444), size: 48),
+              color: AppTheme.errorColor, size: 48),
           const SizedBox(height: 12),
           Text(
             'Failed to load stats:\n$error',
