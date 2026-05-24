@@ -80,10 +80,72 @@ class _AdminShellScreenState extends ConsumerState<AdminShellScreen> {
     context.go(_navItems[index].route);
   }
 
+  Future<bool> _showLogoutConfirmDialog() async {
+    return await showDialog<bool>(
+          context: context,
+          builder: (ctx) => AlertDialog(
+            backgroundColor: AppTheme.darkCard,
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+            title: const Text(
+              'Confirm Logout',
+              style: TextStyle(color: Colors.white, fontWeight: FontWeight.w700),
+            ),
+            content: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const Text(
+                  'Are you sure you want to log out of the admin portal?',
+                  style: TextStyle(color: Colors.white70),
+                ),
+                const SizedBox(height: 24),
+                Row(
+                  children: [
+                    Expanded(
+                      child: ElevatedButton(
+                        onPressed: () => Navigator.pop(ctx, true),
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: AppTheme.errorColor,
+                          foregroundColor: Colors.white,
+                          padding: const EdgeInsets.symmetric(vertical: 12),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                        ),
+                        child: const Text('Logout', style: TextStyle(fontWeight: FontWeight.w600)),
+                      ),
+                    ),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: OutlinedButton(
+                        onPressed: () => Navigator.pop(ctx, false),
+                        style: OutlinedButton.styleFrom(
+                          foregroundColor: Colors.white54,
+                          side: const BorderSide(color: Colors.white24),
+                          padding: const EdgeInsets.symmetric(vertical: 12),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                        ),
+                        child: const Text('Cancel', style: TextStyle(fontWeight: FontWeight.w500)),
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          ),
+        ) ??
+        false;
+  }
+
   @override
   Widget build(BuildContext context) {
     final adminState = ref.watch(adminAuthProvider);
-    final isWide = MediaQuery.sizeOf(context).width >= 900;
+    final screenWidth = MediaQuery.sizeOf(context).width;
+    final isWide = screenWidth >= 900;
+    final showLabels = screenWidth >= 360;
+    final showUnselected = screenWidth >= 480;
 
     // Show loader while the async session check is in progress (page refresh).
     // The GoRouter redirect passes through during `initial` — this prevents
@@ -289,6 +351,8 @@ class _AdminShellScreenState extends ConsumerState<AdminShellScreen> {
                           width: double.infinity,
                           child: OutlinedButton.icon(
                             onPressed: () async {
+                              final confirm = await _showLogoutConfirmDialog();
+                              if (!confirm) return;
                               await ref
                                   .read(adminAuthProvider.notifier)
                                   .signOut();
@@ -330,8 +394,12 @@ class _AdminShellScreenState extends ConsumerState<AdminShellScreen> {
               selectedItemColor: AppTheme.primaryLight,
               unselectedItemColor: Colors.white38,
               type: BottomNavigationBarType.fixed,
+              showSelectedLabels: showLabels,
+              showUnselectedLabels: showLabels && showUnselected,
               selectedLabelStyle: const TextStyle(
                   fontSize: 10, fontWeight: FontWeight.w600),
+              unselectedLabelStyle: const TextStyle(
+                  fontSize: 9),
               items: _navItems.map((e) {
                 final isFeedback = e.route == AppRoutes.adminFeedback;
                 return BottomNavigationBarItem(

@@ -286,32 +286,37 @@ class _DashboardBody extends StatelessWidget {
               ),
             ),
             const SizedBox(height: 12),
-            Column(
-              children: [
-                Row(
+            Builder(
+              builder: (context) {
+                final double spacing = constraints.maxWidth < 600 ? 12.0 : 16.0;
+                return Column(
                   children: [
-                    Expanded(child: statsCards[0]),
-                    const SizedBox(width: 16),
-                    Expanded(child: statsCards[1]),
+                    Row(
+                      children: [
+                        Expanded(child: statsCards[0]),
+                        SizedBox(width: spacing),
+                        Expanded(child: statsCards[1]),
+                      ],
+                    ),
+                    SizedBox(height: spacing),
+                    Row(
+                      children: [
+                        Expanded(child: statsCards[2]),
+                        SizedBox(width: spacing),
+                        Expanded(child: statsCards[3]),
+                      ],
+                    ),
+                    SizedBox(height: spacing),
+                    Row(
+                      children: [
+                        Expanded(child: statsCards[4]),
+                        SizedBox(width: spacing),
+                        Expanded(child: statsCards[5]),
+                      ],
+                    ),
                   ],
-                ),
-                const SizedBox(height: 16),
-                Row(
-                  children: [
-                    Expanded(child: statsCards[2]),
-                    const SizedBox(width: 16),
-                    Expanded(child: statsCards[3]),
-                  ],
-                ),
-                const SizedBox(height: 16),
-                Row(
-                  children: [
-                    Expanded(child: statsCards[4]),
-                    const SizedBox(width: 16),
-                    Expanded(child: statsCards[5]),
-                  ],
-                ),
-              ],
+                );
+              },
             ),
             const SizedBox(height: 24),
 
@@ -431,6 +436,8 @@ class _ConsoleHeader extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final dateStr = DateFormat('EEEE, MMMM d, y').format(DateTime.now());
+    final screenWidth = MediaQuery.sizeOf(context).width;
+    final isMobile = screenWidth < 550;
 
     return Container(
       padding: const EdgeInsets.all(20),
@@ -442,11 +449,11 @@ class _ConsoleHeader extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Expanded(
-                child: Column(
+          if (isMobile)
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     const Text(
@@ -481,57 +488,139 @@ class _ConsoleHeader extends StatelessWidget {
                     ),
                   ],
                 ),
-              ),
-              const SizedBox(width: 16),
-              // Live Badge
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                decoration: BoxDecoration(
-                  color: AppTheme.successColor.withValues(alpha: 0.12),
-                  borderRadius: BorderRadius.circular(20),
-                  border: Border.all(color: AppTheme.successColor.withValues(alpha: 0.3), width: 1),
-                ),
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Container(
-                      width: 8,
-                      height: 8,
-                      decoration: const BoxDecoration(
-                        color: AppTheme.successColor,
-                        shape: BoxShape.circle,
-                        boxShadow: [
-                          BoxShadow(
-                            color: AppTheme.successColor,
-                            blurRadius: 4,
-                            spreadRadius: 1,
-                          ),
-                        ],
+                const SizedBox(height: 12),
+                // Live Badge
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                  decoration: BoxDecoration(
+                    color: AppTheme.successColor.withValues(alpha: 0.12),
+                    borderRadius: BorderRadius.circular(20),
+                    border: Border.all(color: AppTheme.successColor.withValues(alpha: 0.3), width: 1),
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Container(
+                        width: 8,
+                        height: 8,
+                        decoration: const BoxDecoration(
+                          color: AppTheme.successColor,
+                          shape: BoxShape.circle,
+                          boxShadow: [
+                            BoxShadow(
+                              color: AppTheme.successColor,
+                              blurRadius: 4,
+                              spreadRadius: 1,
+                            ),
+                          ],
+                        ),
                       ),
-                    ),
-                    const SizedBox(width: 8),
-                    const Text(
-                      'DB CONNECTED',
-                      style: TextStyle(
-                        color: AppTheme.successColor,
-                        fontSize: 10,
-                        fontWeight: FontWeight.w700,
-                        letterSpacing: 0.5,
+                      const SizedBox(width: 8),
+                      const Text(
+                        'DB CONNECTED',
+                        style: TextStyle(
+                          color: AppTheme.successColor,
+                          fontSize: 10,
+                          fontWeight: FontWeight.w700,
+                          letterSpacing: 0.5,
+                        ),
                       ),
-                    ),
-                  ],
+                    ],
+                  ),
                 ),
-              ),
-            ],
-          ),
+              ],
+            )
+          else
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const Text(
+                        'SYSTEM OPERATOR CONSOLE',
+                        style: TextStyle(
+                          color: AppTheme.primaryLight,
+                          fontSize: 10,
+                          fontWeight: FontWeight.w800,
+                          letterSpacing: 2,
+                        ),
+                      ),
+                      const SizedBox(height: 4),
+                      const Text(
+                        'Welcome Back, Admin',
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontSize: 22,
+                          fontWeight: FontWeight.w800,
+                        ),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                      const SizedBox(height: 2),
+                      Text(
+                        dateStr,
+                        style: TextStyle(
+                          color: Colors.white.withValues(alpha: 0.4),
+                          fontSize: 12,
+                        ),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(width: 16),
+                // Live Badge
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                  decoration: BoxDecoration(
+                    color: AppTheme.successColor.withValues(alpha: 0.12),
+                    borderRadius: BorderRadius.circular(20),
+                    border: Border.all(color: AppTheme.successColor.withValues(alpha: 0.3), width: 1),
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Container(
+                        width: 8,
+                        height: 8,
+                        decoration: const BoxDecoration(
+                          color: AppTheme.successColor,
+                          shape: BoxShape.circle,
+                          boxShadow: [
+                            BoxShadow(
+                              color: AppTheme.successColor,
+                              blurRadius: 4,
+                              spreadRadius: 1,
+                            ),
+                          ],
+                        ),
+                      ),
+                      const SizedBox(width: 8),
+                      const Text(
+                        'DB CONNECTED',
+                        style: TextStyle(
+                          color: AppTheme.successColor,
+                          fontSize: 10,
+                          fontWeight: FontWeight.w700,
+                          letterSpacing: 0.5,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
           const SizedBox(height: 16),
           const Divider(color: AppTheme.darkBorder, height: 1),
           const SizedBox(height: 16),
           // Server Metrics Row
-          const Row(
+          Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Expanded(
+              const Expanded(
                 child: _ServerMetricTile(
                   label: 'CPU LOAD',
                   value: '18.4%',
@@ -539,8 +628,8 @@ class _ConsoleHeader extends StatelessWidget {
                   color: AppTheme.primaryLight,
                 ),
               ),
-              SizedBox(width: 12),
-              Expanded(
+              SizedBox(width: isMobile ? 6 : 12),
+              const Expanded(
                 child: _ServerMetricTile(
                   label: 'LATENCY',
                   value: '42 ms',
@@ -548,8 +637,8 @@ class _ConsoleHeader extends StatelessWidget {
                   color: AppTheme.successColor,
                 ),
               ),
-              SizedBox(width: 12),
-              Expanded(
+              SizedBox(width: isMobile ? 6 : 12),
+              const Expanded(
                 child: _ServerMetricTile(
                   label: 'MEM USAGE',
                   value: '2.4 / 8.0 GB',
@@ -580,10 +669,17 @@ class _ServerMetricTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final screenWidth = MediaQuery.sizeOf(context).width;
+    final isCompact = screenWidth < 480;
+
     return Row(
       children: [
-        Icon(icon, color: color.withValues(alpha: 0.7), size: 16),
-        const SizedBox(width: 8),
+        Icon(
+          icon,
+          color: color.withValues(alpha: 0.7),
+          size: isCompact ? 13 : 16,
+        ),
+        SizedBox(width: isCompact ? 4 : 8),
         Expanded(
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -593,9 +689,9 @@ class _ServerMetricTile extends StatelessWidget {
                 label,
                 style: TextStyle(
                   color: Colors.white.withValues(alpha: 0.35),
-                  fontSize: 9,
+                  fontSize: isCompact ? 8 : 9,
                   fontWeight: FontWeight.w700,
-                  letterSpacing: 1.0,
+                  letterSpacing: isCompact ? 0.5 : 1.0,
                 ),
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
@@ -603,9 +699,9 @@ class _ServerMetricTile extends StatelessWidget {
               const SizedBox(height: 2),
               Text(
                 value,
-                style: const TextStyle(
+                style: TextStyle(
                   color: Colors.white,
-                  fontSize: 12,
+                  fontSize: isCompact ? 10 : 12,
                   fontWeight: FontWeight.w700,
                 ),
                 maxLines: 1,
@@ -703,13 +799,17 @@ class _StatCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final screenWidth = MediaQuery.sizeOf(context).width;
+    final isCompact = screenWidth < 480;
+    final hideSubtitle = screenWidth < 380;
+
     return ClipRRect(
       borderRadius: BorderRadius.circular(20),
       child: BackdropFilter(
         filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
         child: Container(
           width: double.infinity,
-          height: 155,
+          height: isCompact ? 135 : 155,
           decoration: BoxDecoration(
             color: AppTheme.darkCard.withValues(alpha: 0.65),
             borderRadius: BorderRadius.circular(20),
@@ -732,7 +832,7 @@ class _StatCard extends StatelessWidget {
                 left: 0,
                 right: 0,
                 bottom: 0,
-                height: 45,
+                height: isCompact ? 35 : 45,
                 child: CustomPaint(
                   painter: _SparklinePainter(
                     data: trendData,
@@ -742,7 +842,7 @@ class _StatCard extends StatelessWidget {
               ),
               // Card Details
               Padding(
-                padding: const EdgeInsets.all(18),
+                padding: EdgeInsets.all(isCompact ? 12 : 18),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
@@ -754,7 +854,7 @@ class _StatCard extends StatelessWidget {
                             label,
                             style: TextStyle(
                               color: Colors.white.withValues(alpha: 0.5),
-                              fontSize: 11,
+                              fontSize: isCompact ? 10 : 11,
                               fontWeight: FontWeight.w600,
                             ),
                             maxLines: 1,
@@ -762,7 +862,7 @@ class _StatCard extends StatelessWidget {
                           ),
                         ),
                         Container(
-                          padding: const EdgeInsets.all(8),
+                          padding: EdgeInsets.all(isCompact ? 6 : 8),
                           decoration: BoxDecoration(
                             color: color.withValues(alpha: 0.12),
                             borderRadius: BorderRadius.circular(10),
@@ -771,23 +871,23 @@ class _StatCard extends StatelessWidget {
                               width: 1,
                             ),
                           ),
-                          child: Icon(icon, color: color, size: 18),
+                          child: Icon(icon, color: color, size: isCompact ? 15 : 18),
                         ),
                       ],
                     ),
-                    const SizedBox(height: 10),
+                    SizedBox(height: isCompact ? 6 : 10),
                     Text(
                       value,
-                      style: const TextStyle(
+                      style: TextStyle(
                         color: Colors.white,
-                        fontSize: 22,
+                        fontSize: isCompact ? 18 : 22,
                         fontWeight: FontWeight.w800,
                         letterSpacing: -0.5,
                       ),
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                     ),
-                    const SizedBox(height: 4),
+                    SizedBox(height: isCompact ? 2 : 4),
                     // Simulated growth percentage based on data trend
                     Row(
                       children: [
@@ -798,7 +898,7 @@ class _StatCard extends StatelessWidget {
                           color: trendData.last >= trendData[trendData.length - 2]
                               ? AppTheme.successColor
                               : AppTheme.errorColor,
-                          size: 14,
+                          size: isCompact ? 12 : 14,
                         ),
                         const SizedBox(width: 4),
                         Text(
@@ -807,17 +907,20 @@ class _StatCard extends StatelessWidget {
                             color: trendData.last >= trendData[trendData.length - 2]
                                 ? AppTheme.successColor
                                 : AppTheme.errorColor,
-                            fontSize: 10,
+                            fontSize: isCompact ? 9 : 10,
                             fontWeight: FontWeight.w600,
                           ),
                         ),
-                        Text(
-                          ' vs last week',
-                          style: TextStyle(
-                            color: Colors.white.withValues(alpha: 0.3),
-                            fontSize: 10,
+                        if (!hideSubtitle) ...[
+                          const SizedBox(width: 2),
+                          Text(
+                            ' vs last week',
+                            style: TextStyle(
+                              color: Colors.white.withValues(alpha: 0.3),
+                              fontSize: isCompact ? 9 : 10,
+                            ),
                           ),
-                        ),
+                        ],
                       ],
                     ),
                   ],
@@ -908,6 +1011,9 @@ class _AnalyticsChart extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final screenWidth = MediaQuery.sizeOf(context).width;
+    final isChartMobile = screenWidth < 520;
+
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
@@ -918,44 +1024,77 @@ class _AnalyticsChart extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
+          if (isChartMobile)
+            const Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'Growth Analytics',
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontSize: 16,
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+                SizedBox(height: 2),
+                Text(
+                  'Historical platform engagement trends',
+                  style: TextStyle(
+                    color: Colors.white30,
+                    fontSize: 11,
+                  ),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
+                SizedBox(height: 12),
+                Row(
                   children: [
-                    Text(
-                      'Growth Analytics',
-                      style: TextStyle(
-                        color: Colors.white,
-                        fontSize: 16,
-                        fontWeight: FontWeight.w700,
-                      ),
-                    ),
-                    SizedBox(height: 2),
-                    Text(
-                      'Historical platform engagement trends',
-                      style: TextStyle(
-                        color: Colors.white30,
-                        fontSize: 11,
-                      ),
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                    ),
+                    _LegendIndicator(color: AppTheme.primaryLight, label: 'Revenue'),
+                    SizedBox(width: 16),
+                    _LegendIndicator(color: AppTheme.successColor, label: 'Users'),
                   ],
                 ),
-              ),
-              SizedBox(width: 16),
-              Row(
-                children: [
-                  _LegendIndicator(color: AppTheme.primaryLight, label: 'Revenue'),
-                  SizedBox(width: 16),
-                  _LegendIndicator(color: AppTheme.successColor, label: 'Users'),
-                ],
-              ),
-            ],
-          ),
+              ],
+            )
+          else
+            const Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        'Growth Analytics',
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontSize: 16,
+                          fontWeight: FontWeight.w700,
+                        ),
+                      ),
+                      SizedBox(height: 2),
+                      Text(
+                        'Historical platform engagement trends',
+                        style: TextStyle(
+                          color: Colors.white30,
+                          fontSize: 11,
+                        ),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ],
+                  ),
+                ),
+                SizedBox(width: 16),
+                Row(
+                  children: [
+                    _LegendIndicator(color: AppTheme.primaryLight, label: 'Revenue'),
+                    SizedBox(width: 16),
+                    _LegendIndicator(color: AppTheme.successColor, label: 'Users'),
+                  ],
+                ),
+              ],
+            ),
           const SizedBox(height: 24),
           SizedBox(
             height: 240,

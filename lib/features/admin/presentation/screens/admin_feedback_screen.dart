@@ -18,13 +18,13 @@ class _AdminFeedbackScreenState extends State<AdminFeedbackScreen> {
   RealtimeChannel? _channel;
 
   static const _statusColors = {
-    'pending':  AppTheme.warningColor,
+    'pending': AppTheme.warningColor,
     'reviewed': AppTheme.infoColor,
     'resolved': AppTheme.successColor,
   };
 
   static const _statusIcons = {
-    'pending':  Icons.hourglass_empty_rounded,
+    'pending': Icons.hourglass_empty_rounded,
     'reviewed': Icons.remove_red_eye_outlined,
     'resolved': Icons.check_circle_outline_rounded,
   };
@@ -45,7 +45,6 @@ class _AdminFeedbackScreenState extends State<AdminFeedbackScreen> {
   Future<void> _loadFeedbacks() async {
     setState(() => _loading = true);
     try {
-      // Build filter first (PostgrestFilterBuilder), then order (PostgrestTransformBuilder)
       var q = _supabase
           .from('feedbacks')
           .select('*, user_profiles(full_name, email, phone)');
@@ -85,7 +84,6 @@ class _AdminFeedbackScreenState extends State<AdminFeedbackScreen> {
         .subscribe();
   }
 
-
   Future<void> _showDetailDialog(Map<String, dynamic> fb) async {
     final notesCtrl = TextEditingController(text: fb['admin_notes'] ?? '');
     String status = fb['status'] ?? 'pending';
@@ -95,17 +93,21 @@ class _AdminFeedbackScreenState extends State<AdminFeedbackScreen> {
       builder: (ctx) => StatefulBuilder(
         builder: (ctx, setLocal) => Dialog(
           backgroundColor: AppTheme.darkCard,
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+          shape:
+              RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+          insetPadding:
+              const EdgeInsets.symmetric(horizontal: 16, vertical: 24),
           child: ConstrainedBox(
             constraints: const BoxConstraints(maxWidth: 560),
-            child: Padding(
-              padding: const EdgeInsets.all(24),
+            child: SingleChildScrollView(
+              padding: const EdgeInsets.all(20),
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  // Header
+                  // ── Header ─────────────────────────────────────
                   Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       _StarRating(rating: (fb['rating'] as int? ?? 0)),
                       const SizedBox(width: 12),
@@ -133,14 +135,17 @@ class _AdminFeedbackScreenState extends State<AdminFeedbackScreen> {
                       ),
                       IconButton(
                         onPressed: () => Navigator.pop(ctx),
-                        icon: const Icon(Icons.close, color: Colors.white38),
+                        icon:
+                            const Icon(Icons.close, color: Colors.white38),
+                        padding: EdgeInsets.zero,
+                        constraints: const BoxConstraints(),
                       ),
                     ],
                   ),
 
                   const SizedBox(height: 16),
 
-                  // User info
+                  // ── User info ──────────────────────────────────
                   Container(
                     padding: const EdgeInsets.all(12),
                     decoration: BoxDecoration(
@@ -158,6 +163,7 @@ class _AdminFeedbackScreenState extends State<AdminFeedbackScreen> {
                             ' • ${(fb['user_profiles'] as Map?)?['email'] ?? ''}',
                             style: const TextStyle(
                                 color: Colors.white70, fontSize: 13),
+                            overflow: TextOverflow.ellipsis,
                           ),
                         ),
                       ],
@@ -166,12 +172,8 @@ class _AdminFeedbackScreenState extends State<AdminFeedbackScreen> {
 
                   const SizedBox(height: 16),
 
-                  // Message
-                  Text('Message',
-                      style: TextStyle(
-                          color: Colors.white.withValues(alpha: 0.5),
-                          fontSize: 11,
-                          fontWeight: FontWeight.w600)),
+                  // ── Message ───────────────────────────────────
+                  _SectionLabel('Message'),
                   const SizedBox(height: 6),
                   Container(
                     width: double.infinity,
@@ -179,8 +181,7 @@ class _AdminFeedbackScreenState extends State<AdminFeedbackScreen> {
                     decoration: BoxDecoration(
                       color: AppTheme.darkSurface,
                       borderRadius: BorderRadius.circular(10),
-                      border: Border.all(
-                          color: AppTheme.darkBorder),
+                      border: Border.all(color: AppTheme.darkBorder),
                     ),
                     child: Text(
                       fb['message'] ?? '',
@@ -191,40 +192,37 @@ class _AdminFeedbackScreenState extends State<AdminFeedbackScreen> {
 
                   const SizedBox(height: 16),
 
-                  // Status
-                  Text('Status',
-                      style: TextStyle(
-                          color: Colors.white.withValues(alpha: 0.5),
-                          fontSize: 11,
-                          fontWeight: FontWeight.w600)),
+                  // ── Status picker ─────────────────────────────
+                  _SectionLabel('Status'),
                   const SizedBox(height: 8),
-                  Row(
-                    children: ['pending', 'reviewed', 'resolved'].map((s) {
+                  Wrap(
+                    spacing: 8,
+                    runSpacing: 8,
+                    children:
+                        ['pending', 'reviewed', 'resolved'].map((s) {
                       final isSelected = status == s;
                       final col = _statusColors[s]!;
-                      return Padding(
-                        padding: const EdgeInsets.only(right: 8),
-                        child: GestureDetector(
-                          onTap: () => setLocal(() => status = s),
-                          child: AnimatedContainer(
-                            duration: const Duration(milliseconds: 200),
-                            padding: const EdgeInsets.symmetric(
-                                horizontal: 12, vertical: 6),
-                            decoration: BoxDecoration(
-                              color: isSelected
-                                  ? col.withValues(alpha: 0.2)
-                                  : Colors.transparent,
-                              borderRadius: BorderRadius.circular(20),
-                              border: Border.all(
-                                  color: isSelected ? col : Colors.white24),
-                            ),
-                            child: Text(
-                              s[0].toUpperCase() + s.substring(1),
-                              style: TextStyle(
-                                color: isSelected ? col : Colors.white38,
-                                fontSize: 12,
-                                fontWeight: FontWeight.w600,
-                              ),
+                      return GestureDetector(
+                        onTap: () => setLocal(() => status = s),
+                        child: AnimatedContainer(
+                          duration: const Duration(milliseconds: 200),
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 12, vertical: 6),
+                          decoration: BoxDecoration(
+                            color: isSelected
+                                ? col.withValues(alpha: 0.2)
+                                : Colors.transparent,
+                            borderRadius: BorderRadius.circular(20),
+                            border: Border.all(
+                                color:
+                                    isSelected ? col : Colors.white24),
+                          ),
+                          child: Text(
+                            s[0].toUpperCase() + s.substring(1),
+                            style: TextStyle(
+                              color: isSelected ? col : Colors.white38,
+                              fontSize: 12,
+                              fontWeight: FontWeight.w600,
                             ),
                           ),
                         ),
@@ -234,31 +232,29 @@ class _AdminFeedbackScreenState extends State<AdminFeedbackScreen> {
 
                   const SizedBox(height: 16),
 
-                  // Admin notes
-                  Text('Admin Notes',
-                      style: TextStyle(
-                          color: Colors.white.withValues(alpha: 0.5),
-                          fontSize: 11,
-                          fontWeight: FontWeight.w600)),
+                  // ── Admin notes ──────────────────────────────
+                  _SectionLabel('Admin Notes'),
                   const SizedBox(height: 6),
                   TextField(
                     controller: notesCtrl,
                     maxLines: 3,
-                    style: const TextStyle(color: Colors.white, fontSize: 13),
+                    style:
+                        const TextStyle(color: Colors.white, fontSize: 13),
                     decoration: InputDecoration(
                       hintText: 'Add internal notes...',
-                      hintStyle: const TextStyle(color: Colors.white24),
+                      hintStyle:
+                          const TextStyle(color: Colors.white24),
                       filled: true,
                       fillColor: AppTheme.darkSurface,
                       border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(10),
-                        borderSide:
-                            const BorderSide(color: AppTheme.darkBorder),
+                        borderSide: const BorderSide(
+                            color: AppTheme.darkBorder),
                       ),
                       enabledBorder: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(10),
-                        borderSide:
-                            const BorderSide(color: AppTheme.darkBorder),
+                        borderSide: const BorderSide(
+                            color: AppTheme.darkBorder),
                       ),
                       focusedBorder: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(10),
@@ -270,20 +266,26 @@ class _AdminFeedbackScreenState extends State<AdminFeedbackScreen> {
 
                   const SizedBox(height: 20),
 
-                  // Save
+                  // ── Save button ──────────────────────────────
                   SizedBox(
                     width: double.infinity,
                     child: ElevatedButton.icon(
                       onPressed: () async {
                         try {
-                          final updated = await _supabase.from('feedbacks').update({
-                            'status': status,
-                            'admin_notes': notesCtrl.text.trim(),
-                            'updated_at': DateTime.now().toIso8601String(),
-                          }).eq('id', fb['id']).select();
+                          final updated = await _supabase
+                              .from('feedbacks')
+                              .update({
+                                'status': status,
+                                'admin_notes': notesCtrl.text.trim(),
+                                'updated_at':
+                                    DateTime.now().toIso8601String(),
+                              })
+                              .eq('id', fb['id'])
+                              .select();
 
                           if (updated.isEmpty) {
-                            throw Exception('RLS policy blocked the update or row not found.');
+                            throw Exception(
+                                'RLS policy blocked the update or row not found.');
                           }
 
                           if (ctx.mounted) Navigator.pop(ctx);
@@ -293,7 +295,8 @@ class _AdminFeedbackScreenState extends State<AdminFeedbackScreen> {
                             ScaffoldMessenger.of(ctx).showSnackBar(
                               SnackBar(
                                 content: Text('Error saving: $e'),
-                                backgroundColor: const Color(0xFFEF4444),
+                                backgroundColor:
+                                    const Color(0xFFEF4444),
                               ),
                             );
                           }
@@ -302,12 +305,15 @@ class _AdminFeedbackScreenState extends State<AdminFeedbackScreen> {
                       style: ElevatedButton.styleFrom(
                         backgroundColor: AppTheme.primaryColor,
                         foregroundColor: Colors.white,
+                        padding:
+                            const EdgeInsets.symmetric(vertical: 14),
                         shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(10)),
                       ),
                       icon: const Icon(Icons.save_rounded, size: 18),
                       label: const Text('Save Changes',
-                          style: TextStyle(fontWeight: FontWeight.w700)),
+                          style:
+                              TextStyle(fontWeight: FontWeight.w700)),
                     ),
                   ),
                 ],
@@ -323,7 +329,9 @@ class _AdminFeedbackScreenState extends State<AdminFeedbackScreen> {
     if (iso == null) return '';
     final dt = DateTime.tryParse(iso)?.toLocal();
     if (dt == null) return '';
-    return '${dt.day}/${dt.month}/${dt.year} ${dt.hour.toString().padLeft(2, '0')}:${dt.minute.toString().padLeft(2, '0')}';
+    return '${dt.day}/${dt.month}/${dt.year} '
+        '${dt.hour.toString().padLeft(2, '0')}:'
+        '${dt.minute.toString().padLeft(2, '0')}';
   }
 
   List<Map<String, dynamic>> get _filtered => _filter == 'all'
@@ -332,27 +340,33 @@ class _AdminFeedbackScreenState extends State<AdminFeedbackScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final pending = _feedbacks.where((f) => f['status'] == 'pending').length;
+    final pending =
+        _feedbacks.where((f) => f['status'] == 'pending').length;
+    final screenWidth = MediaQuery.sizeOf(context).width;
+    final isCompact = screenWidth < 400;
+    final horizontalPad = isCompact ? 12.0 : 16.0;
 
     return Scaffold(
       backgroundColor: AppTheme.darkBg,
       appBar: AppBar(
         backgroundColor: AppTheme.darkSurface,
         foregroundColor: Colors.white,
+        titleSpacing: horizontalPad,
         title: Row(
           children: [
-            const Text(
+            Text(
               'User Feedback',
               style: TextStyle(
                 fontWeight: FontWeight.w700,
                 color: Colors.white,
+                fontSize: isCompact ? 15 : 17,
               ),
             ),
             if (pending > 0) ...[
-              const SizedBox(width: 10),
+              const SizedBox(width: 8),
               Container(
                 padding:
-                    const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                    const EdgeInsets.symmetric(horizontal: 7, vertical: 2),
                 decoration: BoxDecoration(
                   color: AppTheme.primaryLight,
                   borderRadius: BorderRadius.circular(20),
@@ -361,7 +375,7 @@ class _AdminFeedbackScreenState extends State<AdminFeedbackScreen> {
                   '$pending new',
                   style: const TextStyle(
                     color: Colors.white,
-                    fontSize: 11,
+                    fontSize: 10,
                     fontWeight: FontWeight.w800,
                   ),
                 ),
@@ -372,16 +386,18 @@ class _AdminFeedbackScreenState extends State<AdminFeedbackScreen> {
         actions: [
           IconButton(
             onPressed: _loadFeedbacks,
-            icon: const Icon(Icons.refresh_rounded, color: Colors.white54),
+            icon:
+                const Icon(Icons.refresh_rounded, color: Colors.white54),
             tooltip: 'Refresh',
           ),
-          const SizedBox(width: 8),
+          SizedBox(width: isCompact ? 4 : 8),
         ],
         elevation: 0,
         bottom: PreferredSize(
-          preferredSize: const Size.fromHeight(50),
+          preferredSize: const Size.fromHeight(48),
           child: Padding(
-            padding: const EdgeInsets.fromLTRB(16, 0, 16, 10),
+            padding:
+                EdgeInsets.fromLTRB(horizontalPad, 0, horizontalPad, 10),
             child: SingleChildScrollView(
               scrollDirection: Axis.horizontal,
               child: Row(
@@ -389,8 +405,10 @@ class _AdminFeedbackScreenState extends State<AdminFeedbackScreen> {
                   for (final f in [
                     ('all', 'All', Icons.list_rounded),
                     ('pending', 'Pending', Icons.hourglass_empty_rounded),
-                    ('reviewed', 'Reviewed', Icons.remove_red_eye_outlined),
-                    ('resolved', 'Resolved', Icons.check_circle_outline_rounded),
+                    ('reviewed', 'Reviewed',
+                        Icons.remove_red_eye_outlined),
+                    ('resolved', 'Resolved',
+                        Icons.check_circle_outline_rounded),
                   ])
                     Padding(
                       padding: const EdgeInsets.only(right: 8),
@@ -401,11 +419,14 @@ class _AdminFeedbackScreenState extends State<AdminFeedbackScreen> {
                         },
                         child: AnimatedContainer(
                           duration: const Duration(milliseconds: 200),
-                          padding: const EdgeInsets.symmetric(
-                              horizontal: 14, vertical: 6),
+                          padding: EdgeInsets.symmetric(
+                            horizontal: isCompact ? 10 : 14,
+                            vertical: 6,
+                          ),
                           decoration: BoxDecoration(
                             color: _filter == f.$1
-                                ? AppTheme.primaryLight.withValues(alpha: 0.15)
+                                ? AppTheme.primaryLight
+                                    .withValues(alpha: 0.15)
                                 : AppTheme.darkSurface,
                             borderRadius: BorderRadius.circular(20),
                             border: Border.all(
@@ -417,16 +438,18 @@ class _AdminFeedbackScreenState extends State<AdminFeedbackScreen> {
                           child: Row(
                             mainAxisSize: MainAxisSize.min,
                             children: [
-                              Icon(f.$3,
-                                  size: 14,
-                                  color: _filter == f.$1
-                                      ? AppTheme.primaryLight
-                                      : Colors.white38),
-                              const SizedBox(width: 6),
+                              Icon(
+                                f.$3,
+                                size: isCompact ? 12 : 14,
+                                color: _filter == f.$1
+                                    ? AppTheme.primaryLight
+                                    : Colors.white38,
+                              ),
+                              SizedBox(width: isCompact ? 4 : 6),
                               Text(
                                 f.$2,
                                 style: TextStyle(
-                                  fontSize: 12,
+                                  fontSize: isCompact ? 11 : 12,
                                   fontWeight: FontWeight.w600,
                                   color: _filter == f.$1
                                       ? AppTheme.primaryLight
@@ -446,14 +469,16 @@ class _AdminFeedbackScreenState extends State<AdminFeedbackScreen> {
       ),
       body: _loading
           ? const Center(
-              child: CircularProgressIndicator(color: AppTheme.primaryLight))
+              child: CircularProgressIndicator(
+                  color: AppTheme.primaryLight))
           : _filtered.isEmpty
               ? Center(
                   child: Column(
                     mainAxisSize: MainAxisSize.min,
                     children: [
                       Icon(Icons.feedback_outlined,
-                          size: 56, color: Colors.white.withValues(alpha: 0.15)),
+                          size: 56,
+                          color: Colors.white.withValues(alpha: 0.15)),
                       const SizedBox(height: 12),
                       Text(
                         'No ${_filter == 'all' ? '' : '$_filter '}feedback yet',
@@ -465,55 +490,65 @@ class _AdminFeedbackScreenState extends State<AdminFeedbackScreen> {
                   ),
                 )
               : ListView.builder(
-                  padding: const EdgeInsets.all(16),
+                  padding: EdgeInsets.all(horizontalPad),
                   itemCount: _filtered.length,
                   itemBuilder: (context, i) {
                     final fb = _filtered[i];
-                    final status = fb['status'] as String? ?? 'pending';
-                    final statusColor = _statusColors[status] ?? Colors.white38;
-                    final statusIcon = _statusIcons[status] ?? Icons.circle;
+                    final status =
+                        fb['status'] as String? ?? 'pending';
+                    final statusColor =
+                        _statusColors[status] ?? Colors.white38;
+                    final statusIcon =
+                        _statusIcons[status] ?? Icons.circle;
                     final profile = fb['user_profiles'] as Map?;
 
                     return GestureDetector(
                       onTap: () => _showDetailDialog(fb),
                       child: Container(
                         margin: const EdgeInsets.only(bottom: 10),
-                        padding: const EdgeInsets.all(16),
+                        padding: EdgeInsets.all(isCompact ? 12 : 16),
                         decoration: BoxDecoration(
                           color: AppTheme.darkCard,
                           borderRadius: BorderRadius.circular(14),
                           border: Border.all(
                             color: status == 'pending'
-                                ? AppTheme.warningColor.withValues(alpha: 0.3)
+                                ? AppTheme.warningColor
+                                    .withValues(alpha: 0.3)
                                 : AppTheme.darkBorder,
                           ),
                         ),
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
+                            // ── Top row: stars + status + date ──
                             Row(
                               children: [
                                 _StarRating(
-                                    rating: (fb['rating'] as int? ?? 0)),
+                                    rating:
+                                        (fb['rating'] as int? ?? 0)),
                                 const SizedBox(width: 8),
+                                // Status badge
                                 Container(
                                   padding: const EdgeInsets.symmetric(
-                                      horizontal: 8, vertical: 2),
+                                      horizontal: 7, vertical: 2),
                                   decoration: BoxDecoration(
-                                    color: statusColor.withValues(alpha: 0.15),
-                                    borderRadius: BorderRadius.circular(12),
+                                    color: statusColor
+                                        .withValues(alpha: 0.15),
+                                    borderRadius:
+                                        BorderRadius.circular(12),
                                   ),
                                   child: Row(
                                     mainAxisSize: MainAxisSize.min,
                                     children: [
                                       Icon(statusIcon,
-                                          size: 11, color: statusColor),
+                                          size: 10,
+                                          color: statusColor),
                                       const SizedBox(width: 4),
                                       Text(
                                         status[0].toUpperCase() +
                                             status.substring(1),
                                         style: TextStyle(
-                                          fontSize: 11,
+                                          fontSize: 10,
                                           fontWeight: FontWeight.w700,
                                           color: statusColor,
                                         ),
@@ -522,60 +557,113 @@ class _AdminFeedbackScreenState extends State<AdminFeedbackScreen> {
                                   ),
                                 ),
                                 const Spacer(),
-                                Text(
-                                  _formatDate(fb['created_at'] as String?),
-                                  style: const TextStyle(
-                                      color: Colors.white24, fontSize: 11),
-                                ),
+                                // Date — hidden on very small screens
+                                if (!isCompact)
+                                  Text(
+                                    _formatDate(
+                                        fb['created_at'] as String?),
+                                    style: const TextStyle(
+                                        color: Colors.white24,
+                                        fontSize: 10),
+                                  ),
                               ],
                             ),
-                            const SizedBox(height: 10),
+
+                            const SizedBox(height: 8),
+
+                            // ── Date on compact (below stars row) ──
+                            if (isCompact)
+                              Padding(
+                                padding:
+                                    const EdgeInsets.only(bottom: 6),
+                                child: Text(
+                                  _formatDate(
+                                      fb['created_at'] as String?),
+                                  style: const TextStyle(
+                                      color: Colors.white24,
+                                      fontSize: 10),
+                                ),
+                              ),
+
+                            // ── User + category ───────────────────
                             Row(
                               children: [
                                 const Icon(Icons.person_outline,
-                                    color: Colors.white38, size: 14),
-                                const SizedBox(width: 6),
-                                Text(
-                                  profile?['full_name'] ?? 'Unknown User',
-                                  style: const TextStyle(
-                                      color: Colors.white60,
-                                      fontSize: 12,
-                                      fontWeight: FontWeight.w600),
+                                    color: Colors.white38, size: 13),
+                                const SizedBox(width: 5),
+                                Flexible(
+                                  child: Text(
+                                    profile?['full_name'] ??
+                                        'Unknown User',
+                                    style: const TextStyle(
+                                        color: Colors.white60,
+                                        fontSize: 12,
+                                        fontWeight: FontWeight.w600),
+                                    overflow: TextOverflow.ellipsis,
+                                  ),
                                 ),
-                                const SizedBox(width: 8),
+                                const SizedBox(width: 6),
                                 Container(
                                   padding: const EdgeInsets.symmetric(
-                                      horizontal: 7, vertical: 2),
+                                      horizontal: 6, vertical: 2),
                                   decoration: BoxDecoration(
-                                    color: Colors.white.withValues(alpha: 0.06),
-                                    borderRadius: BorderRadius.circular(8),
+                                    color: Colors.white
+                                        .withValues(alpha: 0.06),
+                                    borderRadius:
+                                        BorderRadius.circular(8),
                                   ),
                                   child: Text(
                                     fb['category'] ?? 'General',
                                     style: const TextStyle(
-                                        color: Colors.white38, fontSize: 10),
+                                        color: Colors.white38,
+                                        fontSize: 10),
                                   ),
                                 ),
                               ],
                             ),
+
                             const SizedBox(height: 8),
+
+                            // ── Message preview ───────────────────
                             Text(
                               fb['message'] ?? '',
                               maxLines: 2,
                               overflow: TextOverflow.ellipsis,
-                              style: const TextStyle(
+                              style: TextStyle(
                                   color: Colors.white,
-                                  fontSize: 13,
+                                  fontSize: isCompact ? 12 : 13,
                                   height: 1.5),
                             ),
                           ],
                         ),
-                      ).animate(delay: Duration(milliseconds: 30 * i))
+                      )
+                          .animate(
+                              delay: Duration(milliseconds: 30 * i))
                           .fadeIn()
                           .slideY(begin: 0.04, end: 0),
                     );
                   },
                 ),
+    );
+  }
+}
+
+// ── Helper widgets ────────────────────────────────────────────────────
+
+class _SectionLabel extends StatelessWidget {
+  final String text;
+  const _SectionLabel(this.text);
+
+  @override
+  Widget build(BuildContext context) {
+    return Text(
+      text,
+      style: TextStyle(
+        color: Colors.white.withValues(alpha: 0.5),
+        fontSize: 11,
+        fontWeight: FontWeight.w600,
+        letterSpacing: 0.4,
+      ),
     );
   }
 }

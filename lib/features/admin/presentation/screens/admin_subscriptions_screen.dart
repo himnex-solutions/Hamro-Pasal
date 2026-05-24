@@ -766,6 +766,10 @@ class _AdminSubscriptionsScreenState extends State<AdminSubscriptionsScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final screenWidth = MediaQuery.sizeOf(context).width;
+    final showLabels = screenWidth >= 360;
+    final showUnselected = screenWidth >= 480;
+
     return Scaffold(
       backgroundColor: AppTheme.darkBg,
       appBar: AppBar(
@@ -794,6 +798,8 @@ class _AdminSubscriptionsScreenState extends State<AdminSubscriptionsScreen> {
         selectedItemColor: AppTheme.primaryLight,
         unselectedItemColor: Colors.white38,
         type: BottomNavigationBarType.fixed,
+        showSelectedLabels: showLabels,
+        showUnselectedLabels: showLabels && showUnselected,
         selectedLabelStyle: const TextStyle(fontWeight: FontWeight.bold, fontSize: 11),
         unselectedLabelStyle: const TextStyle(fontSize: 10),
         items: const [
