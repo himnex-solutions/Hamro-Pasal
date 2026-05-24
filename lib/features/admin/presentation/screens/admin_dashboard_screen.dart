@@ -267,6 +267,8 @@ class _DashboardBody extends StatelessWidget {
     return LayoutBuilder(
       builder: (context, constraints) {
         final isWide = constraints.maxWidth > 1050;
+        final double contentWidth = isWide ? (constraints.maxWidth - 48) * 0.7 : constraints.maxWidth;
+
         final mainContent = Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -328,32 +330,61 @@ class _DashboardBody extends StatelessWidget {
               ),
             ),
             const SizedBox(height: 12),
-            const Row(
-              children: [
-                Expanded(
-                  child: _QuickAction(
-                    label: 'New Announcement',
-                    icon: Icons.campaign_rounded,
-                    color: AppTheme.warningColor,
-                  ),
-                ),
-                SizedBox(width: 12),
-                Expanded(
-                  child: _QuickAction(
-                    label: 'Run Trial Expiry Check',
-                    icon: Icons.timer_rounded,
-                    color: AppTheme.errorColor,
-                  ),
-                ),
-                SizedBox(width: 12),
-                Expanded(
-                  child: _QuickAction(
-                    label: 'Export User Data',
-                    icon: Icons.download_rounded,
-                    color: Color(0xFF3B82F6),
-                  ),
-                ),
-              ],
+            Builder(
+              builder: (context) {
+                if (contentWidth >= 550) {
+                  return const Row(
+                    children: [
+                      Expanded(
+                        child: _QuickAction(
+                          label: 'New Announcement',
+                          icon: Icons.campaign_rounded,
+                          color: AppTheme.warningColor,
+                        ),
+                      ),
+                      SizedBox(width: 12),
+                      Expanded(
+                        child: _QuickAction(
+                          label: 'Run Trial Expiry Check',
+                          icon: Icons.timer_rounded,
+                          color: AppTheme.errorColor,
+                        ),
+                      ),
+                      SizedBox(width: 12),
+                      Expanded(
+                        child: _QuickAction(
+                          label: 'Export User Data',
+                          icon: Icons.download_rounded,
+                          color: Color(0xFF3B82F6),
+                        ),
+                      ),
+                    ],
+                  );
+                } else {
+                  return const Column(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      _QuickAction(
+                        label: 'New Announcement',
+                        icon: Icons.campaign_rounded,
+                        color: AppTheme.warningColor,
+                      ),
+                      SizedBox(height: 12),
+                      _QuickAction(
+                        label: 'Run Trial Expiry Check',
+                        icon: Icons.timer_rounded,
+                        color: AppTheme.errorColor,
+                      ),
+                      SizedBox(height: 12),
+                      _QuickAction(
+                        label: 'Export User Data',
+                        icon: Icons.download_rounded,
+                        color: Color(0xFF3B82F6),
+                      ),
+                    ],
+                  );
+                }
+              },
             ),
           ],
         );
