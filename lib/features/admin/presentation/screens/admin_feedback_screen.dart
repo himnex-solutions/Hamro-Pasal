@@ -341,8 +341,13 @@ class _AdminFeedbackScreenState extends State<AdminFeedbackScreen> {
         foregroundColor: Colors.white,
         title: Row(
           children: [
-            const Text('User Feedback',
-                style: TextStyle(fontWeight: FontWeight.w700)),
+            const Text(
+              'User Feedback',
+              style: TextStyle(
+                fontWeight: FontWeight.w700,
+                color: Colors.white,
+              ),
+            ),
             if (pending > 0) ...[
               const SizedBox(width: 10),
               Container(
@@ -367,7 +372,7 @@ class _AdminFeedbackScreenState extends State<AdminFeedbackScreen> {
         actions: [
           IconButton(
             onPressed: _loadFeedbacks,
-            icon: const Icon(Icons.refresh_rounded),
+            icon: const Icon(Icons.refresh_rounded, color: Colors.white54),
             tooltip: 'Refresh',
           ),
           const SizedBox(width: 8),
@@ -559,7 +564,7 @@ class _AdminFeedbackScreenState extends State<AdminFeedbackScreen> {
                               maxLines: 2,
                               overflow: TextOverflow.ellipsis,
                               style: const TextStyle(
-                                  color: Colors.white70,
+                                  color: Colors.white,
                                   fontSize: 13,
                                   height: 1.5),
                             ),

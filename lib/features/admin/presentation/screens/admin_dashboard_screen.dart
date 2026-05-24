@@ -445,37 +445,44 @@ class _ConsoleHeader extends StatelessWidget {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  const Text(
-                    'SYSTEM OPERATOR CONSOLE',
-                    style: TextStyle(
-                      color: AppTheme.primaryLight,
-                      fontSize: 10,
-                      fontWeight: FontWeight.w800,
-                      letterSpacing: 2,
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Text(
+                      'SYSTEM OPERATOR CONSOLE',
+                      style: TextStyle(
+                        color: AppTheme.primaryLight,
+                        fontSize: 10,
+                        fontWeight: FontWeight.w800,
+                        letterSpacing: 2,
+                      ),
                     ),
-                  ),
-                  const SizedBox(height: 4),
-                  const Text(
-                    'Welcome Back, Admin',
-                    style: TextStyle(
-                      color: Colors.white,
-                      fontSize: 22,
-                      fontWeight: FontWeight.w800,
+                    const SizedBox(height: 4),
+                    const Text(
+                      'Welcome Back, Admin',
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontSize: 22,
+                        fontWeight: FontWeight.w800,
+                      ),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
                     ),
-                  ),
-                  const SizedBox(height: 2),
-                  Text(
-                    dateStr,
-                    style: TextStyle(
-                      color: Colors.white.withValues(alpha: 0.4),
-                      fontSize: 12,
+                    const SizedBox(height: 2),
+                    Text(
+                      dateStr,
+                      style: TextStyle(
+                        color: Colors.white.withValues(alpha: 0.4),
+                        fontSize: 12,
+                      ),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
                     ),
-                  ),
-                ],
+                  ],
+                ),
               ),
+              const SizedBox(width: 16),
               // Live Badge
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
@@ -524,23 +531,31 @@ class _ConsoleHeader extends StatelessWidget {
           const Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              _ServerMetricTile(
-                label: 'CPU LOAD',
-                value: '18.4%',
-                icon: Icons.developer_board_rounded,
-                color: AppTheme.primaryLight,
+              Expanded(
+                child: _ServerMetricTile(
+                  label: 'CPU LOAD',
+                  value: '18.4%',
+                  icon: Icons.developer_board_rounded,
+                  color: AppTheme.primaryLight,
+                ),
               ),
-              _ServerMetricTile(
-                label: 'LATENCY',
-                value: '42 ms',
-                icon: Icons.speed_rounded,
-                color: AppTheme.successColor,
+              SizedBox(width: 12),
+              Expanded(
+                child: _ServerMetricTile(
+                  label: 'LATENCY',
+                  value: '42 ms',
+                  icon: Icons.speed_rounded,
+                  color: AppTheme.successColor,
+                ),
               ),
-              _ServerMetricTile(
-                label: 'MEM USAGE',
-                value: '2.4 / 8.0 GB',
-                icon: Icons.memory_rounded,
-                color: AppTheme.warningColor,
+              SizedBox(width: 12),
+              Expanded(
+                child: _ServerMetricTile(
+                  label: 'MEM USAGE',
+                  value: '2.4 / 8.0 GB',
+                  icon: Icons.memory_rounded,
+                  color: AppTheme.warningColor,
+                ),
               ),
             ],
           ),
@@ -569,28 +584,35 @@ class _ServerMetricTile extends StatelessWidget {
       children: [
         Icon(icon, color: color.withValues(alpha: 0.7), size: 16),
         const SizedBox(width: 8),
-        Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              label,
-              style: TextStyle(
-                color: Colors.white.withValues(alpha: 0.35),
-                fontSize: 9,
-                fontWeight: FontWeight.w700,
-                letterSpacing: 1.0,
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Text(
+                label,
+                style: TextStyle(
+                  color: Colors.white.withValues(alpha: 0.35),
+                  fontSize: 9,
+                  fontWeight: FontWeight.w700,
+                  letterSpacing: 1.0,
+                ),
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
               ),
-            ),
-            const SizedBox(height: 2),
-            Text(
-              value,
-              style: const TextStyle(
-                color: Colors.white,
-                fontSize: 12,
-                fontWeight: FontWeight.w700,
+              const SizedBox(height: 2),
+              Text(
+                value,
+                style: const TextStyle(
+                  color: Colors.white,
+                  fontSize: 12,
+                  fontWeight: FontWeight.w700,
+                ),
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       ],
     );
@@ -899,27 +921,32 @@ class _AnalyticsChart extends StatelessWidget {
           const Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    'Growth Analytics',
-                    style: TextStyle(
-                      color: Colors.white,
-                      fontSize: 16,
-                      fontWeight: FontWeight.w700,
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Growth Analytics',
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontSize: 16,
+                        fontWeight: FontWeight.w700,
+                      ),
                     ),
-                  ),
-                  SizedBox(height: 2),
-                  Text(
-                    'Historical platform engagement trends',
-                    style: TextStyle(
-                      color: Colors.white30,
-                      fontSize: 11,
+                    SizedBox(height: 2),
+                    Text(
+                      'Historical platform engagement trends',
+                      style: TextStyle(
+                        color: Colors.white30,
+                        fontSize: 11,
+                      ),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
                     ),
-                  ),
-                ],
+                  ],
+                ),
               ),
+              SizedBox(width: 16),
               Row(
                 children: [
                   _LegendIndicator(color: AppTheme.primaryLight, label: 'Revenue'),
