@@ -267,8 +267,6 @@ class _DashboardBody extends StatelessWidget {
     return LayoutBuilder(
       builder: (context, constraints) {
         final isWide = constraints.maxWidth > 1050;
-        final double contentWidth = isWide ? (constraints.maxWidth - 48) * 0.7 : constraints.maxWidth;
-
         final mainContent = Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
@@ -286,79 +284,28 @@ class _DashboardBody extends StatelessWidget {
               ),
             ),
             const SizedBox(height: 12),
-            Builder(
-              builder: (context) {
-                if (contentWidth >= 650) {
-                  return Column(
-                    children: [
-                      Row(
-                        children: [
-                          Expanded(child: statsCards[0]),
-                          const SizedBox(width: 16),
-                          Expanded(child: statsCards[1]),
-                          const SizedBox(width: 16),
-                          Expanded(child: statsCards[2]),
-                        ],
-                      ),
-                      const SizedBox(height: 16),
-                      Row(
-                        children: [
-                          Expanded(child: statsCards[3]),
-                          const SizedBox(width: 16),
-                          Expanded(child: statsCards[4]),
-                          const SizedBox(width: 16),
-                          Expanded(child: statsCards[5]),
-                        ],
-                      ),
-                    ],
-                  );
-                } else if (contentWidth >= 450) {
-                  return Column(
-                    children: [
-                      Row(
-                        children: [
-                          Expanded(child: statsCards[0]),
-                          const SizedBox(width: 16),
-                          Expanded(child: statsCards[1]),
-                        ],
-                      ),
-                      const SizedBox(height: 16),
-                      Row(
-                        children: [
-                          Expanded(child: statsCards[2]),
-                          const SizedBox(width: 16),
-                          Expanded(child: statsCards[3]),
-                        ],
-                      ),
-                      const SizedBox(height: 16),
-                      Row(
-                        children: [
-                          Expanded(child: statsCards[4]),
-                          const SizedBox(width: 16),
-                          Expanded(child: statsCards[5]),
-                        ],
-                      ),
-                    ],
-                  );
-                } else {
-                  return Column(
-                    crossAxisAlignment: CrossAxisAlignment.stretch,
-                    children: [
-                      statsCards[0],
-                      const SizedBox(height: 16),
-                      statsCards[1],
-                      const SizedBox(height: 16),
-                      statsCards[2],
-                      const SizedBox(height: 16),
-                      statsCards[3],
-                      const SizedBox(height: 16),
-                      statsCards[4],
-                      const SizedBox(height: 16),
-                      statsCards[5],
-                    ],
-                  );
-                }
-              },
+            Column(
+              children: [
+                Row(
+                  children: [
+                    Expanded(child: statsCards[0]),
+                    const SizedBox(width: 16),
+                    Expanded(child: statsCards[1]),
+                    const SizedBox(width: 16),
+                    Expanded(child: statsCards[2]),
+                  ],
+                ),
+                const SizedBox(height: 16),
+                Row(
+                  children: [
+                    Expanded(child: statsCards[3]),
+                    const SizedBox(width: 16),
+                    Expanded(child: statsCards[4]),
+                    const SizedBox(width: 16),
+                    Expanded(child: statsCards[5]),
+                  ],
+                ),
+              ],
             ),
             const SizedBox(height: 24),
 
@@ -377,61 +324,32 @@ class _DashboardBody extends StatelessWidget {
               ),
             ),
             const SizedBox(height: 12),
-            Builder(
-              builder: (context) {
-                if (contentWidth >= 550) {
-                  return const Row(
-                    children: [
-                      Expanded(
-                        child: _QuickAction(
-                          label: 'New Announcement',
-                          icon: Icons.campaign_rounded,
-                          color: AppTheme.warningColor,
-                        ),
-                      ),
-                      SizedBox(width: 12),
-                      Expanded(
-                        child: _QuickAction(
-                          label: 'Run Trial Expiry Check',
-                          icon: Icons.timer_rounded,
-                          color: AppTheme.errorColor,
-                        ),
-                      ),
-                      SizedBox(width: 12),
-                      Expanded(
-                        child: _QuickAction(
-                          label: 'Export User Data',
-                          icon: Icons.download_rounded,
-                          color: Color(0xFF3B82F6),
-                        ),
-                      ),
-                    ],
-                  );
-                } else {
-                  return const Column(
-                    crossAxisAlignment: CrossAxisAlignment.stretch,
-                    children: [
-                      _QuickAction(
-                        label: 'New Announcement',
-                        icon: Icons.campaign_rounded,
-                        color: AppTheme.warningColor,
-                      ),
-                      SizedBox(height: 12),
-                      _QuickAction(
-                        label: 'Run Trial Expiry Check',
-                        icon: Icons.timer_rounded,
-                        color: AppTheme.errorColor,
-                      ),
-                      SizedBox(height: 12),
-                      _QuickAction(
-                        label: 'Export User Data',
-                        icon: Icons.download_rounded,
-                        color: Color(0xFF3B82F6),
-                      ),
-                    ],
-                  );
-                }
-              },
+            const Row(
+              children: [
+                Expanded(
+                  child: _QuickAction(
+                    label: 'New Announcement',
+                    icon: Icons.campaign_rounded,
+                    color: AppTheme.warningColor,
+                  ),
+                ),
+                SizedBox(width: 12),
+                Expanded(
+                  child: _QuickAction(
+                    label: 'Run Trial Expiry Check',
+                    icon: Icons.timer_rounded,
+                    color: AppTheme.errorColor,
+                  ),
+                ),
+                SizedBox(width: 12),
+                Expanded(
+                  child: _QuickAction(
+                    label: 'Export User Data',
+                    icon: Icons.download_rounded,
+                    color: Color(0xFF3B82F6),
+                  ),
+                ),
+              ],
             ),
           ],
         );
