@@ -291,15 +291,19 @@ class _DashboardBody extends StatelessWidget {
                     Expanded(child: statsCards[0]),
                     const SizedBox(width: 16),
                     Expanded(child: statsCards[1]),
-                    const SizedBox(width: 16),
-                    Expanded(child: statsCards[2]),
                   ],
                 ),
                 const SizedBox(height: 16),
                 Row(
                   children: [
-                    Expanded(child: statsCards[3]),
+                    Expanded(child: statsCards[2]),
                     const SizedBox(width: 16),
+                    Expanded(child: statsCards[3]),
+                  ],
+                ),
+                const SizedBox(height: 16),
+                Row(
+                  children: [
                     Expanded(child: statsCards[4]),
                     const SizedBox(width: 16),
                     Expanded(child: statsCards[5]),
