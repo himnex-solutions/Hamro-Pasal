@@ -173,7 +173,7 @@ class _AdminFeedbackScreenState extends State<AdminFeedbackScreen> {
                   const SizedBox(height: 16),
 
                   // ── Message ───────────────────────────────────
-                  _SectionLabel('Message'),
+                  const _SectionLabel('Message'),
                   const SizedBox(height: 6),
                   Container(
                     width: double.infinity,
@@ -193,7 +193,7 @@ class _AdminFeedbackScreenState extends State<AdminFeedbackScreen> {
                   const SizedBox(height: 16),
 
                   // ── Status picker ─────────────────────────────
-                  _SectionLabel('Status'),
+                  const _SectionLabel('Status'),
                   const SizedBox(height: 8),
                   Wrap(
                     spacing: 8,
@@ -233,7 +233,7 @@ class _AdminFeedbackScreenState extends State<AdminFeedbackScreen> {
                   const SizedBox(height: 16),
 
                   // ── Admin notes ──────────────────────────────
-                  _SectionLabel('Admin Notes'),
+                  const _SectionLabel('Admin Notes'),
                   const SizedBox(height: 6),
                   TextField(
                     controller: notesCtrl,
