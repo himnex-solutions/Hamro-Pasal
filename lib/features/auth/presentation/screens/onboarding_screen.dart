@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:go_router/go_router.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:smooth_page_indicator/smooth_page_indicator.dart';
 import 'package:hamro_pasal/core/constants/app_constants.dart';
 import 'package:hamro_pasal/core/router/app_router.dart';
 import 'package:hamro_pasal/core/theme/app_theme.dart';
@@ -30,6 +31,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
       'author': 'Warren Buffett',
       'icon': Icons.storefront_rounded,
       'color': AppTheme.primaryLight, // Teal primary accent
+      'image': 'assets/images/onboarding_billing.png',
     },
     {
       'title': 'Automated Credit Reminders',
@@ -40,6 +42,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
       'author': 'Financial Wisdom',
       'icon': Icons.notifications_active_rounded,
       'color': AppTheme.accentColor, // Glowing warm cyan accent
+      'image': 'assets/images/onboarding_reminders.png',
     },
     {
       'title': 'Profit Insights & Stock',
@@ -50,6 +53,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
       'author': 'Benjamin Franklin',
       'icon': Icons.query_stats_rounded,
       'color': const Color(0xFF1DD8E8), // Glowing cyan
+      'image': 'assets/images/onboarding_insights.png',
     },
   ];
 
@@ -70,7 +74,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppTheme.darkBg,
+      backgroundColor: Colors.white,
       body: Stack(
         children: [
           // ── Dynamic Glowing Background (Transitions with Swipe) ──
@@ -83,6 +87,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
             builder: (context, color, child) {
               return Positioned.fill(
                 child: PolyMeshBackground(
+                  isLight: true,
                   accentColor: color,
                 ),
               );
@@ -103,26 +108,42 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                       Row(
                         children: [
                           Container(
-                            padding: const EdgeInsets.all(10),
+                            width: 40,
+                            height: 40,
                             decoration: BoxDecoration(
-                              gradient: AppTheme.primaryGradient,
                               borderRadius: BorderRadius.circular(12),
                               boxShadow: AppTheme.cardShadow(
                                 AppTheme.primaryColor,
-                                opacity: 0.3,
+                                opacity: 0.2,
                               ),
                             ),
-                            child: const Icon(
-                              Icons.store_rounded,
-                              color: Colors.white,
-                              size: 20,
+                            child: ClipRRect(
+                              borderRadius: BorderRadius.circular(12),
+                              child: Image.asset(
+                                'assets/images/logo.png',
+                                width: 40,
+                                height: 40,
+                                fit: BoxFit.cover,
+                                errorBuilder: (context, error, stackTrace) => Container(
+                                  width: 40,
+                                  height: 40,
+                                  decoration: const BoxDecoration(
+                                    gradient: AppTheme.primaryGradient,
+                                  ),
+                                  child: const Icon(
+                                    Icons.store_rounded,
+                                    color: Colors.white,
+                                    size: 20,
+                                  ),
+                                ),
+                              ),
                             ),
                           ),
                           const SizedBox(width: 12),
                           const Text(
                             'Hamro Pasal',
                             style: TextStyle(
-                              color: Colors.white,
+                              color: Color(0xFF0D7E8A),
                               fontSize: 18,
                               fontWeight: FontWeight.w800,
                               letterSpacing: 0.5,
@@ -134,7 +155,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                         TextButton(
                           onPressed: _finishOnboarding,
                           style: TextButton.styleFrom(
-                            foregroundColor: Colors.white.withValues(alpha: 0.45),
+                            foregroundColor: const Color(0xFF94A3B8),
                           ),
                           child: const Text(
                             'Skip',
@@ -161,12 +182,10 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                       return LayoutBuilder(
                         builder: (context, constraints) {
                           final isCompact = constraints.maxHeight < 580;
-                          final orbitSize = isCompact ? 130.0 : 185.0;
-                          final innerOrbitSize = isCompact ? 100.0 : 145.0;
-                          final auraSize = isCompact ? 80.0 : 115.0;
-                          final ringSize = isCompact ? 70.0 : 100.0;
-                          final coreSize = isCompact ? 56.0 : 80.0;
-                          final coreIconSize = isCompact ? 26.0 : 36.0;
+                          final orbitSize = isCompact ? 210.0 : 290.0;
+                          final innerOrbitSize = isCompact ? 170.0 : 240.0;
+                          final auraSize = isCompact ? 140.0 : 200.0;
+                          final ringSize = isCompact ? 120.0 : 170.0;
                           final spacing = isCompact ? 16.0 : 36.0;
 
                           return Padding(
@@ -176,7 +195,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                               mainAxisAlignment: MainAxisAlignment.center,
                               children: [
                                 SizedBox(height: isCompact ? 8 : 16),
-                                // ── Premium Double-Orbit Illustration ─────
+                                // ── Concrete Illustration Group with Orbit Animations ──
                                 Stack(
                                   alignment: Alignment.center,
                                   children: [
@@ -231,57 +250,63 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                                             duration: 2.seconds,
                                             curve: Curves.easeInOut),
 
-                                    // 4. Glowing inner ring
+                                    // 4. Glass ring
                                     Container(
                                       width: ringSize,
                                       height: ringSize,
                                       decoration: BoxDecoration(
                                         shape: BoxShape.circle,
                                         border: Border.all(
-                                          color:
-                                              accentColor.withValues(alpha: 0.25),
-                                          width: 2.0,
+                                          color: accentColor.withValues(alpha: 0.25),
+                                          width: 1.5,
                                         ),
                                       ),
                                     ),
 
-                                    // 5. Core badge icon
+                                    // 5. Concrete PNG Illustration with float animation
                                     Container(
-                                      width: coreSize,
-                                      height: coreSize,
-                                      decoration: BoxDecoration(
-                                        shape: BoxShape.circle,
-                                        gradient: LinearGradient(
-                                          colors: [
-                                            accentColor,
-                                            accentColor.withValues(alpha: 0.7)
-                                          ],
-                                          begin: Alignment.topLeft,
-                                          end: Alignment.bottomRight,
-                                        ),
-                                        boxShadow: AppTheme.glowShadow(
-                                          accentColor,
-                                          opacity: 0.35,
-                                        ),
+                                      height: isCompact ? 160.0 : 220.0,
+                                      constraints: BoxConstraints(
+                                        maxWidth: isCompact ? 240.0 : 320.0,
                                       ),
-                                      child: Icon(
-                                        slide['icon'] as IconData,
-                                        size: coreIconSize,
-                                        color: Colors.white,
+                                      child: Image.asset(
+                                        slide['image'] as String,
+                                        fit: BoxFit.contain,
+                                        errorBuilder: (context, error, stackTrace) => Container(
+                                          width: isCompact ? 120.0 : 160.0,
+                                          height: isCompact ? 120.0 : 160.0,
+                                          decoration: BoxDecoration(
+                                            shape: BoxShape.circle,
+                                            gradient: AppTheme.primaryGradient,
+                                            boxShadow: AppTheme.glowShadow(
+                                              accentColor,
+                                              opacity: 0.3,
+                                            ),
+                                          ),
+                                          child: Icon(
+                                            slide['icon'] as IconData,
+                                            size: isCompact ? 50.0 : 70.0,
+                                            color: Colors.white,
+                                          ),
+                                        ),
                                       ),
                                     )
-                                        .animate()
-                                        .scale(
-                                            duration: 500.ms,
-                                            curve: Curves.elasticOut,
-                                            begin: const Offset(0.4, 0.4))
-                                        .rotate(
-                                            duration: 800.ms,
-                                            begin: -0.15,
-                                            end: 0,
-                                            curve: Curves.easeOut),
+                                        .animate(
+                                            onPlay: (controller) => controller
+                                                .repeat(reverse: true))
+                                        .moveY(
+                                            begin: -8,
+                                            end: 8,
+                                            duration: 2000.ms,
+                                            curve: Curves.easeInOut),
                                   ],
-                                ),
+                                )
+                                    .animate()
+                                    .fadeIn(duration: 500.ms)
+                                    .scale(
+                                        begin: const Offset(0.75, 0.75),
+                                        duration: 500.ms,
+                                        curve: Curves.easeOutBack),
                                 SizedBox(height: spacing),
 
                                 // ── Glassmorphic Text Card ──────────────────
@@ -291,19 +316,30 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                                     filter: ImageFilter.blur(
                                         sigmaX: 12, sigmaY: 12),
                                     child: Container(
-                                      padding: EdgeInsets.all(isCompact ? 16 : 24),
+                                      padding:
+                                          EdgeInsets.all(isCompact ? 20 : 28),
                                       decoration: BoxDecoration(
-                                        color: Colors.white.withValues(alpha: 0.03),
-                                        borderRadius: BorderRadius.circular(24),
+                                        color: Colors.white
+                                            .withValues(alpha: 0.70),
+                                        borderRadius: BorderRadius.circular(28),
                                         border: Border.all(
-                                          color: Colors.white.withValues(alpha: 0.08),
-                                          width: 1.2,
+                                          color: const Color(0xFF0D7E8A)
+                                              .withValues(alpha: 0.10),
+                                          width: 1.5,
                                         ),
                                         boxShadow: [
                                           BoxShadow(
-                                            color: Colors.black.withValues(alpha: 0.2),
-                                            blurRadius: 20,
-                                            offset: const Offset(0, 10),
+                                            color: const Color(0xFF0D7E8A)
+                                                .withValues(alpha: 0.04),
+                                            blurRadius: 40,
+                                            offset: const Offset(0, 16),
+                                            spreadRadius: -4,
+                                          ),
+                                          BoxShadow(
+                                            color: Colors.black
+                                                .withValues(alpha: 0.015),
+                                            blurRadius: 12,
+                                            offset: const Offset(0, 4),
                                           ),
                                         ],
                                       ),
@@ -314,49 +350,83 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                                             slide['title'] as String,
                                             textAlign: TextAlign.center,
                                             style: TextStyle(
-                                              color: Colors.white,
-                                              fontSize: isCompact ? 20 : 24,
-                                              fontWeight: FontWeight.w800,
-                                              letterSpacing: -0.5,
+                                              color: const Color(0xFF07242B),
+                                              fontSize: isCompact ? 22 : 26,
+                                              fontWeight: FontWeight.w900,
+                                              letterSpacing: -0.6,
+                                              height: 1.25,
                                             ),
                                           ).animate().fadeIn().slideY(
-                                              begin: 0.2, end: 0, duration: 400.ms),
-                                          SizedBox(height: isCompact ? 8 : 12),
+                                              begin: 0.2,
+                                              end: 0,
+                                              duration: 400.ms),
+                                          SizedBox(height: isCompact ? 10 : 14),
                                           Text(
                                             slide['desc'] as String,
                                             textAlign: TextAlign.center,
                                             style: TextStyle(
-                                              color: Colors.white.withValues(alpha: 0.55),
-                                              fontSize: isCompact ? 13.0 : 14.5,
-                                              height: 1.5,
+                                              color: const Color(0xFF475569),
+                                              fontSize: isCompact ? 13.5 : 15.0,
+                                              fontWeight: FontWeight.w400,
+                                              height: 1.6,
                                             ),
-                                          ).animate().fadeIn(delay: 150.ms).slideY(
-                                              begin: 0.15, end: 0, duration: 450.ms),
+                                          )
+                                              .animate()
+                                              .fadeIn(delay: 150.ms)
+                                              .slideY(
+                                                  begin: 0.15,
+                                                  end: 0,
+                                                  duration: 450.ms),
                                           if (!isCompact) ...[
-                                            const SizedBox(height: 20),
-                                            Divider(
-                                              color: Colors.white.withValues(alpha: 0.08),
-                                              thickness: 1,
+                                            const SizedBox(height: 22),
+                                            const Divider(
+                                              color: Color(0xFFE2E8F0),
+                                              thickness: 1.2,
                                             ),
-                                            const SizedBox(height: 16),
-                                            Text(
-                                              slide['quote'] as String,
-                                              textAlign: TextAlign.center,
-                                              style: const TextStyle(
-                                                color: Colors.white70,
-                                                fontSize: 13,
-                                                fontStyle: FontStyle.italic,
-                                                height: 1.5,
+                                            const SizedBox(height: 18),
+                                            Container(
+                                              padding:
+                                                  const EdgeInsets.symmetric(
+                                                      horizontal: 14,
+                                                      vertical: 4),
+                                              decoration: BoxDecoration(
+                                                border: Border(
+                                                  left: BorderSide(
+                                                    color:
+                                                        accentColor.withValues(
+                                                            alpha: 0.35),
+                                                    width: 3.5,
+                                                  ),
+                                                ),
                                               ),
-                                            ),
-                                            const SizedBox(height: 8),
-                                            Text(
-                                              '— ${slide['author']}',
-                                              style: TextStyle(
-                                                color: accentColor.withValues(alpha: 0.8),
-                                                fontSize: 11,
-                                                fontWeight: FontWeight.w700,
-                                                letterSpacing: 1.2,
+                                              child: Column(
+                                                crossAxisAlignment:
+                                                    CrossAxisAlignment.start,
+                                                children: [
+                                                  Text(
+                                                    slide['quote'] as String,
+                                                    style: const TextStyle(
+                                                      color: Color(0xFF334155),
+                                                      fontSize: 13.5,
+                                                      fontStyle:
+                                                          FontStyle.italic,
+                                                      height: 1.55,
+                                                    ),
+                                                  ),
+                                                  const SizedBox(height: 8),
+                                                  Text(
+                                                    '— ${slide['author']}',
+                                                    style: TextStyle(
+                                                      color: accentColor
+                                                          .withValues(
+                                                              alpha: 0.9),
+                                                      fontSize: 11,
+                                                      fontWeight:
+                                                          FontWeight.w800,
+                                                      letterSpacing: 1.2,
+                                                    ),
+                                                  ),
+                                                ],
                                               ),
                                             ),
                                           ],
@@ -381,94 +451,30 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                 Padding(
                   padding: EdgeInsets.fromLTRB(
                     28,
-                    16,
+                    12,
                     28,
-                    MediaQuery.of(context).size.height < 600 ? 16 : 32,
+                    MediaQuery.of(context).size.height < 600 ? 12 : 28,
                   ),
                   child: Column(
+                    mainAxisSize: MainAxisSize.min,
                     children: [
-                      // Dots
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: List.generate(_slides.length, (idx) {
-                          final isActive = _currentIndex == idx;
-                          final accent =
-                              _slides[_currentIndex]['color'] as Color;
-                          return AnimatedContainer(
-                            duration: const Duration(milliseconds: 300),
-                            margin: const EdgeInsets.symmetric(horizontal: 4),
-                            height: 6,
-                            width: isActive ? 24 : 6,
-                            decoration: BoxDecoration(
-                              color: isActive ? accent : Colors.white24,
-                              borderRadius: BorderRadius.circular(3),
-                              boxShadow: isActive
-                                  ? [
-                                      BoxShadow(
-                                        color: accent.withValues(alpha: 0.5),
-                                        blurRadius: 6,
-                                        spreadRadius: 1,
-                                      )
-                                    ]
-                                  : null,
-                            ),
-                          );
-                        }),
-                      ),
-                      SizedBox(
-                        height: MediaQuery.of(context).size.height < 600 ? 12 : 32,
-                      ),
-
-                      // Actions Button
-                      AnimatedCrossFade(
-                        duration: const Duration(milliseconds: 250),
-                        crossFadeState: _currentIndex == _slides.length - 1
-                            ? CrossFadeState.showSecond
-                            : CrossFadeState.showFirst,
-                        firstChild: Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            TextButton(
-                              onPressed: _finishOnboarding,
-                              style: TextButton.styleFrom(
-                                foregroundColor: Colors.white.withValues(alpha: 0.4),
-                              ),
-                              child: const Text(
-                                'SKIP',
-                                style: TextStyle(
-                                  fontWeight: FontWeight.bold,
-                                  fontSize: 13.5,
-                                  letterSpacing: 1.0,
-                                ),
-                              ),
-                            ),
-                            Container(
-                              decoration: BoxDecoration(
-                                shape: BoxShape.circle,
-                                boxShadow: AppTheme.glowShadow(
-                                  _slides[_currentIndex]['color'] as Color,
-                                  opacity: 0.3,
-                                ),
-                              ),
-                              child: FloatingActionButton(
-                                onPressed: () {
-                                  _pageCtrl.nextPage(
-                                    duration: const Duration(milliseconds: 400),
-                                    curve: Curves.easeInOut,
-                                  );
-                                },
-                                backgroundColor:
-                                    _slides[_currentIndex]['color'] as Color,
-                                shape: const CircleBorder(),
-                                child: const Icon(
-                                  Icons.arrow_forward_rounded,
-                                  color: Colors.white,
-                                ),
-                              ),
-                            ),
-                          ],
+                      if (_currentIndex == _slides.length - 1) ...[
+                        // ── Last page: centered dots + full-width CTA ──
+                        SmoothPageIndicator(
+                          controller: _pageCtrl,
+                          count: _slides.length,
+                          effect: ExpandingDotsEffect(
+                            activeDotColor:
+                                _slides[_currentIndex]['color'] as Color,
+                            dotColor: const Color(0xFFE2E8F0),
+                            dotHeight: 7,
+                            dotWidth: 7,
+                            expansionFactor: 4.0,
+                            spacing: 6,
+                          ),
                         ),
-                        secondChild: Container(
+                        const SizedBox(height: 20),
+                        Container(
                           width: double.infinity,
                           height: 54,
                           decoration: BoxDecoration(
@@ -504,7 +510,91 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                             ),
                           ),
                         ),
-                      ),
+                      ] else ...[
+                        // ── Pages 1 & 2: Back (left) | Dots (center) | Next (right) ──
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            // Left: Back button (invisible on page 0 but keeps space)
+                            SizedBox(
+                              width: 60,
+                              height: 44,
+                              child: _currentIndex > 0
+                                  ? Align(
+                                      alignment: Alignment.centerLeft,
+                                      child: TextButton(
+                                        onPressed: () => _pageCtrl.previousPage(
+                                          duration: const Duration(milliseconds: 300),
+                                          curve: Curves.easeInOut,
+                                        ),
+                                        style: TextButton.styleFrom(
+                                          foregroundColor: const Color(0xFF94A3B8),
+                                          padding: EdgeInsets.zero,
+                                          minimumSize: const Size(44, 44),
+                                          tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                                        ),
+                                        child: const Row(
+                                          mainAxisSize: MainAxisSize.min,
+                                          children: [
+                                            Icon(Icons.arrow_back_ios_new_rounded, size: 14),
+                                            SizedBox(width: 4),
+                                            Text(
+                                              'Back',
+                                              style: TextStyle(
+                                                fontWeight: FontWeight.w600,
+                                                fontSize: 14,
+                                              ),
+                                            ),
+                                          ],
+                                        ),
+                                      ),
+                                    )
+                                  : const SizedBox.shrink(),
+                            ),
+
+                            // Center: SmoothPageIndicator
+                            SmoothPageIndicator(
+                              controller: _pageCtrl,
+                              count: _slides.length,
+                              effect: ExpandingDotsEffect(
+                                activeDotColor: _slides[_currentIndex]['color'] as Color,
+                                dotColor: const Color(0xFFE2E8F0),
+                                dotHeight: 7,
+                                dotWidth: 7,
+                                expansionFactor: 4.0,
+                                spacing: 6,
+                              ),
+                            ),
+
+                            // Right: Next arrow button (no shadow)
+                            SizedBox(
+                              width: 60,
+                              height: 44,
+                              child: Align(
+                                alignment: Alignment.centerRight,
+                                child: IconButton(
+                                  onPressed: () => _pageCtrl.nextPage(
+                                    duration: const Duration(milliseconds: 400),
+                                    curve: Curves.easeInOut,
+                                  ),
+                                  style: IconButton.styleFrom(
+                                    backgroundColor: _slides[_currentIndex]['color'] as Color,
+                                    foregroundColor: Colors.white,
+                                    padding: const EdgeInsets.all(12),
+                                    minimumSize: const Size(44, 44),
+                                    elevation: 0,
+                                    shadowColor: Colors.transparent,
+                                  ),
+                                  icon: const Icon(
+                                    Icons.arrow_forward_rounded,
+                                    size: 20,
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ],
                     ],
                   ),
                 ),
@@ -591,3 +681,4 @@ class OrbitPainter extends CustomPainter {
         oldDelegate.dotSize != dotSize;
   }
 }
+

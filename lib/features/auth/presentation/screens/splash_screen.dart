@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:hamro_pasal/core/router/app_router.dart';
 import 'package:hamro_pasal/core/services/app_lock_service.dart';
+import 'package:hamro_pasal/core/widgets/poly_mesh_background.dart';
 import 'package:hamro_pasal/features/auth/presentation/providers/auth_provider.dart';
 import 'package:hamro_pasal/features/settings/presentation/screens/pin_lock_screen.dart';
 import 'package:loading_animation_widget/loading_animation_widget.dart';
@@ -99,60 +100,23 @@ class _SplashScreenState extends ConsumerState<SplashScreen>
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: Colors.white,
       body: AnimatedBuilder(
         animation: _gradientController,
         builder: (context, child) {
-          return Container(
-            decoration: BoxDecoration(
-              gradient: LinearGradient(
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
-                colors: [
-                  Color.lerp(
-                    const Color(0xFF0F172A),
-                    const Color(0xFF1E1B4B),
-                    _gradientController.value,
-                  )!,
-                  Color.lerp(
-                    const Color(0xFF1A3A6E),
-                    const Color(0xFF312E81),
-                    _gradientController.value,
-                  )!,
-                  Color.lerp(
-                    const Color(0xFF1E6FD9),
-                    const Color(0xFF4338CA),
-                    _gradientController.value,
-                  )!,
-                ],
-              ),
-            ),
+          final animatedAccent = Color.lerp(
+            const Color(0xFF10B4C3),
+            const Color(0xFF00C9B1),
+            _gradientController.value,
+          );
+          return PolyMeshBackground(
+            isLight: true,
+            accentColor: animatedAccent,
             child: child,
           );
         },
         child: Stack(
           children: [
-            // Background decorative orbs — direct Positioned children (no LayoutBuilder)
-            Positioned(
-                top: -80,
-                right: -60,
-                child:
-                    _Orb(300, const Color(0xFF3B82F6).withValues(alpha: 0.15))),
-            Positioned(
-                bottom: -100,
-                left: -80,
-                child:
-                    _Orb(360, const Color(0xFF6366F1).withValues(alpha: 0.12))),
-            Positioned(
-                top: MediaQuery.sizeOf(context).height * 0.4,
-                right: -40,
-                child:
-                    _Orb(200, const Color(0xFF06B6D4).withValues(alpha: 0.08))),
-            Positioned(
-                top: MediaQuery.sizeOf(context).height * 0.2,
-                left: -30,
-                child:
-                    _Orb(180, const Color(0xFF8B5CF6).withValues(alpha: 0.10))),
-
             // Main content
             Center(
               child: Column(
@@ -172,21 +136,25 @@ class _SplashScreenState extends ConsumerState<SplashScreen>
                       height: 112,
                       decoration: BoxDecoration(
                         borderRadius: BorderRadius.circular(32),
+                        border: Border.all(
+                          color: Colors.white.withValues(alpha: 0.25),
+                          width: 1.5,
+                        ),
                         gradient: const LinearGradient(
-                          colors: [Color(0xFF60A5FA), Color(0xFF1E6FD9)],
+                          colors: [Color(0xFF1DD8E8), Color(0xFF0D7E8A)],
                           begin: Alignment.topLeft,
                           end: Alignment.bottomRight,
                         ),
                         boxShadow: [
                           BoxShadow(
                             color:
-                                const Color(0xFF1E6FD9).withValues(alpha: 0.55),
+                                const Color(0xFF0D7E8A).withValues(alpha: 0.35),
                             blurRadius: 45,
                             spreadRadius: 8,
                           ),
                           BoxShadow(
                             color:
-                                const Color(0xFF6366F1).withValues(alpha: 0.35),
+                                const Color(0xFF00C9B1).withValues(alpha: 0.20),
                             blurRadius: 80,
                             spreadRadius: 15,
                           ),
@@ -211,15 +179,15 @@ class _SplashScreenState extends ConsumerState<SplashScreen>
                   // App name with gradient text
                   ShaderMask(
                     shaderCallback: (bounds) => const LinearGradient(
-                      colors: [Colors.white, Color(0xFFBAE6FD)],
+                      colors: [Color(0xFF07242B), Color(0xFF0D7E8A)],
                     ).createShader(bounds),
                     child: const Text(
                       'Hamro Pasal',
                       style: TextStyle(
                         color: Colors.white,
-                        fontSize: 36,
-                        fontWeight: FontWeight.w800,
-                        letterSpacing: 1.5,
+                        fontSize: 38,
+                        fontWeight: FontWeight.w900,
+                        letterSpacing: -0.8,
                       ),
                     ),
                   )
@@ -229,12 +197,13 @@ class _SplashScreenState extends ConsumerState<SplashScreen>
 
                   const SizedBox(height: 10),
 
-                  Text(
+                  const Text(
                     'Your Business, Simplified.',
                     style: TextStyle(
-                      color: Colors.white.withValues(alpha: 0.7),
-                      fontSize: 15,
-                      letterSpacing: 0.5,
+                      color: Color(0xFF64748B),
+                      fontSize: 15.5,
+                      fontWeight: FontWeight.w600,
+                      letterSpacing: 0.2,
                     ),
                   ).animate(delay: 500.ms).fadeIn(duration: 600.ms),
 
@@ -242,7 +211,7 @@ class _SplashScreenState extends ConsumerState<SplashScreen>
 
                   // Premium loading dots
                   LoadingAnimationWidget.staggeredDotsWave(
-                    color: Colors.white.withValues(alpha: 0.85),
+                    color: const Color(0xFF0D7E8A),
                     size: 38,
                   ).animate(delay: 900.ms).fadeIn(duration: 500.ms),
                 ],
@@ -259,13 +228,11 @@ class _SplashScreenState extends ConsumerState<SplashScreen>
                 children: [
                   Text('Made with ',
                       style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                          color: Colors.white.withValues(alpha: 0.4),
-                          letterSpacing: 1)),
+                          color: const Color(0xFF94A3B8), letterSpacing: 1)),
                   const Icon(Icons.favorite, color: Colors.red, size: 14),
                   Text(' in Nepal',
                       style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                          color: Colors.white.withValues(alpha: 0.4),
-                          letterSpacing: 1)),
+                          color: const Color(0xFF94A3B8), letterSpacing: 1)),
                 ],
               ).animate(delay: 1200.ms).fadeIn(),
             ),
@@ -274,18 +241,4 @@ class _SplashScreenState extends ConsumerState<SplashScreen>
       ),
     );
   }
-}
-
-// ── Orb background circle ─────────────────────────────────────
-class _Orb extends StatelessWidget {
-  final double size;
-  final Color color;
-  const _Orb(this.size, this.color);
-
-  @override
-  Widget build(BuildContext context) => Container(
-        width: size,
-        height: size,
-        decoration: BoxDecoration(shape: BoxShape.circle, color: color),
-      );
 }
