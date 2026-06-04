@@ -10,7 +10,7 @@ class PrivacyPolicyScreen extends StatelessWidget {
     return const _LegalScreen(
       title: 'Privacy Policy',
       icon: Icons.privacy_tip_outlined,
-      accentColor: Color(0xFF0D7E8A),
+      accentColor: AppTheme.primaryColor,
       lastUpdated: 'May 20, 2025',
       sections: [
         _LegalSection(
@@ -92,7 +92,7 @@ class TermsOfServiceScreen extends StatelessWidget {
     return const _LegalScreen(
       title: 'Terms of Service',
       icon: Icons.description_outlined,
-      accentColor: Color(0xFF1D4ED8),
+      accentColor: AppTheme.primaryDark,
       lastUpdated: 'May 20, 2025',
       sections: [
         _LegalSection(

@@ -17,7 +17,7 @@ class ToolsScreen extends StatelessWidget {
         subtitle: 'Standard arithmetic for quick calculations',
         icon: Icons.calculate_rounded,
         gradient: LinearGradient(
-          colors: [Color(0xFF0D7E8A), Color(0xFF1DD8E8)],
+          colors: [Color(0xFF2537D5), Color(0xFFD362EC)],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
         ),

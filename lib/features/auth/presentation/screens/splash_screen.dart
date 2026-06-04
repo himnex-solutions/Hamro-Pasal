@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:hamro_pasal/core/router/app_router.dart';
 import 'package:hamro_pasal/core/services/app_lock_service.dart';
+import 'package:hamro_pasal/core/theme/app_theme.dart';
 import 'package:hamro_pasal/core/widgets/poly_mesh_background.dart';
 import 'package:hamro_pasal/features/auth/presentation/providers/auth_provider.dart';
 import 'package:hamro_pasal/features/settings/presentation/screens/pin_lock_screen.dart';
@@ -105,8 +106,8 @@ class _SplashScreenState extends ConsumerState<SplashScreen>
         animation: _gradientController,
         builder: (context, child) {
           final animatedAccent = Color.lerp(
-            const Color(0xFF10B4C3),
-            const Color(0xFF00C9B1),
+            AppTheme.primaryColor,
+            AppTheme.primaryLight,
             _gradientController.value,
           );
           return PolyMeshBackground(
@@ -141,20 +142,20 @@ class _SplashScreenState extends ConsumerState<SplashScreen>
                           width: 1.5,
                         ),
                         gradient: const LinearGradient(
-                          colors: [Color(0xFF1DD8E8), Color(0xFF0D7E8A)],
+                          colors: [Color(0xFF2537D5), Color(0xFF6B58F5)],
                           begin: Alignment.topLeft,
                           end: Alignment.bottomRight,
                         ),
                         boxShadow: [
                           BoxShadow(
                             color:
-                                const Color(0xFF0D7E8A).withValues(alpha: 0.35),
+                                const Color(0xFF2537D5).withValues(alpha: 0.35),
                             blurRadius: 45,
                             spreadRadius: 8,
                           ),
                           BoxShadow(
                             color:
-                                const Color(0xFF00C9B1).withValues(alpha: 0.20),
+                                const Color(0xFF6B58F5).withValues(alpha: 0.20),
                             blurRadius: 80,
                             spreadRadius: 15,
                           ),
@@ -179,7 +180,7 @@ class _SplashScreenState extends ConsumerState<SplashScreen>
                   // App name with gradient text
                   ShaderMask(
                     shaderCallback: (bounds) => const LinearGradient(
-                      colors: [Color(0xFF07242B), Color(0xFF0D7E8A)],
+                      colors: [Color(0xFF1E2ED2), Color(0xFF6B58F5)],
                     ).createShader(bounds),
                     child: const Text(
                       'Hamro Pasal',
@@ -211,7 +212,7 @@ class _SplashScreenState extends ConsumerState<SplashScreen>
 
                   // Premium loading dots
                   LoadingAnimationWidget.staggeredDotsWave(
-                    color: const Color(0xFF0D7E8A),
+                    color: AppTheme.primaryColor,
                     size: 38,
                   ).animate(delay: 900.ms).fadeIn(duration: 500.ms),
                 ],

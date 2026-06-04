@@ -96,7 +96,7 @@ class SettingsScreen extends ConsumerWidget {
             icon: Icons.build_outlined,
             title: 'Business Tools',
             subtitle: 'Calculators & Utilities',
-            color: const Color(0xFF0D7E8A),
+            color: AppTheme.primaryColor,
             onTap: () => context.go(AppRoutes.tools),
           ),
 

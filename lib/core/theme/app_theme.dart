@@ -4,21 +4,21 @@ import 'package:google_fonts/google_fonts.dart';
 class AppTheme {
   AppTheme._();
 
-  // ── Brand Colors — Teal palette (matches login/signup) ──────
-  static const Color primaryColor  = Color(0xFF0D7E8A); // _teal
-  static const Color primaryDark   = Color(0xFF086870); // darker teal
-  static const Color primaryLight  = Color(0xFF10B4C3); // _tealLink — brighter
+  // ── Brand Colors — Royal Blue / Purple palette (matches login/signup) ──────
+  static const Color primaryColor  = Color(0xFF2537D5); // vibrant royal blue
+  static const Color primaryDark   = Color(0xFF1E2ED2); // royal blue
+  static const Color primaryLight  = Color(0xFF6B58F5); // light purple/blue
 
   // ── Gradient Helpers ─────────────────────────────────────────
   static const LinearGradient primaryGradient = LinearGradient(
-    colors: [Color(0xFF1DD8E8), Color(0xFF0D7E8A)],
+    colors: [Color(0xFF2537D5), Color(0xFFD362EC)],
     begin: Alignment.topLeft,
     end: Alignment.bottomRight,
   );
 
   // Matches login/signup full-screen dark background exactly
   static const LinearGradient darkBgGradient = LinearGradient(
-    colors: [Color(0xFF07242B), Color(0xFF0F4850)],
+    colors: [Color(0xFF1E2ED2), Color(0xFF6B58F5)],
     begin: Alignment.topLeft,
     end: Alignment.bottomRight,
   );
@@ -53,18 +53,18 @@ class AppTheme {
     ),
   ];
 
-  // Brand Accent Colors — kept as complementary warm teal
-  static const Color accentColor = Color(0xFF00C9B1);
-  static const Color accentDark  = Color(0xFF00A896);
+  // Brand Accent Colors — premium purple/pink accent
+  static const Color accentColor = Color(0xFFD362EC);
+  static const Color accentDark  = Color(0xFFB84AD1);
 
   // Semantic Colors
   static const Color successColor = Color(0xFF22C55E);
   static const Color warningColor = Color(0xFFF59E0B);
   static const Color errorColor   = Color(0xFFEF4444);
-  static const Color infoColor    = Color(0xFF10B4C3); // teal instead of blue
+  static const Color infoColor    = Color(0xFF2537D5); // royal blue
 
   // Neutral Light
-  static const Color lightBg            = Color(0xFFF0FAFA); // very soft teal tint
+  static const Color lightBg            = Color(0xFFF8FAFC); // soft slate/indigo-tint background
   static const Color lightSurface       = Color(0xFFFFFFFF);
   static const Color lightCard          = Color(0xFFFFFFFF);
   static const Color lightBorder        = Color(0xFFE2E8F0);
@@ -72,11 +72,11 @@ class AppTheme {
   static const Color lightTextSecondary = Color(0xFF64748B);
   static const Color lightTextHint      = Color(0xFF94A3B8);
 
-  // Neutral Dark — aligned with auth dark teal-navy
-  static const Color darkBg            = Color(0xFF07242B); // _bgDark1
-  static const Color darkSurface       = Color(0xFF0D3A44); // one step lighter
-  static const Color darkCard          = Color(0xFF0F4050);
-  static const Color darkBorder        = Color(0xFF1A5C6A);
+  // Neutral Dark — aligned with auth dark slate-navy
+  static const Color darkBg            = Color(0xFF0F172A); // slate-900
+  static const Color darkSurface       = Color(0xFF1E293B); // slate-800
+  static const Color darkCard          = Color(0xFF1E293B);
+  static const Color darkBorder        = Color(0xFF334155); // slate-700
   static const Color darkTextPrimary   = Color(0xFFF1F5F9);
   static const Color darkTextSecondary = Color(0xFF94A3B8);
   static const Color darkTextHint      = Color(0xFF64748B);
@@ -160,7 +160,7 @@ class AppTheme {
       ),
       dividerTheme: const DividerThemeData(color: lightBorder, thickness: 1, space: 1),
       chipTheme: ChipThemeData(
-        backgroundColor: const Color(0xFFE0F7F9), // soft teal tint
+        backgroundColor: const Color(0xFFEEF2FF), // soft indigo tint
         selectedColor: primaryColor,
         labelStyle: GoogleFonts.poppins(fontSize: 13),
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
@@ -259,7 +259,7 @@ class AppTheme {
       ),
       dividerTheme: const DividerThemeData(color: darkBorder, thickness: 1, space: 1),
       chipTheme: ChipThemeData(
-        backgroundColor: const Color(0xFF0D3A44),
+        backgroundColor: darkSurface,
         selectedColor: primaryLight,
         labelStyle: GoogleFonts.poppins(fontSize: 13, color: darkTextPrimary),
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),

@@ -30,7 +30,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
           '"Do not save what is left after spending; spend what is left after saving."',
       'author': 'Warren Buffett',
       'icon': Icons.storefront_rounded,
-      'color': AppTheme.primaryLight, // Teal primary accent
+      'color': AppTheme.primaryColor, // Royal blue primary accent
       'image': 'assets/images/onboarding_billing.png',
     },
     {
@@ -41,7 +41,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
           '"The key to wealth is not how much you make, but how much you keep."',
       'author': 'Financial Wisdom',
       'icon': Icons.notifications_active_rounded,
-      'color': AppTheme.accentColor, // Glowing warm cyan accent
+      'color': AppTheme.accentColor, // Purple/pink accent
       'image': 'assets/images/onboarding_reminders.png',
     },
     {
@@ -52,7 +52,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
           '"Beware of little expenses; a small leak will sink a great ship."',
       'author': 'Benjamin Franklin',
       'icon': Icons.query_stats_rounded,
-      'color': const Color(0xFF1DD8E8), // Glowing cyan
+      'color': AppTheme.primaryLight, // Light purple/blue
       'image': 'assets/images/onboarding_insights.png',
     },
   ];
@@ -143,7 +143,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                           const Text(
                             'Hamro Pasal',
                             style: TextStyle(
-                              color: Color(0xFF0D7E8A),
+                              color: AppTheme.primaryColor,
                               fontSize: 18,
                               fontWeight: FontWeight.w800,
                               letterSpacing: 0.5,
@@ -155,7 +155,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                         TextButton(
                           onPressed: _finishOnboarding,
                           style: TextButton.styleFrom(
-                            foregroundColor: const Color(0xFF94A3B8),
+                            foregroundColor: AppTheme.lightTextHint,
                           ),
                           child: const Text(
                             'Skip',
@@ -323,13 +323,13 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                                             .withValues(alpha: 0.70),
                                         borderRadius: BorderRadius.circular(28),
                                         border: Border.all(
-                                          color: const Color(0xFF0D7E8A)
+                                          color: AppTheme.primaryColor
                                               .withValues(alpha: 0.10),
                                           width: 1.5,
                                         ),
                                         boxShadow: [
                                           BoxShadow(
-                                            color: const Color(0xFF0D7E8A)
+                                            color: AppTheme.primaryColor
                                                 .withValues(alpha: 0.04),
                                             blurRadius: 40,
                                             offset: const Offset(0, 16),
@@ -350,7 +350,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                                             slide['title'] as String,
                                             textAlign: TextAlign.center,
                                             style: TextStyle(
-                                              color: const Color(0xFF07242B),
+                                              color: AppTheme.lightTextPrimary,
                                               fontSize: isCompact ? 22 : 26,
                                               fontWeight: FontWeight.w900,
                                               letterSpacing: -0.6,
@@ -365,7 +365,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                                             slide['desc'] as String,
                                             textAlign: TextAlign.center,
                                             style: TextStyle(
-                                              color: const Color(0xFF475569),
+                                              color: AppTheme.lightTextSecondary,
                                               fontSize: isCompact ? 13.5 : 15.0,
                                               fontWeight: FontWeight.w400,
                                               height: 1.6,
@@ -528,7 +528,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                                           curve: Curves.easeInOut,
                                         ),
                                         style: TextButton.styleFrom(
-                                          foregroundColor: const Color(0xFF94A3B8),
+                                          foregroundColor: AppTheme.lightTextHint,
                                           padding: EdgeInsets.zero,
                                           minimumSize: const Size(44, 44),
                                           tapTargetSize: MaterialTapTargetSize.shrinkWrap,

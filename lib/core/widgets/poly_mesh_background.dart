@@ -7,13 +7,13 @@ class PolyMeshBackground extends StatelessWidget {
 
   // ── Color tokens ────────────
   static const _bgDark1 =
-      Color(0xFF07242B); // top-left of dark background gradient
+      Color(0xFF1E2ED2); // top-left of dark background gradient (royal blue)
   static const _bgDark2 =
-      Color(0xFF0F4850); // bottom-right of dark background gradient
+      Color(0xFF6B58F5); // bottom-right of dark background gradient (purple/blue)
 
   static const _bgLight1 = Color(0xFFFFFFFF); // premium white top-left
   static const _bgLight2 =
-      Color(0xFFF0FAFA); // very soft teal/cyan bottom-right
+      Color(0xFFEEF2FF); // very soft indigo-tint bottom-right
 
   const PolyMeshBackground({
     super.key,
@@ -64,15 +64,15 @@ class PolyMeshPainter extends CustomPainter {
     final W = size.width;
     final H = size.height;
 
-    // Use accentColor if provided, otherwise fallback to the default website brand teal/cyan colors
-    final primaryOrbColor = accentColor ?? const Color(0xFF1FE0F0);
-    final secondaryOrbColor = accentColor ?? const Color(0xFF38EAF7);
-    final midOrbColor = accentColor ?? const Color(0xFF0CCEDF);
-    final beamColor = accentColor ?? const Color(0xFF1FE0F0);
-    final waveColor1 = accentColor ?? const Color(0xFF0ECFDD);
-    final waveColor2 = accentColor ?? const Color(0xFF0BBAC8);
-    final ringColor = accentColor ?? const Color(0xFF1DD8E8);
-    final sparkleColor = accentColor ?? const Color(0xFF1DD8E8);
+    // Use accentColor if provided, otherwise fallback to the default website brand royal blue/purple colors
+    final primaryOrbColor = accentColor ?? const Color(0xFF2537D5);
+    final secondaryOrbColor = accentColor ?? const Color(0xFFD362EC);
+    final midOrbColor = accentColor ?? const Color(0xFF6B58F5);
+    final beamColor = accentColor ?? const Color(0xFF2537D5);
+    final waveColor1 = accentColor ?? const Color(0xFF6B58F5);
+    final waveColor2 = accentColor ?? const Color(0xFFD362EC);
+    final ringColor = accentColor ?? const Color(0xFF2537D5);
+    final sparkleColor = accentColor ?? const Color(0xFFD362EC);
 
     if (isLight) {
       // ── Premium Minimalist Light Ambient Aurora Background ──
@@ -280,7 +280,7 @@ class PolyMeshPainter extends CustomPainter {
           ..color = (accentColor != null
                   ? Color.alphaBlend(
                       accentColor!.withValues(alpha: 0.4), Colors.white)
-                  : const Color(0xFF6FF6FF))
+                  : const Color(0xFFE8AEFF))
               .withValues(alpha: isLight ? 0.85 : 0.75),
       );
     }

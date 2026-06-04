@@ -2,21 +2,19 @@ import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/flutter_svg.dart';
-import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:go_router/go_router.dart';
 import 'package:hamro_pasal/core/router/app_router.dart';
 import 'package:hamro_pasal/core/widgets/app_snackbar.dart';
-import 'package:hamro_pasal/core/widgets/poly_mesh_background.dart';
 import 'package:hamro_pasal/features/auth/presentation/providers/auth_provider.dart';
 
+import 'package:hamro_pasal/core/widgets/wavy_divider.dart';
+
 // ── Color tokens (matching reference image exactly) ────────────
-const _teal = Color(0xFF0D7E8A); // dark teal for button & accents
-const _tealLink = Color(0xFF10B4C3); // slightly brighter for links
-const _dark = Color(0xFF0F172A); // near-black title text
-const _grey = Color(0xFF94A3B8); // placeholder / secondary text
-const _border = Color(0xFFE2E8F0); // input border
-const _bgDark1 = Color(0xFF07242B); // top-left of background gradient
-// _bgDark2 = Color(0xFF0F4850) — unused, kept for reference only
+const _gradientStart = Color(0xFF1E2ED2); // royal blue
+const _gradientEnd = Color(0xFF6B58F5); // light purple/blue
+const _dark = Color(0xFF0F172A); // slate-black for titles
+const _grey = Color(0xFF94A3B8); // slate-grey for subtitle
+const _border = Color(0xFFE2E8F0); // border color
 
 class LoginScreen extends ConsumerStatefulWidget {
   const LoginScreen({super.key});
@@ -29,8 +27,8 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
   final _emailCtrl = TextEditingController();
   final _passwordCtrl = TextEditingController();
   bool _obscurePassword = true;
-  bool _rememberMe = false;
   bool _isLoading = false;
+  bool _rememberMe = false;
 
   @override
   void dispose() {
@@ -89,20 +87,61 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
   @override
   Widget build(BuildContext context) {
     final screenHeight = MediaQuery.of(context).size.height;
-    // Card covers ~63% of screen; logo sits in the top ~37%
-    final topSectionHeight = screenHeight * 0.37;
+    final topSectionHeight = screenHeight * 0.38;
 
     return Scaffold(
       resizeToAvoidBottomInset: true,
-      backgroundColor: _bgDark1,
+      backgroundColor: _gradientStart,
       body: Stack(
         children: [
-          // ── Full-screen polygonal dark background ─────────────
-          const Positioned.fill(
-            child: PolyMeshBackground(),
+          // ── Top Gradient Section ──────────────────
+          Positioned.fill(
+            child: Container(
+              decoration: const BoxDecoration(
+                gradient: LinearGradient(
+                  colors: [_gradientStart, _gradientEnd],
+                  begin: Alignment.bottomLeft,
+                  end: Alignment.topRight,
+                ),
+              ),
+            ),
           ),
 
-          // ── Logo centered in the top section ──────────────────
+          // ── Top Navigation Row ──────────────────
+          Positioned(
+            top: 0,
+            left: 0,
+            right: 0,
+            child: SafeArea(
+              bottom: false,
+              child: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    // Back Arrow Button
+                    GestureDetector(
+                      onTap: () {
+                        if (Navigator.of(context).canPop()) {
+                          context.pop();
+                        }
+                      },
+                      child: const Padding(
+                        padding: EdgeInsets.all(8.0),
+                        child: Icon(
+                          Icons.arrow_back_ios_new_rounded,
+                          color: Colors.white,
+                          size: 18,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ),
+
+          // ── Title "HamroPasal" centered in top section ──────────────────
           Positioned(
             top: 0,
             left: 0,
@@ -111,32 +150,30 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
             child: SafeArea(
               bottom: false,
               child: Center(
-                child: Image.asset(
-                  'assets/images/logo.png',
-                  width: 90,
-                  height: 90,
-                  fit: BoxFit.contain,
-                  errorBuilder: (_, __, ___) => const _FallbackLogo(),
+                child: const Text(
+                  'HamroPasal',
+                  style: TextStyle(
+                    fontSize: 42,
+                    fontWeight: FontWeight.w800,
+                    color: Colors.white,
+                    letterSpacing: -0.6,
+                  ),
                 ).animate().fadeIn(duration: 700.ms).scale(
-                    begin: const Offset(0.75, 0.75), curve: Curves.easeOutBack),
+                    begin: const Offset(0.9, 0.9), curve: Curves.easeOutBack),
               ),
             ),
           ),
 
-          // ── White bottom-sheet card ───────────────────────────
+          // ── White bottom-sheet card with wavy divider ───────────────────────────
           Positioned(
             left: 0,
             right: 0,
             bottom: 0,
-            top: topSectionHeight - 30, // slight overlap with dark bg
-            child: Container(
-              decoration: const BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.vertical(top: Radius.circular(36)),
-              ),
+            top: topSectionHeight - 45, // slight overlap to display waves beautifully
+            child: WavyDivider(
               child: SingleChildScrollView(
                 physics: const BouncingScrollPhysics(),
-                padding: const EdgeInsets.fromLTRB(28, 30, 28, 24),
+                padding: const EdgeInsets.only(left: 24, right: 24, top: 60, bottom: 32),
                 child: _buildForm(),
               ),
             ).animate(delay: 150.ms).slideY(
@@ -154,53 +191,13 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          // Title
-          const Text(
-            'Login',
-            textAlign: TextAlign.center,
-            style: TextStyle(
-              fontSize: 26,
-              fontWeight: FontWeight.w800,
-              color: _dark,
-              letterSpacing: -0.3,
-            ),
-          ).animate().fadeIn(delay: 200.ms),
-
-          const SizedBox(height: 6),
-
-          // Subtitle row
-          Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              const Flexible(
-                child: Text(
-                  "Don't Have An Account? ",
-                  style: TextStyle(fontSize: 13.5, color: _grey),
-                  overflow: TextOverflow.ellipsis,
-                ),
-              ),
-              GestureDetector(
-                onTap: () => context.push(AppRoutes.signup),
-                child: const Text(
-                  'Sign Up',
-                  style: TextStyle(
-                    fontSize: 13.5,
-                    color: _tealLink,
-                    fontWeight: FontWeight.w700,
-                  ),
-                ),
-              ),
-            ],
-          ).animate().fadeIn(delay: 240.ms),
-
-          const SizedBox(height: 26),
+          const SizedBox(height: 24),
 
           // Email
-          _AuthField(
+          _CustomAuthField(
             controller: _emailCtrl,
-            hint: 'Enter your email address',
-            prefixIcon: Icons.mail_outline_rounded,
+            label: 'Email Address',
+            icon: Icons.mail_outline_rounded,
             keyboardType: TextInputType.emailAddress,
             textInputAction: TextInputAction.next,
             validator: (v) {
@@ -210,13 +207,13 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
             },
           ).animate().fadeIn(delay: 280.ms),
 
-          const SizedBox(height: 14),
+          const SizedBox(height: 16),
 
           // Password
-          _AuthField(
+          _CustomAuthField(
             controller: _passwordCtrl,
-            hint: 'Password',
-            prefixIcon: Icons.lock_outline_rounded,
+            label: 'Password',
+            icon: Icons.lock_outline_rounded,
             obscureText: _obscurePassword,
             textInputAction: TextInputAction.done,
             onSubmitted: (_) => _login(),
@@ -237,73 +234,85 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
             },
           ).animate().fadeIn(delay: 310.ms),
 
-          const SizedBox(height: 14),
+          const SizedBox(height: 18),
 
-          // Remember me + Forgot password
+          // Remember Me & Forgot Password Row
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              // Checkbox + label
+              // Remember Me Checkbox
               Row(
+                mainAxisSize: MainAxisSize.min,
                 children: [
                   SizedBox(
                     width: 20,
                     height: 20,
                     child: Checkbox(
                       value: _rememberMe,
-                      onChanged: (v) =>
-                          setState(() => _rememberMe = v ?? false),
-                      activeColor: _teal,
+                      onChanged: (val) {
+                        setState(() {
+                          _rememberMe = val ?? false;
+                        });
+                      },
+                      activeColor: const Color(0xFF2C3BD5),
                       checkColor: Colors.white,
-                      shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(4)),
-                      side: BorderSide(
-                          color: _rememberMe ? _teal : _border, width: 1.5),
                       materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(5),
+                      ),
+                      side: const BorderSide(color: Color(0xFFCBD5E1), width: 1.5),
                     ),
                   ),
                   const SizedBox(width: 8),
-                  const Text(
-                    'Remember Me',
-                    style: TextStyle(fontSize: 13, color: _dark),
+                  GestureDetector(
+                    onTap: () => setState(() => _rememberMe = !_rememberMe),
+                    child: const Text(
+                      'Remember me',
+                      style: TextStyle(
+                        fontSize: 13.5,
+                        color: Color(0xFF475569),
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
                   ),
                 ],
               ),
-              // Forgot
+              // Forgot Password
               GestureDetector(
                 onTap: () => context.push(AppRoutes.forgotPassword),
                 child: const Text(
-                  'Forgot Password?',
+                  'Forgot password?',
                   style: TextStyle(
-                      fontSize: 13,
-                      color: _tealLink,
-                      fontWeight: FontWeight.w600),
+                    fontSize: 13.5,
+                    color: Color(0xFF475569),
+                    fontWeight: FontWeight.w600,
+                  ),
                 ),
               ),
             ],
-          ).animate().fadeIn(delay: 340.ms),
+          ).animate().fadeIn(delay: 325.ms),
 
-          const SizedBox(height: 22),
+          const SizedBox(height: 28),
 
-          // Login button
-          _PillButton(
-            label: 'Login',
+          // Sign in button
+          _GradientButton(
+            label: 'Sign in',
             isLoading: _isLoading,
             onPressed: _login,
-          ).animate().fadeIn(delay: 370.ms),
+          ).animate().fadeIn(delay: 340.ms),
 
-          const SizedBox(height: 20),
+          const SizedBox(height: 24),
 
           // Divider
           const Row(children: [
             Expanded(child: Divider(color: _border, thickness: 1)),
             Padding(
-              padding: EdgeInsets.symmetric(horizontal: 14),
+              padding: EdgeInsets.symmetric(horizontal: 16),
               child: Text(
-                'Or Continue With',
+                'Or sign in with',
                 style: TextStyle(
-                  fontSize: 12,
-                  color: Color(0xFF9E9E9E),
+                  fontSize: 13,
+                  color: _grey,
                   fontWeight: FontWeight.w500,
                 ),
               ),
@@ -311,33 +320,70 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
             Expanded(child: Divider(color: _border, thickness: 1)),
           ]).animate().fadeIn(delay: 400.ms),
 
-          const SizedBox(height: 18),
+          const SizedBox(height: 22),
 
           // Social buttons row
           Row(
             children: [
-              // Apple
-              Expanded(
-                child: _SocialPillButton(
-                  label: 'Apple',
-                  icon: const FaIcon(FontAwesomeIcons.apple,
-                      size: 20, color: Colors.white),
-                  isDark: true,
-                  onTap: () {},
-                ),
-              ),
-              const SizedBox(width: 14),
               // Google
               Expanded(
-                child: _SocialPillButton(
+                child: _SocialBorderButton(
                   label: 'Google',
                   icon: _GoogleLogo(),
-                  isDark: false,
+                  textColor: _dark,
                   onTap: _googleLogin,
+                ),
+              ),
+              const SizedBox(width: 16),
+              // Apple
+              Expanded(
+                child: _SocialBorderButton(
+                  label: 'Apple',
+                  icon: const Icon(
+                    Icons.apple,
+                    color: Colors.black,
+                    size: 24,
+                  ),
+                  textColor: Colors.black,
+                  onTap: () {
+                    AppSnackbar.show(
+                      context,
+                      'Apple login is not configured yet.',
+                      isError: false,
+                    );
+                  },
                 ),
               ),
             ],
           ).animate().fadeIn(delay: 430.ms),
+
+          const SizedBox(height: 28),
+
+          // Don't have an account? Sign Up
+          Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              const Text(
+                "Don't have an account? ",
+                style: TextStyle(
+                  color: Color(0xFF64748B), // Slate 500
+                  fontSize: 14,
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
+              GestureDetector(
+                onTap: () => context.push(AppRoutes.signup),
+                child: const Text(
+                  'Sign Up',
+                  style: TextStyle(
+                    color: Color(0xFF2C3BD5), // Accent blue
+                    fontSize: 14,
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+              ),
+            ],
+          ).animate().fadeIn(delay: 450.ms),
         ],
       ),
     );
@@ -345,63 +391,13 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
 }
 
 // ─────────────────────────────────────────────────────────────
-//  Fallback Logo (white outline triangle/arrow)
+//  Custom Auth Text Field (label-inside-border custom design)
 // ─────────────────────────────────────────────────────────────
 
-class _FallbackLogo extends StatelessWidget {
-  const _FallbackLogo();
-  @override
-  Widget build(BuildContext context) {
-    return CustomPaint(
-      size: const Size(80, 80),
-      painter: _ArrowLogoPainter(),
-    );
-  }
-}
-
-class _ArrowLogoPainter extends CustomPainter {
-  @override
-  void paint(Canvas canvas, Size size) {
-    final paint = Paint()
-      ..color = Colors.white
-      ..style = PaintingStyle.stroke
-      ..strokeWidth = 3.5
-      ..strokeCap = StrokeCap.round
-      ..strokeJoin = StrokeJoin.round;
-
-    final w = size.width;
-    final h = size.height;
-
-    // Outer triangle
-    final outer = Path()
-      ..moveTo(w * 0.5, h * 0.05)
-      ..lineTo(w * 0.95, h * 0.92)
-      ..lineTo(w * 0.05, h * 0.92)
-      ..close();
-    canvas.drawPath(outer, paint);
-
-    // Inner arrow pointing up
-    final inner = Path()
-      ..moveTo(w * 0.5, h * 0.30)
-      ..lineTo(w * 0.68, h * 0.68)
-      ..lineTo(w * 0.50, h * 0.55)
-      ..lineTo(w * 0.32, h * 0.68)
-      ..close();
-    canvas.drawPath(inner, paint..style = PaintingStyle.fill);
-  }
-
-  @override
-  bool shouldRepaint(covariant CustomPainter _) => false;
-}
-
-// ─────────────────────────────────────────────────────────────
-//  Auth Text Field (pill-shaped, matching reference)
-// ─────────────────────────────────────────────────────────────
-
-class _AuthField extends StatefulWidget {
+class _CustomAuthField extends StatefulWidget {
   final TextEditingController controller;
-  final String hint;
-  final IconData prefixIcon;
+  final String label;
+  final IconData? icon;
   final bool obscureText;
   final TextInputType keyboardType;
   final TextInputAction? textInputAction;
@@ -409,10 +405,10 @@ class _AuthField extends StatefulWidget {
   final void Function(String)? onSubmitted;
   final Widget? suffix;
 
-  const _AuthField({
+  const _CustomAuthField({
     required this.controller,
-    required this.hint,
-    required this.prefixIcon,
+    required this.label,
+    this.icon,
     this.obscureText = false,
     this.keyboardType = TextInputType.text,
     this.textInputAction,
@@ -422,85 +418,206 @@ class _AuthField extends StatefulWidget {
   });
 
   @override
-  State<_AuthField> createState() => _AuthFieldState();
+  State<_CustomAuthField> createState() => _CustomAuthFieldState();
 }
 
-class _AuthFieldState extends State<_AuthField> {
-  bool _focused = false;
+class _CustomAuthFieldState extends State<_CustomAuthField> {
+  late FocusNode _internalFocus;
+  bool _isFocused = false;
+  String? _errorText;
+
+  @override
+  void initState() {
+    super.initState();
+    _internalFocus = FocusNode();
+    _internalFocus.addListener(_onFocusChange);
+    widget.controller.addListener(_onTextChanged);
+  }
+
+  void _onFocusChange() {
+    if (mounted) {
+      setState(() {
+        _isFocused = _internalFocus.hasFocus;
+      });
+    }
+  }
+
+  void _onTextChanged() {
+    if (mounted) {
+      setState(() {});
+    }
+  }
+
+  @override
+  void dispose() {
+    _internalFocus.removeListener(_onFocusChange);
+    widget.controller.removeListener(_onTextChanged);
+    _internalFocus.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
-    return Focus(
-      onFocusChange: (v) => setState(() => _focused = v),
-      child: TextFormField(
-        controller: widget.controller,
-        keyboardType: widget.keyboardType,
-        obscureText: widget.obscureText,
-        textInputAction: widget.textInputAction,
-        validator: widget.validator,
-        onFieldSubmitted: widget.onSubmitted,
-        style: const TextStyle(
-            fontSize: 14.5, color: _dark, fontWeight: FontWeight.w500),
-        decoration: InputDecoration(
-          hintText: widget.hint,
-          hintStyle: const TextStyle(
-              color: _grey, fontSize: 14.5, fontWeight: FontWeight.w400),
-          prefixIcon: Padding(
-            padding: const EdgeInsets.only(left: 18, right: 10),
-            child: Icon(widget.prefixIcon,
-                size: 20, color: _focused ? _teal : _grey),
+    final hasError = _errorText != null;
+    final isFloated = widget.controller.text.isNotEmpty || _isFocused;
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        GestureDetector(
+          onTap: () => _internalFocus.requestFocus(),
+          child: Container(
+            height: 60,
+            padding: const EdgeInsets.symmetric(horizontal: 16),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(16),
+              border: Border.all(
+                color: hasError
+                    ? const Color(0xFFEF4444)
+                    : _isFocused
+                        ? const Color(0xFF2C3BD5)
+                        : const Color(0xFFE2E8F0),
+                width: _isFocused || hasError ? 1.5 : 1.2,
+              ),
+            ),
+            child: Stack(
+              children: [
+                // TextFormField positioned at the bottom of the container
+                TextFormField(
+                  controller: widget.controller,
+                  focusNode: _internalFocus,
+                  obscureText: widget.obscureText,
+                  keyboardType: widget.keyboardType,
+                  textInputAction: widget.textInputAction,
+                  onFieldSubmitted: widget.onSubmitted,
+                  textAlign: TextAlign.left,
+                  style: const TextStyle(
+                    fontSize: 14.5,
+                    color: Color(0xFF0F172A),
+                    fontWeight: FontWeight.w500,
+                  ),
+                  decoration: const InputDecoration(
+                    isDense: true,
+                    contentPadding: EdgeInsets.only(top: 26, bottom: 6),
+                    border: InputBorder.none,
+                    enabledBorder: InputBorder.none,
+                    focusedBorder: InputBorder.none,
+                    errorBorder: InputBorder.none,
+                    focusedErrorBorder: InputBorder.none,
+                    disabledBorder: InputBorder.none,
+                    filled: false,
+                    fillColor: Colors.transparent,
+                    errorStyle: TextStyle(
+                      color: Colors.transparent,
+                      fontSize: 0,
+                      height: 0,
+                    ),
+                  ),
+                  validator: (value) {
+                    if (widget.validator != null) {
+                      final err = widget.validator!(value);
+                      if (_errorText != err) {
+                        WidgetsBinding.instance.addPostFrameCallback((_) {
+                          if (mounted) {
+                            setState(() {
+                              _errorText = err;
+                            });
+                          }
+                        });
+                      }
+                      return err;
+                    }
+                    return null;
+                  },
+                ),
+                // Smooth animated floating label and icon
+                AnimatedPositioned(
+                  duration: const Duration(milliseconds: 200),
+                  curve: Curves.easeOut,
+                  left: 0,
+                  top: isFloated ? 6 : 20,
+                  child: IgnorePointer(
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        if (widget.icon != null) ...[
+                          Icon(
+                            widget.icon,
+                            size: isFloated ? 14 : 18,
+                            color: _isFocused
+                                ? const Color(0xFF2C3BD5)
+                                : const Color(0xFF94A3B8),
+                          ),
+                          const SizedBox(width: 8),
+                        ],
+                        AnimatedDefaultTextStyle(
+                          duration: const Duration(milliseconds: 200),
+                          style: TextStyle(
+                            color: _isFocused
+                                ? const Color(0xFF2C3BD5)
+                                : const Color(0xFF94A3B8),
+                            fontSize: isFloated ? 11 : 14.5,
+                            fontWeight: isFloated ? FontWeight.w600 : FontWeight.w400,
+                          ),
+                          child: Text(widget.label),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+                // Suffix (like Visibility Toggle)
+                if (widget.suffix != null)
+                  Positioned(
+                    right: 0,
+                    top: 0,
+                    bottom: 0,
+                    child: Center(
+                      child: widget.suffix!,
+                    ),
+                  ),
+              ],
+            ),
           ),
-          prefixIconConstraints:
-              const BoxConstraints(minWidth: 0, minHeight: 0),
-          suffixIcon: widget.suffix != null
-              ? Padding(
-                  padding: const EdgeInsets.only(right: 16),
-                  child: widget.suffix)
-              : null,
-          suffixIconConstraints:
-              const BoxConstraints(minWidth: 0, minHeight: 0),
-          filled: true,
-          fillColor: Colors.white,
-          contentPadding:
-              const EdgeInsets.symmetric(horizontal: 22, vertical: 15),
-          // Pill-shaped borders (radius 50 = fully round sides)
-          enabledBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(50),
-              borderSide: const BorderSide(color: _border, width: 1.2)),
-          focusedBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(50),
-              borderSide: const BorderSide(color: _teal, width: 1.5)),
-          errorBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(50),
-              borderSide:
-                  const BorderSide(color: Color(0xFFEF4444), width: 1.2)),
-          focusedErrorBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(50),
-              borderSide:
-                  const BorderSide(color: Color(0xFFEF4444), width: 1.5)),
-          border: InputBorder.none,
-          errorStyle: const TextStyle(fontSize: 11, color: Color(0xFFEF4444)),
         ),
-      ),
+        if (hasError) ...[
+          const SizedBox(height: 4),
+          Padding(
+            padding: const EdgeInsets.only(left: 12),
+            child: Text(
+              _errorText!,
+              style: const TextStyle(
+                color: Color(0xFFEF4444),
+                fontSize: 11,
+              ),
+            ),
+          ),
+        ],
+      ],
     );
   }
 }
 
 // ─────────────────────────────────────────────────────────────
-//  Pill-shaped primary button
+//  Gradient-filled primary button
 // ─────────────────────────────────────────────────────────────
 
-class _PillButton extends StatefulWidget {
+class _GradientButton extends StatefulWidget {
   final String label;
   final bool isLoading;
   final VoidCallback onPressed;
-  const _PillButton(
-      {required this.label, required this.isLoading, required this.onPressed});
+
+  const _GradientButton({
+    required this.label,
+    required this.isLoading,
+    required this.onPressed,
+  });
+
   @override
-  State<_PillButton> createState() => _PillButtonState();
+  State<_GradientButton> createState() => _GradientButtonState();
 }
 
-class _PillButtonState extends State<_PillButton> {
+class _GradientButtonState extends State<_GradientButton> {
   bool _pressed = false;
 
   @override
@@ -516,11 +633,25 @@ class _PillButtonState extends State<_PillButton> {
         scale: _pressed ? 0.97 : 1.0,
         duration: const Duration(milliseconds: 80),
         child: Container(
-          height: 52,
+          height: 54,
           width: double.infinity,
           decoration: BoxDecoration(
-            color: _pressed ? const Color(0xFF0A6872) : _teal,
-            borderRadius: BorderRadius.circular(50),
+            gradient: const LinearGradient(
+              colors: [
+                Color(0xFF2537D5), // Start: vibrant blue
+                Color(0xFFD362EC), // End: light purple/pink
+              ],
+              begin: Alignment.centerLeft,
+              end: Alignment.centerRight,
+            ),
+            borderRadius: BorderRadius.circular(16),
+            boxShadow: [
+              BoxShadow(
+                color: const Color(0xFF2537D5).withValues(alpha: 0.25),
+                blurRadius: 12,
+                offset: const Offset(0, 4),
+              ),
+            ],
           ),
           alignment: Alignment.center,
           child: widget.isLoading
@@ -528,7 +659,10 @@ class _PillButtonState extends State<_PillButton> {
                   width: 22,
                   height: 22,
                   child: CircularProgressIndicator(
-                      strokeWidth: 2.5, color: Colors.white))
+                    strokeWidth: 2.5,
+                    color: Colors.white,
+                  ),
+                )
               : Text(
                   widget.label,
                   style: const TextStyle(
@@ -563,19 +697,19 @@ class _GoogleLogo extends StatelessWidget {
 }
 
 // ─────────────────────────────────────────────────────────────
-//  Social Button (pill-shaped)
+//  Social Login Border Button
 // ─────────────────────────────────────────────────────────────
 
-class _SocialPillButton extends StatelessWidget {
+class _SocialBorderButton extends StatelessWidget {
   final String label;
   final Widget icon;
-  final bool isDark;
+  final Color textColor;
   final VoidCallback onTap;
 
-  const _SocialPillButton({
+  const _SocialBorderButton({
     required this.label,
     required this.icon,
-    required this.isDark,
+    required this.textColor,
     required this.onTap,
   });
 
@@ -584,34 +718,28 @@ class _SocialPillButton extends StatelessWidget {
     return GestureDetector(
       onTap: onTap,
       child: Container(
-        height: 50,
+        height: 52,
         decoration: BoxDecoration(
-          color: isDark ? _dark : Colors.white,
-          borderRadius: BorderRadius.circular(50),
-          border: isDark ? null : Border.all(color: _border, width: 1.2),
-          boxShadow: isDark
-              ? [
-                  BoxShadow(
-                      color: Colors.black.withValues(alpha: 0.18),
-                      blurRadius: 8,
-                      offset: const Offset(0, 2))
-                ]
-              : [
-                  BoxShadow(
-                      color: Colors.black.withValues(alpha: 0.05),
-                      blurRadius: 6,
-                      offset: const Offset(0, 1))
-                ],
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(color: const Color(0xFFE2E8F0), width: 1.2),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withValues(alpha: 0.04),
+              blurRadius: 6,
+              offset: const Offset(0, 1),
+            ),
+          ],
         ),
         child: Row(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             icon,
-            const SizedBox(width: 8),
+            const SizedBox(width: 10),
             Text(
               label,
               style: TextStyle(
-                color: isDark ? Colors.white : _dark,
+                color: textColor,
                 fontSize: 14.5,
                 fontWeight: FontWeight.w600,
               ),
