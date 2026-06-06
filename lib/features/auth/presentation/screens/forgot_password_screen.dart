@@ -244,7 +244,8 @@ class _ForgotPasswordScreenState extends ConsumerState<ForgotPasswordScreen> {
             child: SafeArea(
               bottom: false,
               child: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
@@ -274,14 +275,6 @@ class _ForgotPasswordScreenState extends ConsumerState<ForgotPasswordScreen> {
                         ),
                       ),
                     ),
-                    const Text(
-                      'Reset Password',
-                      style: TextStyle(
-                        color: Colors.white,
-                        fontSize: 16,
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
                     const SizedBox(width: 44), // balance back button space
                   ],
                 ),
@@ -294,11 +287,13 @@ class _ForgotPasswordScreenState extends ConsumerState<ForgotPasswordScreen> {
             left: 0,
             right: 0,
             bottom: 0,
-            top: topSectionHeight - 45, // slight overlap to display waves beautifully
+            top: topSectionHeight -
+                45, // slight overlap to display waves beautifully
             child: WavyDivider(
               child: SingleChildScrollView(
                 physics: const BouncingScrollPhysics(),
-                padding: const EdgeInsets.only(left: 24, right: 24, top: 60, bottom: 32),
+                padding: const EdgeInsets.only(
+                    left: 24, right: 24, top: 60, bottom: 32),
                 child: AnimatedSwitcher(
                   duration: const Duration(milliseconds: 300),
                   transitionBuilder: (child, anim) => FadeTransition(
@@ -349,9 +344,7 @@ class _ForgotPasswordScreenState extends ConsumerState<ForgotPasswordScreen> {
             ),
           ),
         ).animate().scale(duration: 500.ms, curve: Curves.elasticOut),
-
         const SizedBox(height: 24),
-
         const Text(
           'Forgot Password?',
           textAlign: TextAlign.center,
@@ -362,9 +355,7 @@ class _ForgotPasswordScreenState extends ConsumerState<ForgotPasswordScreen> {
             letterSpacing: -0.3,
           ),
         ),
-
         const SizedBox(height: 8),
-
         const Text(
           "Enter your registered email and we'll send you a 6-digit OTP code to reset your password.",
           textAlign: TextAlign.center,
@@ -375,9 +366,7 @@ class _ForgotPasswordScreenState extends ConsumerState<ForgotPasswordScreen> {
             fontWeight: FontWeight.w500,
           ),
         ),
-
         const SizedBox(height: 32),
-
         _CustomAuthField(
           controller: _emailCtrl,
           label: 'Email Address',
@@ -391,9 +380,7 @@ class _ForgotPasswordScreenState extends ConsumerState<ForgotPasswordScreen> {
             return null;
           },
         ),
-
         const SizedBox(height: 28),
-
         _GradientButton(
           label: 'Send OTP',
           isLoading: _isLoading,
@@ -494,9 +481,7 @@ class _ForgotPasswordScreenState extends ConsumerState<ForgotPasswordScreen> {
                   ? 'Resend OTP in ${_resendCooldown}s'
                   : 'Resend OTP',
               style: TextStyle(
-                color: _resendCooldown > 0
-                    ? _grey
-                    : const Color(0xFF2C3BD5),
+                color: _resendCooldown > 0 ? _grey : const Color(0xFF2C3BD5),
                 fontWeight: FontWeight.w700,
                 fontSize: 14.5,
               ),
@@ -528,9 +513,7 @@ class _ForgotPasswordScreenState extends ConsumerState<ForgotPasswordScreen> {
             ),
           ),
         ).animate().scale(duration: 500.ms, curve: Curves.elasticOut),
-
         const SizedBox(height: 24),
-
         const Text(
           'Reset Password',
           textAlign: TextAlign.center,
@@ -541,9 +524,7 @@ class _ForgotPasswordScreenState extends ConsumerState<ForgotPasswordScreen> {
             letterSpacing: -0.3,
           ),
         ),
-
         const SizedBox(height: 8),
-
         const Text(
           'OTP verified successfully. Create a strong new password for your account.',
           textAlign: TextAlign.center,
@@ -554,9 +535,7 @@ class _ForgotPasswordScreenState extends ConsumerState<ForgotPasswordScreen> {
             fontWeight: FontWeight.w500,
           ),
         ),
-
         const SizedBox(height: 32),
-
         _CustomAuthField(
           controller: _pwCtrl,
           label: 'New Password',
@@ -574,9 +553,7 @@ class _ForgotPasswordScreenState extends ConsumerState<ForgotPasswordScreen> {
             ),
           ),
         ),
-
         const SizedBox(height: 16),
-
         _CustomAuthField(
           controller: _confirmPwCtrl,
           label: 'Confirm Password',
@@ -595,9 +572,7 @@ class _ForgotPasswordScreenState extends ConsumerState<ForgotPasswordScreen> {
             ),
           ),
         ),
-
         const SizedBox(height: 12),
-
         const Padding(
           padding: EdgeInsets.only(left: 4),
           child: Text(
@@ -610,9 +585,7 @@ class _ForgotPasswordScreenState extends ConsumerState<ForgotPasswordScreen> {
             ),
           ),
         ),
-
         const SizedBox(height: 28),
-
         _GradientButton(
           label: 'Update Password',
           isLoading: _isLoading,
@@ -791,7 +764,8 @@ class _CustomAuthFieldState extends State<_CustomAuthField> {
                                 ? const Color(0xFF2C3BD5)
                                 : const Color(0xFF94A3B8),
                             fontSize: isFloated ? 11 : 14.5,
-                            fontWeight: isFloated ? FontWeight.w600 : FontWeight.w400,
+                            fontWeight:
+                                isFloated ? FontWeight.w600 : FontWeight.w400,
                           ),
                           child: Text(widget.label),
                         ),
@@ -886,8 +860,8 @@ class _GradientButtonState extends State<_GradientButton> {
                   )
                 : const LinearGradient(
                     colors: [
-                      Color(0xFF2537D5), // Start: vibrant blue
-                      Color(0xFFD362EC), // End: light purple/pink
+                      _gradientStart,
+                      _gradientEnd,
                     ],
                     begin: Alignment.centerLeft,
                     end: Alignment.centerRight,
@@ -897,7 +871,7 @@ class _GradientButtonState extends State<_GradientButton> {
                 ? null
                 : [
                     BoxShadow(
-                      color: const Color(0xFF2537D5).withValues(alpha: 0.25),
+                      color: _gradientStart.withValues(alpha: 0.25),
                       blurRadius: 12,
                       offset: const Offset(0, 4),
                     ),
