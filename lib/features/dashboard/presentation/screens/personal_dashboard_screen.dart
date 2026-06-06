@@ -382,7 +382,8 @@ class _ProfileCard extends StatelessWidget {
           end: Alignment.bottomRight,
           colors: [
             Theme.of(context).cardTheme.color ?? Colors.white,
-            (Theme.of(context).cardTheme.color ?? Colors.white).withValues(alpha: 0.7),
+            (Theme.of(context).cardTheme.color ?? Colors.white)
+                .withValues(alpha: 0.7),
           ],
         ),
       ),
@@ -614,7 +615,10 @@ class _StatTile extends StatelessWidget {
                 const SizedBox(height: 2),
                 Text(
                   label,
-                  style: Theme.of(context).textTheme.bodySmall?.copyWith(fontSize: 11),
+                  style: Theme.of(context)
+                      .textTheme
+                      .bodySmall
+                      ?.copyWith(fontSize: 11),
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                 ),

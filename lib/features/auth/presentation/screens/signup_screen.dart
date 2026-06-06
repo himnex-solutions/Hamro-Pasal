@@ -183,7 +183,8 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
             child: SafeArea(
               bottom: false,
               child: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
@@ -243,7 +244,8 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
             child: WavyDivider(
               child: SingleChildScrollView(
                 physics: const BouncingScrollPhysics(),
-                padding: const EdgeInsets.only(left: 24, right: 24, top: 60, bottom: 28),
+                padding: const EdgeInsets.only(
+                    left: 24, right: 24, top: 60, bottom: 28),
                 child: _buildForm(),
               ),
             ).animate(delay: 150.ms).slideY(
@@ -301,9 +303,13 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
                   )
                 : null,
             validator: (v) {
-              if (v == null || v.trim().isEmpty) return 'Phone number is required';
+              if (v == null || v.trim().isEmpty) {
+                return 'Phone number is required';
+              }
               final digits = v.trim().replaceAll(RegExp(r'[^0-9]'), '');
-              if (digits.length != 10) return 'Phone number must be exactly 10 digits';
+              if (digits.length != 10) {
+                return 'Phone number must be exactly 10 digits';
+              }
               if (_phoneError != null) return _phoneError;
               return null;
             },
@@ -653,7 +659,8 @@ class _CustomAuthFieldState extends State<_CustomAuthField> {
                               ),
                               decoration: const InputDecoration(
                                 isDense: true,
-                                contentPadding: EdgeInsets.only(top: 24, bottom: 8),
+                                contentPadding:
+                                    EdgeInsets.only(top: 24, bottom: 8),
                                 border: InputBorder.none,
                                 enabledBorder: InputBorder.none,
                                 focusedBorder: InputBorder.none,
@@ -671,7 +678,8 @@ class _CustomAuthFieldState extends State<_CustomAuthField> {
                                 if (widget.validator != null) {
                                   final err = widget.validator!(value);
                                   if (_errorText != err) {
-                                    WidgetsBinding.instance.addPostFrameCallback((_) {
+                                    WidgetsBinding.instance
+                                        .addPostFrameCallback((_) {
                                       if (mounted) {
                                         setState(() => _errorText = err);
                                       }
@@ -790,8 +798,9 @@ class _CustomAuthFieldState extends State<_CustomAuthField> {
                                       ? const Color(0xFF2C3BD5)
                                       : const Color(0xFF94A3B8),
                                   fontSize: isFloated ? 11 : 14.5,
-                                  fontWeight:
-                                      isFloated ? FontWeight.w600 : FontWeight.w400,
+                                  fontWeight: isFloated
+                                      ? FontWeight.w600
+                                      : FontWeight.w400,
                                 ),
                                 child: Text(widget.label),
                               ),
@@ -869,8 +878,8 @@ class _GradientButtonState extends State<_GradientButton> {
           decoration: BoxDecoration(
             gradient: const LinearGradient(
               colors: [
-                Color(0xFF2537D5), // Start: vibrant blue
-                Color(0xFFD362EC), // End: light purple/pink
+                _gradientStart,
+                _gradientEnd,
               ],
               begin: Alignment.centerLeft,
               end: Alignment.centerRight,
@@ -878,7 +887,7 @@ class _GradientButtonState extends State<_GradientButton> {
             borderRadius: BorderRadius.circular(16),
             boxShadow: [
               BoxShadow(
-                color: const Color(0xFF2537D5).withValues(alpha: 0.25),
+                color: _gradientStart.withValues(alpha: 0.25),
                 blurRadius: 12,
                 offset: const Offset(0, 4),
               ),

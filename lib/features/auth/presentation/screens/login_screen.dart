@@ -115,7 +115,8 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
             child: SafeArea(
               bottom: false,
               child: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
@@ -169,11 +170,13 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
             left: 0,
             right: 0,
             bottom: 0,
-            top: topSectionHeight - 45, // slight overlap to display waves beautifully
+            top: topSectionHeight -
+                45, // slight overlap to display waves beautifully
             child: WavyDivider(
               child: SingleChildScrollView(
                 physics: const BouncingScrollPhysics(),
-                padding: const EdgeInsets.only(left: 24, right: 24, top: 60, bottom: 32),
+                padding: const EdgeInsets.only(
+                    left: 24, right: 24, top: 60, bottom: 32),
                 child: _buildForm(),
               ),
             ).animate(delay: 150.ms).slideY(
@@ -260,7 +263,8 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(5),
                       ),
-                      side: const BorderSide(color: Color(0xFFCBD5E1), width: 1.5),
+                      side: const BorderSide(
+                          color: Color(0xFFCBD5E1), width: 1.5),
                     ),
                   ),
                   const SizedBox(width: 8),
@@ -558,7 +562,8 @@ class _CustomAuthFieldState extends State<_CustomAuthField> {
                                 ? const Color(0xFF2C3BD5)
                                 : const Color(0xFF94A3B8),
                             fontSize: isFloated ? 11 : 14.5,
-                            fontWeight: isFloated ? FontWeight.w600 : FontWeight.w400,
+                            fontWeight:
+                                isFloated ? FontWeight.w600 : FontWeight.w400,
                           ),
                           child: Text(widget.label),
                         ),
@@ -638,8 +643,8 @@ class _GradientButtonState extends State<_GradientButton> {
           decoration: BoxDecoration(
             gradient: const LinearGradient(
               colors: [
-                Color(0xFF2537D5), // Start: vibrant blue
-                Color(0xFFD362EC), // End: light purple/pink
+                _gradientStart,
+                _gradientEnd,
               ],
               begin: Alignment.centerLeft,
               end: Alignment.centerRight,
@@ -647,7 +652,7 @@ class _GradientButtonState extends State<_GradientButton> {
             borderRadius: BorderRadius.circular(16),
             boxShadow: [
               BoxShadow(
-                color: const Color(0xFF2537D5).withValues(alpha: 0.25),
+                color: _gradientStart.withValues(alpha: 0.25),
                 blurRadius: 12,
                 offset: const Offset(0, 4),
               ),

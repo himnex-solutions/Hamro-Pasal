@@ -290,7 +290,8 @@ void _showNotificationCenter(BuildContext context, WidgetRef ref) {
             children: [
               // Header
               Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
@@ -300,10 +301,12 @@ void _showNotificationCenter(BuildContext context, WidgetRef ref) {
                           width: 36,
                           height: 36,
                           decoration: BoxDecoration(
-                            color: const Color(0xFFF59E0B).withValues(alpha: 0.1),
+                            color:
+                                const Color(0xFFF59E0B).withValues(alpha: 0.1),
                             borderRadius: BorderRadius.circular(10),
                           ),
-                          child: const Icon(Icons.notifications_rounded, color: Color(0xFFF59E0B), size: 20),
+                          child: const Icon(Icons.notifications_rounded,
+                              color: Color(0xFFF59E0B), size: 20),
                         ),
                         const SizedBox(width: 12),
                         Column(
@@ -311,11 +314,16 @@ void _showNotificationCenter(BuildContext context, WidgetRef ref) {
                           children: [
                             const Text(
                               'Updates & Notifications',
-                              style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 15),
+                              style: TextStyle(
+                                  color: Colors.white,
+                                  fontWeight: FontWeight.bold,
+                                  fontSize: 15),
                             ),
                             Text(
                               'Stay updated on your store activity',
-                              style: TextStyle(color: Colors.white.withValues(alpha: 0.4), fontSize: 11),
+                              style: TextStyle(
+                                  color: Colors.white.withValues(alpha: 0.4),
+                                  fontSize: 11),
                             ),
                           ],
                         ),
@@ -324,10 +332,15 @@ void _showNotificationCenter(BuildContext context, WidgetRef ref) {
                     if (notifications.isNotEmpty)
                       TextButton(
                         onPressed: () {
-                          ref.read(inAppNotificationsProvider.notifier).clearAll();
+                          ref
+                              .read(inAppNotificationsProvider.notifier)
+                              .clearAll();
                         },
-                        style: TextButton.styleFrom(foregroundColor: const Color(0xFFEF4444)),
-                        child: const Text('Clear All', style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold)),
+                        style: TextButton.styleFrom(
+                            foregroundColor: const Color(0xFFEF4444)),
+                        child: const Text('Clear All',
+                            style: TextStyle(
+                                fontSize: 12, fontWeight: FontWeight.bold)),
                       ),
                   ],
                 ),
@@ -336,20 +349,27 @@ void _showNotificationCenter(BuildContext context, WidgetRef ref) {
               // Body
               if (notifications.isEmpty)
                 Container(
-                  padding: const EdgeInsets.symmetric(vertical: 64, horizontal: 32),
+                  padding:
+                      const EdgeInsets.symmetric(vertical: 64, horizontal: 32),
                   child: Column(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      Icon(Icons.notifications_none_rounded, size: 48, color: Colors.white.withValues(alpha: 0.1)),
+                      Icon(Icons.notifications_none_rounded,
+                          size: 48, color: Colors.white.withValues(alpha: 0.1)),
                       const SizedBox(height: 16),
                       const Text(
                         'No notifications yet',
-                        style: TextStyle(color: Colors.white70, fontWeight: FontWeight.bold, fontSize: 14),
+                        style: TextStyle(
+                            color: Colors.white70,
+                            fontWeight: FontWeight.bold,
+                            fontSize: 14),
                       ),
                       const SizedBox(height: 6),
                       Text(
                         'Updates about subscriptions, stock levels, and store status will appear here.',
-                        style: TextStyle(color: Colors.white.withValues(alpha: 0.4), fontSize: 11),
+                        style: TextStyle(
+                            color: Colors.white.withValues(alpha: 0.4),
+                            fontSize: 11),
                         textAlign: TextAlign.center,
                       ),
                     ],
@@ -360,7 +380,8 @@ void _showNotificationCenter(BuildContext context, WidgetRef ref) {
                   child: ListView.builder(
                     itemCount: notifications.length,
                     shrinkWrap: true,
-                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                     itemBuilder: (context, index) {
                       final item = notifications[index];
                       Color color = const Color(0xFF3B82F6);
@@ -383,7 +404,9 @@ void _showNotificationCenter(BuildContext context, WidgetRef ref) {
 
                       return InkWell(
                         onTap: () {
-                          ref.read(inAppNotificationsProvider.notifier).markAsRead(item.id);
+                          ref
+                              .read(inAppNotificationsProvider.notifier)
+                              .markAsRead(item.id);
                         },
                         borderRadius: BorderRadius.circular(16),
                         child: Container(
@@ -419,13 +442,16 @@ void _showNotificationCenter(BuildContext context, WidgetRef ref) {
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
                                     Row(
-                                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                      mainAxisAlignment:
+                                          MainAxisAlignment.spaceBetween,
                                       children: [
                                         Text(
                                           item.title,
                                           style: TextStyle(
                                             color: Colors.white,
-                                            fontWeight: item.isRead ? FontWeight.w600 : FontWeight.bold,
+                                            fontWeight: item.isRead
+                                                ? FontWeight.w600
+                                                : FontWeight.bold,
                                             fontSize: 13,
                                           ),
                                         ),
@@ -443,12 +469,15 @@ void _showNotificationCenter(BuildContext context, WidgetRef ref) {
                                     const SizedBox(height: 4),
                                     Text(
                                       item.body,
-                                      style: const TextStyle(color: Colors.white70, fontSize: 11.5),
+                                      style: const TextStyle(
+                                          color: Colors.white70,
+                                          fontSize: 11.5),
                                     ),
                                     const SizedBox(height: 6),
                                     Text(
                                       _formatTime(item.timestamp),
-                                      style: const TextStyle(color: Colors.white38, fontSize: 9.5),
+                                      style: const TextStyle(
+                                          color: Colors.white38, fontSize: 9.5),
                                     ),
                                   ],
                                 ),
@@ -465,15 +494,19 @@ void _showNotificationCenter(BuildContext context, WidgetRef ref) {
                   padding: const EdgeInsets.fromLTRB(16, 8, 16, 12),
                   child: ElevatedButton(
                     onPressed: () {
-                      ref.read(inAppNotificationsProvider.notifier).markAllAsRead();
+                      ref
+                          .read(inAppNotificationsProvider.notifier)
+                          .markAllAsRead();
                     },
                     style: ElevatedButton.styleFrom(
                       backgroundColor: const Color(0xFFF59E0B),
                       foregroundColor: Colors.black,
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                      shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12)),
                       padding: const EdgeInsets.symmetric(vertical: 12),
                     ),
-                    child: const Text('Mark All as Read', style: TextStyle(fontWeight: FontWeight.bold)),
+                    child: const Text('Mark All as Read',
+                        style: TextStyle(fontWeight: FontWeight.bold)),
                   ),
                 ),
             ],
@@ -518,8 +551,8 @@ class _DashAppBar extends ConsumerWidget {
         IconButton(
           tooltip: 'Tools',
           onPressed: () => context.push(AppRoutes.tools),
-          icon: const Icon(Icons.build_outlined,
-              size: 20, color: Colors.white70),
+          icon:
+              const Icon(Icons.build_outlined, size: 20, color: Colors.white70),
         ),
         IconButton(
           tooltip: 'Settings',
@@ -545,9 +578,13 @@ class _DashAppBar extends ConsumerWidget {
                   tooltip: 'Notifications',
                   onPressed: () => _showNotificationCenter(context, ref),
                   icon: Icon(
-                    unreadCount > 0 ? Icons.notifications_active_rounded : Icons.notifications_outlined,
+                    unreadCount > 0
+                        ? Icons.notifications_active_rounded
+                        : Icons.notifications_outlined,
                     size: 20,
-                    color: unreadCount > 0 ? const Color(0xFFF59E0B) : Colors.white70,
+                    color: unreadCount > 0
+                        ? const Color(0xFFF59E0B)
+                        : Colors.white70,
                   ),
                 ),
                 if (unreadCount > 0)
@@ -672,7 +709,8 @@ class _KpiCard extends StatelessWidget {
           end: Alignment.bottomRight,
           colors: [
             Theme.of(context).cardTheme.color ?? Colors.white,
-            (Theme.of(context).cardTheme.color ?? Colors.white).withValues(alpha: 0.7),
+            (Theme.of(context).cardTheme.color ?? Colors.white)
+                .withValues(alpha: 0.7),
           ],
         ),
       ),
@@ -734,7 +772,9 @@ class _KpiCard extends StatelessWidget {
               style: TextStyle(
                   fontSize: 15,
                   fontWeight: FontWeight.w800,
-                  color: Theme.of(context).brightness == Brightness.dark ? AppTheme.darkTextPrimary : const Color(0xFF0F172A),
+                  color: Theme.of(context).brightness == Brightness.dark
+                      ? AppTheme.darkTextPrimary
+                      : const Color(0xFF0F172A),
                   letterSpacing: -0.3),
               maxLines: 1,
               overflow: TextOverflow.ellipsis),
@@ -744,7 +784,9 @@ class _KpiCard extends StatelessWidget {
               style: TextStyle(
                   fontSize: 11,
                   fontWeight: FontWeight.w500,
-                  color: Theme.of(context).brightness == Brightness.dark ? AppTheme.darkTextSecondary : const Color(0xFF9CA3AF)),
+                  color: Theme.of(context).brightness == Brightness.dark
+                      ? AppTheme.darkTextSecondary
+                      : const Color(0xFF9CA3AF)),
               maxLines: 1),
         ],
       ),
@@ -786,7 +828,8 @@ class _NetProfitCard extends StatelessWidget {
           end: Alignment.bottomRight,
           colors: [
             Theme.of(context).cardTheme.color ?? Colors.white,
-            (Theme.of(context).cardTheme.color ?? Colors.white).withValues(alpha: 0.8),
+            (Theme.of(context).cardTheme.color ?? Colors.white)
+                .withValues(alpha: 0.8),
           ],
         ),
       ),
@@ -814,7 +857,9 @@ class _NetProfitCard extends StatelessWidget {
                   style: TextStyle(
                       fontSize: 12,
                       fontWeight: FontWeight.w500,
-                      color: Theme.of(context).brightness == Brightness.dark ? AppTheme.darkTextSecondary : const Color(0xFF6B7280))),
+                      color: Theme.of(context).brightness == Brightness.dark
+                          ? AppTheme.darkTextSecondary
+                          : const Color(0xFF6B7280))),
               const SizedBox(height: 3),
               Text('${isPositive ? '+' : '-'} Rs. ${fmt.format(profit.abs())}',
                   style: TextStyle(
@@ -862,8 +907,8 @@ class _QuickActionsGrid extends StatelessWidget {
           AppRoutes.addExpense),
       const _QA('Reports', Icons.bar_chart_rounded, Color(0xFFF59E0B),
           AppRoutes.reports),
-      const _QA('Tools', Icons.build_outlined, Color(0xFF0D7E8A),
-          AppRoutes.tools),
+      const _QA(
+          'Tools', Icons.build_outlined, Color(0xFF0D7E8A), AppRoutes.tools),
       const _QA('Invoices', Icons.description_outlined, Color(0xFF14B8A6),
           AppRoutes.invoices),
       const _QA('Settings', Icons.settings_outlined, Color(0xFF64748B),
@@ -925,7 +970,8 @@ class _QACardState extends State<_QACard> {
               end: Alignment.bottomRight,
               colors: [
                 Theme.of(context).cardTheme.color ?? Colors.white,
-                (Theme.of(context).cardTheme.color ?? Colors.white).withValues(alpha: 0.6),
+                (Theme.of(context).cardTheme.color ?? Colors.white)
+                    .withValues(alpha: 0.6),
               ],
             ),
           ),
@@ -946,7 +992,9 @@ class _QACardState extends State<_QACard> {
                   style: TextStyle(
                       fontSize: 11.5,
                       fontWeight: FontWeight.w600,
-                      color: Theme.of(context).brightness == Brightness.dark ? AppTheme.darkTextPrimary : const Color(0xFF374151)),
+                      color: Theme.of(context).brightness == Brightness.dark
+                          ? AppTheme.darkTextPrimary
+                          : const Color(0xFF374151)),
                   textAlign: TextAlign.center,
                   maxLines: 1),
             ],
@@ -1018,13 +1066,18 @@ class _TxTile extends StatelessWidget {
                   style: TextStyle(
                       fontSize: 13,
                       fontWeight: FontWeight.w600,
-                      color: Theme.of(context).brightness == Brightness.dark ? AppTheme.darkTextPrimary : const Color(0xFF111827)),
+                      color: Theme.of(context).brightness == Brightness.dark
+                          ? AppTheme.darkTextPrimary
+                          : const Color(0xFF111827)),
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis),
               const SizedBox(height: 2),
               Text(subtitle,
-                  style:
-                      TextStyle(fontSize: 11, color: Theme.of(context).brightness == Brightness.dark ? AppTheme.darkTextSecondary : const Color(0xFF9CA3AF)),
+                  style: TextStyle(
+                      fontSize: 11,
+                      color: Theme.of(context).brightness == Brightness.dark
+                          ? AppTheme.darkTextSecondary
+                          : const Color(0xFF9CA3AF)),
                   maxLines: 1),
             ]),
           ),
@@ -1045,7 +1098,10 @@ class _EmptyTransactions extends StatelessWidget {
         decoration: BoxDecoration(
           color: Theme.of(context).cardTheme.color,
           borderRadius: BorderRadius.circular(12),
-          border: Border.all(color: Theme.of(context).brightness == Brightness.dark ? AppTheme.darkBorder : const Color(0xFFE5E7EB)),
+          border: Border.all(
+              color: Theme.of(context).brightness == Brightness.dark
+                  ? AppTheme.darkBorder
+                  : const Color(0xFFE5E7EB)),
         ),
         child: Center(
           child: Column(children: [
@@ -1119,6 +1175,8 @@ class _SectionHeader extends StatelessWidget {
       style: TextStyle(
           fontSize: 15,
           fontWeight: FontWeight.w700,
-          color: Theme.of(context).brightness == Brightness.dark ? AppTheme.darkTextPrimary : const Color(0xFF111827),
+          color: Theme.of(context).brightness == Brightness.dark
+              ? AppTheme.darkTextPrimary
+              : const Color(0xFF111827),
           letterSpacing: -0.2));
 }
