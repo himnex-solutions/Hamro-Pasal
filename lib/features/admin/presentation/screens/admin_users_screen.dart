@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
-import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+
 import 'package:hamro_pasal/core/theme/app_theme.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
@@ -99,7 +99,7 @@ class _AdminUsersScreenState extends State<AdminUsersScreen> {
             const EdgeInsets.symmetric(horizontal: 20, vertical: 24),
         child: ConstrainedBox(
           constraints: const BoxConstraints(maxWidth: 480),
-          child: Padding(
+          child: SingleChildScrollView(
             padding: const EdgeInsets.all(24),
             child: Column(
               mainAxisSize: MainAxisSize.min,
@@ -463,13 +463,13 @@ class _UserCard extends StatelessWidget {
                 Column(
                   children: [
                     _ActionButton(
-                        icon: FontAwesomeIcons.penToSquare,
+                        icon: Icons.edit_rounded,
                         color: AppTheme.primaryLight,
                         onTap: onEdit,
                         tooltip: 'Edit User'),
                     const SizedBox(height: 6),
                     _ActionButton(
-                        icon: FontAwesomeIcons.trashCan,
+                        icon: Icons.delete_rounded,
                         color: AppTheme.errorColor,
                         onTap: onDelete,
                         tooltip: 'Delete User'),
@@ -533,13 +533,13 @@ class _UserCard extends StatelessWidget {
                   ),
                 ),
                 _ActionButton(
-                    icon: FontAwesomeIcons.penToSquare,
+                    icon: Icons.edit_rounded,
                     color: AppTheme.primaryLight,
                     onTap: onEdit,
                     tooltip: 'Edit User'),
                 const SizedBox(width: 8),
                 _ActionButton(
-                    icon: FontAwesomeIcons.trashCan,
+                    icon: Icons.delete_rounded,
                     color: AppTheme.errorColor,
                     onTap: onDelete,
                     tooltip: 'Delete User'),
@@ -634,7 +634,7 @@ class _ActionButton extends StatelessWidget {
               borderRadius: BorderRadius.circular(8),
               border: Border.all(color: color.withValues(alpha: 0.25)),
             ),
-            child: Center(child: FaIcon(icon, color: color, size: 14)),
+            child: Center(child: Icon(icon, color: color, size: 18)),
           ),
         ),
       ),

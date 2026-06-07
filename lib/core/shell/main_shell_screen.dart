@@ -587,27 +587,32 @@ class _PremiumSidebar extends ConsumerWidget {
             ),
           ),
 
-          const SizedBox(height: 16),
+          // Scrollable navigation links
+          Expanded(
+            child: SingleChildScrollView(
+              padding: const EdgeInsets.only(top: 16, bottom: 8),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const _SectionLabel('MAIN'),
+                  ...destinations.asMap().entries.map((e) => _SidebarTile(
+                    item: e.value,
+                    isSelected: e.key == selectedIndex,
+                    onTap: () => onDestinationSelected(e.key),
+                  ).animate(delay: Duration(milliseconds: e.key * 40)).fadeIn().slideX(begin: -0.05, end: 0)),
 
-          // MAIN section
-          const _SectionLabel('MAIN'),
-          ...destinations.asMap().entries.map((e) => _SidebarTile(
-            item: e.value,
-            isSelected: e.key == selectedIndex,
-            onTap: () => onDestinationSelected(e.key),
-          ).animate(delay: Duration(milliseconds: e.key * 40)).fadeIn().slideX(begin: -0.05, end: 0)),
+                  const SizedBox(height: 12),
 
-          const SizedBox(height: 12),
-
-          // MORE section
-          const _SectionLabel('MORE'),
-          ...sidebarExtras.asMap().entries.map((e) => _SidebarTile(
-            item: e.value,
-            isSelected: false,
-            onTap: () => onExtraSelected(e.key),
-          ).animate(delay: Duration(milliseconds: 200 + e.key * 40)).fadeIn().slideX(begin: -0.05, end: 0)),
-
-          const Spacer(),
+                  const _SectionLabel('MORE'),
+                  ...sidebarExtras.asMap().entries.map((e) => _SidebarTile(
+                    item: e.value,
+                    isSelected: false,
+                    onTap: () => onExtraSelected(e.key),
+                  ).animate(delay: Duration(milliseconds: 200 + e.key * 40)).fadeIn().slideX(begin: -0.05, end: 0)),
+                ],
+              ),
+            ),
+          ),
 
           // Divider
           Padding(

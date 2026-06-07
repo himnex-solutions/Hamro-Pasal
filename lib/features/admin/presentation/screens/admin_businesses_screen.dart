@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
-import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+
 import 'package:hamro_pasal/core/theme/app_theme.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
@@ -417,13 +417,13 @@ class _BusinessCard extends StatelessWidget {
         ? Column(
             children: [
               _ActionButton(
-                  icon: FontAwesomeIcons.penToSquare,
+                  icon: Icons.edit_rounded,
                   color: AppTheme.primaryLight,
                   onTap: onEdit,
                   tooltip: 'Edit Business'),
               const SizedBox(height: 6),
               _ActionButton(
-                  icon: FontAwesomeIcons.trashCan,
+                  icon: Icons.delete_rounded,
                   color: AppTheme.errorColor,
                   onTap: onDelete,
                   tooltip: 'Delete Business'),
@@ -433,13 +433,13 @@ class _BusinessCard extends StatelessWidget {
             mainAxisSize: MainAxisSize.min,
             children: [
               _ActionButton(
-                  icon: FontAwesomeIcons.penToSquare,
+                  icon: Icons.edit_rounded,
                   color: AppTheme.primaryLight,
                   onTap: onEdit,
                   tooltip: 'Edit Business'),
               const SizedBox(width: 8),
               _ActionButton(
-                  icon: FontAwesomeIcons.trashCan,
+                  icon: Icons.delete_rounded,
                   color: AppTheme.errorColor,
                   onTap: onDelete,
                   tooltip: 'Delete Business'),
@@ -554,7 +554,7 @@ class _ActionButton extends StatelessWidget {
               borderRadius: BorderRadius.circular(8),
               border: Border.all(color: color.withValues(alpha: 0.25)),
             ),
-            child: Center(child: FaIcon(icon, color: color, size: 14)),
+            child: Center(child: Icon(icon, color: color, size: 18)),
           ),
         ),
       ),

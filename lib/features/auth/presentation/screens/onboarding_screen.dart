@@ -181,20 +181,23 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
 
                       return LayoutBuilder(
                         builder: (context, constraints) {
-                          final isCompact = constraints.maxHeight < 580;
-                          final orbitSize = isCompact ? 210.0 : 290.0;
-                          final innerOrbitSize = isCompact ? 170.0 : 240.0;
-                          final auraSize = isCompact ? 140.0 : 200.0;
-                          final ringSize = isCompact ? 120.0 : 170.0;
-                          final spacing = isCompact ? 16.0 : 36.0;
+                          final double maxHeight = constraints.maxHeight;
+                          final bool isCompact = maxHeight < 620;
+                          
+                          // Dynamically scale sizes based on available height to prevent overflows
+                          final double orbitSize = (maxHeight * 0.34).clamp(130.0, 290.0);
+                          final double innerOrbitSize = orbitSize * 0.8;
+                          final double auraSize = orbitSize * 0.65;
+                          final double ringSize = orbitSize * 0.55;
+                          final double spacing = (maxHeight * 0.035).clamp(10.0, 36.0);
 
                           return Padding(
                             padding: EdgeInsets.symmetric(
-                                horizontal: 24, vertical: isCompact ? 8 : 20),
+                                horizontal: 24, vertical: (maxHeight * 0.02).clamp(4.0, 20.0)),
                             child: Column(
                               mainAxisAlignment: MainAxisAlignment.center,
                               children: [
-                                SizedBox(height: isCompact ? 8 : 16),
+                                SizedBox(height: (maxHeight * 0.015).clamp(4.0, 16.0)),
                                 // ── Concrete Illustration Group with Orbit Animations ──
                                 Stack(
                                   alignment: Alignment.center,
@@ -265,16 +268,16 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
 
                                     // 5. Concrete PNG Illustration with float animation
                                     Container(
-                                      height: isCompact ? 160.0 : 220.0,
+                                      height: (orbitSize * 0.75).clamp(100.0, 220.0),
                                       constraints: BoxConstraints(
-                                        maxWidth: isCompact ? 240.0 : 320.0,
+                                        maxWidth: (orbitSize * 1.1).clamp(150.0, 320.0),
                                       ),
                                       child: Image.asset(
                                         slide['image'] as String,
                                         fit: BoxFit.contain,
                                         errorBuilder: (context, error, stackTrace) => Container(
-                                          width: isCompact ? 120.0 : 160.0,
-                                          height: isCompact ? 120.0 : 160.0,
+                                          width: (orbitSize * 0.55).clamp(80.0, 160.0),
+                                          height: (orbitSize * 0.55).clamp(80.0, 160.0),
                                           decoration: BoxDecoration(
                                             shape: BoxShape.circle,
                                             gradient: AppTheme.primaryGradient,
@@ -285,7 +288,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                                           ),
                                           child: Icon(
                                             slide['icon'] as IconData,
-                                            size: isCompact ? 50.0 : 70.0,
+                                            size: (orbitSize * 0.25).clamp(36.0, 70.0),
                                             color: Colors.white,
                                           ),
                                         ),
@@ -316,8 +319,8 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                                     filter: ImageFilter.blur(
                                         sigmaX: 12, sigmaY: 12),
                                     child: Container(
-                                      padding:
-                                          EdgeInsets.all(isCompact ? 20 : 28),
+                                      padding: EdgeInsets.all(
+                                          (maxHeight * 0.035).clamp(12.0, 28.0)),
                                       decoration: BoxDecoration(
                                         color: Colors.white
                                             .withValues(alpha: 0.70),

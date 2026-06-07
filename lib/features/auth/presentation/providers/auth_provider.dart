@@ -50,22 +50,10 @@ class AuthNotifier extends StateNotifier<AuthState> {
 
   final _supabase = Supabase.instance.client;
 
-  // True while _init() is running. Prevents a signedOut event that the SDK
-  // emits during token-refresh on cold start from being mistaken for a
-  // deliberate sign-out and logging the user out.
-  bool _isInitializing = true;
-
   // ── Initialization ────────────────────────────────────────
   Future<void> _init() async {
-    // PRIMARY strategy: listen to onAuthStateChange.
-    //
-    // The Supabase SDK fires AuthChangeEvent.initialSession when it has
-    // finished reading the persisted session from SharedPreferences.
-    // Using this event (instead of reading currentSession directly) is the
-    // only reliable way to handle cold-start after the app is killed from
-    // the background — because currentSession can return null for a brief
-    // moment while the SDK is still restoring the token from storage.
     bool initialEventHandled = false;
+    DateTime? _initialSessionTime; // tracks when initialSession fired
 
     _supabase.auth.onAuthStateChange.listen((data) async {
       final event = data.event;
@@ -74,6 +62,7 @@ class AuthNotifier extends StateNotifier<AuthState> {
       // ── First event on cold start ─────────────────────────
       if (event == AuthChangeEvent.initialSession) {
         initialEventHandled = true;
+        _initialSessionTime = DateTime.now();
         if (session != null) {
           try {
             final deviceId = await _getOrCreateDeviceId();
@@ -89,14 +78,32 @@ class AuthNotifier extends StateNotifier<AuthState> {
         return;
       }
 
-      // ── Subsequent events (live) ──────────────────────────
-      // IMPORTANT: ignore signedOut while we are still initializing.
-      // On cold start the SDK fires  initialSession(expired) → signedOut → tokenRefreshed.
-      // If we react to signedOut here we log the user out before the refresh completes.
-      if (_isInitializing && event == AuthChangeEvent.signedOut) return;
+      // ── Suppress signedOut for 5 s after initialSession ──
+      // On web page refresh the SDK fires:
+      //   initialSession → signedOut → tokenRefreshed
+      // The old boolean _isInitializing flag was cleared too quickly (same
+      // microtask tick as initialSession), so signedOut slipped through.
+      // A 5-second time window reliably covers the entire refresh cycle.
+      if (event == AuthChangeEvent.signedOut) {
+        final msSinceInit = _initialSessionTime != null
+            ? DateTime.now().difference(_initialSessionTime!).inMilliseconds
+            : 0;
+        if (msSinceInit < 5000) return; // still in refresh window — suppress
 
+        // Outside the window: only log out if session is truly gone.
+        // Wait briefly to let any in-flight tokenRefreshed arrive first.
+        if (state.status == AuthStatus.authenticated) {
+          await Future.delayed(const Duration(milliseconds: 1500));
+          if (_supabase.auth.currentSession == null &&
+              state.status == AuthStatus.authenticated) {
+            state = AuthState.unauthenticated();
+          }
+        }
+        return;
+      }
+
+      // ── Subsequent events (live) ──────────────────────────
       if (event == AuthChangeEvent.signedIn && session != null) {
-        // Session was restored or user signed in on a trusted device
         if (state.status == AuthStatus.unauthenticated ||
             state.status == AuthStatus.initial) {
           final hasBusinessId = await _checkBusinessSetup();
@@ -105,18 +112,11 @@ class AuthNotifier extends StateNotifier<AuthState> {
               : AuthState.needsSetup();
         }
       } else if (event == AuthChangeEvent.tokenRefreshed && session != null) {
-        // Token silently refreshed — stay authenticated
         if (state.status == AuthStatus.unauthenticated) {
           final hasBusinessId = await _checkBusinessSetup();
           state = hasBusinessId
               ? AuthState.authenticated()
               : AuthState.needsSetup();
-        }
-      } else if (event == AuthChangeEvent.signedOut) {
-        // Only move to unauthenticated if the user was authenticated,
-        // not on normal initialization flows (OTP sign-out, signUp sign-out).
-        if (state.status == AuthStatus.authenticated) {
-          state = AuthState.unauthenticated();
         }
       }
     });

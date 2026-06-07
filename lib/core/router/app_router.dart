@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:supabase_flutter/supabase_flutter.dart' hide AuthState;
+import 'package:hamro_pasal/features/auth/presentation/providers/auth_provider.dart';
 
 import 'package:hamro_pasal/features/auth/presentation/screens/splash_screen.dart';
 import 'package:hamro_pasal/features/auth/presentation/screens/login_screen.dart';
@@ -104,6 +105,19 @@ class _AdminAuthListenable extends ChangeNotifier {
   }
 }
 
+// ── App auth listenable ────────────────────────────────────────
+// Re-runs GoRouter redirects when authProvider exits AuthStatus.initial
+// (i.e. when Supabase finishes restoring the session on web page refresh).
+// Without this, the redirect runs while currentSession is still null and
+// immediately sends the user to /login before the token is restored.
+class _AppAuthListenable extends ChangeNotifier {
+  _AppAuthListenable(Ref ref) {
+    ref.listen<AuthState>(authProvider, (_, __) {
+      notifyListeners();
+    });
+  }
+}
+
 // ── Router Provider ───────────────────────────────────────────
 final appRouterProvider = Provider<GoRouter>((ref) {
   // NOTE: Do NOT watch authProvider here.
@@ -112,16 +126,27 @@ final appRouterProvider = Provider<GoRouter>((ref) {
   // being pushed. All routing after auth events is handled explicitly
   // in each screen via context.push / context.go.
 
-  // Re-run redirects when admin auth state changes (fixes refresh bug)
+  // Re-run redirects when either auth state changes (fixes web refresh logout)
+  final appAuthListenable = _AppAuthListenable(ref);
   final adminListenable = _AdminAuthListenable(ref);
 
   return GoRouter(
     initialLocation: AppRoutes.splash,
     debugLogDiagnostics: false,
-    refreshListenable: adminListenable,
+    refreshListenable: Listenable.merge([appAuthListenable, adminListenable]),
     redirect: (context, state) {
-      final session = Supabase.instance.client.auth.currentSession;
+      final authStatus = ref.read(authProvider).status;
       final location = state.uri.path;
+
+      // ── Still initializing ────────────────────────────────
+      // Supabase Web SDK restores sessions asynchronously on page refresh.
+      // While authStatus == initial, currentSession may temporarily be null
+      // even though a valid token exists in localStorage. Returning null here
+      // keeps the user on the splash screen until _init() completes and
+      // refreshListenable fires again with the resolved status.
+      if (authStatus == AuthStatus.initial) return null;
+
+      final session = Supabase.instance.client.auth.currentSession;
 
       // Routes that never require a session
       const publicRoutes = [

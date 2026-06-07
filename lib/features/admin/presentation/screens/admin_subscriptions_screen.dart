@@ -342,30 +342,32 @@ class _AdminSubscriptionsScreenState extends State<AdminSubscriptionsScreen> {
         backgroundColor: AppTheme.darkCard,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
         title: const Text('Reject Payment Request', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            const Text('Provide a reason for rejection:', style: TextStyle(color: Colors.white70, fontSize: 13)),
-            const SizedBox(height: 12),
-            TextField(
-              controller: reasonCtrl,
-              style: const TextStyle(color: Colors.white),
-              maxLines: 3,
-              decoration: InputDecoration(
-                hintText: 'e.g. screenshot is blur / payment not received.',
-                hintStyle: TextStyle(color: Colors.white.withValues(alpha: 0.3)),
-                filled: true,
-                fillColor: AppTheme.darkSurface,
-                border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(10),
-                    borderSide: const BorderSide(color: AppTheme.darkBorder)),
-                focusedBorder: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(10),
-                    borderSide: const BorderSide(color: AppTheme.errorColor)),
+        content: SingleChildScrollView(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const Text('Provide a reason for rejection:', style: TextStyle(color: Colors.white70, fontSize: 13)),
+              const SizedBox(height: 12),
+              TextField(
+                controller: reasonCtrl,
+                style: const TextStyle(color: Colors.white),
+                maxLines: 3,
+                decoration: InputDecoration(
+                  hintText: 'e.g. screenshot is blur / payment not received.',
+                  hintStyle: TextStyle(color: Colors.white.withValues(alpha: 0.3)),
+                  filled: true,
+                  fillColor: AppTheme.darkSurface,
+                  border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(10),
+                      borderSide: const BorderSide(color: AppTheme.darkBorder)),
+                  focusedBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(10),
+                      borderSide: const BorderSide(color: AppTheme.errorColor)),
+                ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
         actions: [
           TextButton(
@@ -599,66 +601,67 @@ class _AdminSubscriptionsScreenState extends State<AdminSubscriptionsScreen> {
             maxWidth: 500,
           ),
           padding: const EdgeInsets.all(16),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  const Text(
-                    'Payment Proof Receipt',
-                    style: TextStyle(
-                      color: Colors.white,
-                      fontWeight: FontWeight.bold,
-                      fontSize: 15,
+          child: SingleChildScrollView(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    const Text(
+                      'Payment Proof Receipt',
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontWeight: FontWeight.bold,
+                        fontSize: 15,
+                      ),
                     ),
-                  ),
-                  IconButton(
-                    icon: const Icon(Icons.close, color: Colors.white60, size: 20),
-                    onPressed: () => Navigator.pop(ctx),
-                  ),
-                ],
-              ),
-              const Divider(color: Colors.white12, height: 16),
-              const SizedBox(height: 8),
-              ClipRRect(
-                borderRadius: BorderRadius.circular(10),
-                child: Container(
-                  height: 320,
-                  color: Colors.black26,
-                  child: InteractiveViewer(
-                    maxScale: 4.0,
-                    child: Image.network(
-                      url,
-                      fit: BoxFit.contain,
-                      errorBuilder: (_, __, ___) => const Center(
-                        child: Padding(
-                          padding: EdgeInsets.all(24),
-                          child: Column(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              Icon(Icons.image_not_supported_outlined, color: AppTheme.errorColor, size: 48),
-                              SizedBox(height: 12),
-                              Text(
-                                'Unable to Preview Image',
-                                style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 13),
-                              ),
-                              SizedBox(height: 6),
-                              Text(
-                                'Browser security policies (CORS) or private storage settings may block in-app preview. Use the button below to view it directly.',
-                                style: TextStyle(color: Colors.white54, fontSize: 11),
-                                textAlign: TextAlign.center,
-                              ),
-                            ],
+                    IconButton(
+                      icon: const Icon(Icons.close, color: Colors.white60, size: 20),
+                      onPressed: () => Navigator.pop(ctx),
+                    ),
+                  ],
+                ),
+                const Divider(color: Colors.white12, height: 16),
+                const SizedBox(height: 8),
+                ClipRRect(
+                  borderRadius: BorderRadius.circular(10),
+                  child: Container(
+                    height: 320,
+                    color: Colors.black26,
+                    child: InteractiveViewer(
+                      maxScale: 4.0,
+                      child: Image.network(
+                        url,
+                        fit: BoxFit.contain,
+                        errorBuilder: (_, __, ___) => const Center(
+                          child: Padding(
+                            padding: EdgeInsets.all(24),
+                            child: Column(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Icon(Icons.image_not_supported_outlined, color: AppTheme.errorColor, size: 48),
+                                SizedBox(height: 12),
+                                Text(
+                                  'Unable to Preview Image',
+                                  style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 13),
+                                ),
+                                SizedBox(height: 6),
+                                Text(
+                                  'Browser security policies (CORS) or private storage settings may block in-app preview. Use the button below to view it directly.',
+                                  style: TextStyle(color: Colors.white54, fontSize: 11),
+                                  textAlign: TextAlign.center,
+                                ),
+                              ],
+                            ),
                           ),
                         ),
                       ),
                     ),
                   ),
                 ),
-              ),
-              const SizedBox(height: 16),
+                const SizedBox(height: 16),
               Row(
                 mainAxisAlignment: MainAxisAlignment.end,
                 children: [
@@ -703,8 +706,9 @@ class _AdminSubscriptionsScreenState extends State<AdminSubscriptionsScreen> {
           ),
         ),
       ),
-    );
-  }
+    ),
+  );
+}
 
   // ── Filters & Search Handlers ─────────────────────────────────────
 

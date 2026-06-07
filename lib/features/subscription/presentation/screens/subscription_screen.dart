@@ -721,41 +721,43 @@ class _ManualPaymentModalState extends State<_ManualPaymentModal> {
                 color: Colors.white,
                 borderRadius: BorderRadius.circular(24),
               ),
-              child: Column(
-                children: [
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Text(
-                        _paymentMethod == 'esewa'
-                            ? 'eSewa QR Code'
-                            : _paymentMethod == 'khalti'
-                                ? 'Khalti QR Code'
-                                : 'Prabhu Bank QR Code',
-                        style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16, color: Colors.black87),
-                      ),
-                      IconButton(
-                        icon: const Icon(Icons.close, color: Colors.black54),
-                        onPressed: () => Navigator.pop(dialogCtx),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 12),
-                  ClipRRect(
-                    borderRadius: BorderRadius.circular(16),
-                    child: Image.asset(
-                      assetPath,
-                      width: MediaQuery.of(dialogCtx).size.width * 0.8,
-                      height: MediaQuery.of(dialogCtx).size.width * 0.8,
-                      fit: BoxFit.contain,
+              child: SingleChildScrollView(
+                child: Column(
+                  children: [
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Text(
+                          _paymentMethod == 'esewa'
+                              ? 'eSewa QR Code'
+                              : _paymentMethod == 'khalti'
+                                  ? 'Khalti QR Code'
+                                  : 'Prabhu Bank QR Code',
+                          style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16, color: Colors.black87),
+                        ),
+                        IconButton(
+                          icon: const Icon(Icons.close, color: Colors.black54),
+                          onPressed: () => Navigator.pop(dialogCtx),
+                        ),
+                      ],
                     ),
-                  ),
-                  const SizedBox(height: 12),
-                  const Text(
-                    'Scan or download this QR code to pay.',
-                    style: TextStyle(color: Colors.black54, fontSize: 12),
-                  ),
-                ],
+                    const SizedBox(height: 12),
+                    ClipRRect(
+                      borderRadius: BorderRadius.circular(16),
+                      child: Image.asset(
+                        assetPath,
+                        width: MediaQuery.of(dialogCtx).size.width * 0.8,
+                        height: MediaQuery.of(dialogCtx).size.width * 0.8,
+                        fit: BoxFit.contain,
+                      ),
+                    ),
+                    const SizedBox(height: 12),
+                    const Text(
+                      'Scan or download this QR code to pay.',
+                      style: TextStyle(color: Colors.black54, fontSize: 12),
+                    ),
+                  ],
+                ),
               ),
             ),
           ],
