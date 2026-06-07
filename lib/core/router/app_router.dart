@@ -37,6 +37,7 @@ import 'package:hamro_pasal/features/settings/presentation/screens/settings_scre
 import 'package:hamro_pasal/features/tools/presentation/screens/tools_screen.dart';
 import 'package:hamro_pasal/features/tools/presentation/screens/calculator_screen.dart';
 import 'package:hamro_pasal/features/tools/presentation/screens/emi_calculator_screen.dart';
+import 'package:hamro_pasal/features/tools/presentation/screens/thermal_label_screen.dart';
 import 'package:hamro_pasal/core/shell/main_shell_screen.dart';
 import 'package:hamro_pasal/features/admin/presentation/providers/admin_auth_provider.dart';
 import 'package:hamro_pasal/features/admin/presentation/screens/admin_login_screen.dart';
@@ -76,6 +77,7 @@ class AppRoutes {
   static const String tools = '/home/tools';
   static const String calculator = '/home/tools/calculator';
   static const String emiCalculator = '/home/tools/emi';
+  static const String thermalLabel = '/home/tools/thermal';
 
   static const String subscription = '/subscription';
   static const String trialExpired = '/trial-expired';
@@ -278,6 +280,10 @@ final appRouterProvider = Provider<GoRouter>((ref) {
               GoRoute(
                 path: 'emi',
                 builder: (_, __) => const EmiCalculatorScreen(),
+              ),
+              GoRoute(
+                path: 'thermal',
+                builder: (_, __) => const ThermalLabelScreen(),
               ),
             ],
           ),

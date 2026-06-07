@@ -1,15 +1,19 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:hamro_pasal/core/router/app_router.dart';
 import 'package:hamro_pasal/core/theme/app_theme.dart';
+import 'package:hamro_pasal/features/subscription/data/services/subscription_manager.dart';
 
-class ToolsScreen extends StatelessWidget {
+class ToolsScreen extends ConsumerWidget {
   const ToolsScreen({super.key});
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
+    final plan = ref.watch(subscriptionManagerProvider).planCode;
+    final canUseThermal = plan == 'gold' || plan == 'diamond';
 
     final tools = [
       const _ToolItem(
@@ -35,16 +39,18 @@ class ToolsScreen extends StatelessWidget {
         route: AppRoutes.emiCalculator,
       ),
       _ToolItem(
-        title: 'Coming Soon',
-        subtitle: 'GST Calculator, Currency Converter & more',
-        icon: Icons.more_horiz_rounded,
-        gradient: LinearGradient(
-          colors: [Colors.grey.shade400, Colors.grey.shade500],
+        title: 'Thermal Label Printer',
+        subtitle: canUseThermal
+            ? (plan == 'diamond' ? '💎 Unlimited prints · Web & Desktop' : '🥇 Gold · 10 prints/day · Web & Desktop')
+            : '🔒 Gold & Diamond · Print product labels & barcodes',
+        icon: Icons.label_important_rounded,
+        gradient: const LinearGradient(
+          colors: [Color(0xFF059669), Color(0xFF34D399)],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
         ),
-        route: null,
-        locked: true,
+        route: AppRoutes.thermalLabel,
+        planBadge: plan == 'diamond' ? '💎' : plan == 'gold' ? '🥇' : '🔒',
       ),
     ];
 
@@ -124,7 +130,7 @@ class _ToolItem {
   final IconData icon;
   final Gradient gradient;
   final String? route;
-  final bool locked;
+  final String? planBadge;
 
   const _ToolItem({
     required this.title,
@@ -132,7 +138,7 @@ class _ToolItem {
     required this.icon,
     required this.gradient,
     required this.route,
-    this.locked = false,
+    this.planBadge,
   });
 }
 
@@ -162,19 +168,15 @@ class _ToolCardState extends State<_ToolCard> {
           duration: const Duration(milliseconds: 180),
           padding: const EdgeInsets.all(18),
           decoration: BoxDecoration(
-            color: widget.tool.locked
-                ? (isDark
-                    ? AppTheme.darkSurface.withValues(alpha: 0.5)
-                    : Colors.grey.shade50)
-                : (isDark ? AppTheme.darkSurface : Colors.white),
+            color: isDark ? AppTheme.darkSurface : Colors.white,
             borderRadius: BorderRadius.circular(20),
             border: Border.all(
-              color: _hovered && !widget.tool.locked
+              color: _hovered
                   ? AppTheme.primaryColor.withValues(alpha: 0.4)
                   : (isDark ? AppTheme.darkBorder : AppTheme.lightBorder),
-              width: _hovered && !widget.tool.locked ? 1.5 : 1,
+              width: _hovered ? 1.5 : 1,
             ),
-            boxShadow: _hovered && !widget.tool.locked
+            boxShadow: _hovered
                 ? AppTheme.cardShadow(AppTheme.primaryColor, opacity: 0.1)
                 : AppTheme.cardShadow(Colors.black, opacity: 0.04),
           ),
@@ -187,17 +189,15 @@ class _ToolCardState extends State<_ToolCard> {
                 decoration: BoxDecoration(
                   gradient: widget.tool.gradient,
                   borderRadius: BorderRadius.circular(16),
-                  boxShadow: widget.tool.locked
-                      ? null
-                      : [
-                          BoxShadow(
-                            color: (widget.tool.gradient as LinearGradient)
-                                .colors[0]
-                                .withValues(alpha: 0.35),
-                            blurRadius: 12,
-                            offset: const Offset(0, 4),
-                          ),
-                        ],
+                  boxShadow: [
+                    BoxShadow(
+                      color: (widget.tool.gradient as LinearGradient)
+                          .colors[0]
+                          .withValues(alpha: 0.35),
+                      blurRadius: 12,
+                      offset: const Offset(0, 4),
+                    ),
+                  ],
                 ),
                 child: Icon(widget.tool.icon, color: Colors.white, size: 28),
               ),
@@ -208,12 +208,9 @@ class _ToolCardState extends State<_ToolCard> {
                   children: [
                     Text(
                       widget.tool.title,
-                      style: TextStyle(
+                      style: const TextStyle(
                         fontSize: 16,
                         fontWeight: FontWeight.w700,
-                        color: widget.tool.locked
-                            ? AppTheme.lightTextHint
-                            : null,
                       ),
                     ),
                     const SizedBox(height: 3),
@@ -227,28 +224,28 @@ class _ToolCardState extends State<_ToolCard> {
                   ],
                 ),
               ),
-              if (!widget.tool.locked)
+              if (widget.tool.planBadge != null)
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                  decoration: BoxDecoration(
+                    color: widget.tool.planBadge == '💎'
+                        ? const Color(0xFF7C3AED).withValues(alpha: 0.12)
+                        : widget.tool.planBadge == '🥇'
+                            ? const Color(0xFFD97706).withValues(alpha: 0.12)
+                            : Colors.grey.shade200,
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: Text(
+                    widget.tool.planBadge!,
+                    style: const TextStyle(fontSize: 16),
+                  ),
+                )
+              else
                 Icon(
                   Icons.chevron_right_rounded,
                   color: _hovered
                       ? AppTheme.primaryColor
                       : AppTheme.lightTextHint,
-                )
-              else
-                Container(
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                  decoration: BoxDecoration(
-                    color: Colors.grey.shade200,
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                  child: const Text(
-                    'Soon',
-                    style: TextStyle(
-                        fontSize: 11,
-                        color: AppTheme.lightTextHint,
-                        fontWeight: FontWeight.w600),
-                  ),
                 ),
             ],
           ),

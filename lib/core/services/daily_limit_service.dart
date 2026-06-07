@@ -30,6 +30,7 @@ class DailyLimitService {
       'transactions': 50,
       'expenses': 50,
       'products': 20,
+      'thermal_print': 10,
     },
     // diamond = unlimited → not in map → always allowed
   };
@@ -91,6 +92,8 @@ class DailyLimitService {
         return 'expenses';
       case 'products':
         return 'products';
+      case 'thermal_print':
+        return 'thermal prints';
       default:
         return action;
     }

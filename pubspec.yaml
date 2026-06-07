@@ -54,6 +54,10 @@ dependencies:
   printing: ^5.13.1
   excel: ^4.0.2
 
+  # QR Code & Barcode (web/desktop safe, pure Dart)
+  qr_flutter: ^4.1.0
+  barcode_widget: ^2.0.4
+
   # Notifications
   flutter_local_notifications: ^17.2.2
   timezone: ^0.9.4
