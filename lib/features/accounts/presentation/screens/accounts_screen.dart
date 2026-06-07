@@ -242,37 +242,39 @@ class AccountsScreen extends ConsumerWidget {
           title: const Text('Add Account'),
           shape:
               RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-          content: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              const Text('Account Name'),
-              const SizedBox(height: 8),
-              TextField(
-                  controller: nameCtrl,
-                  decoration: const InputDecoration(
-                      hintText: 'e.g. Main Cash, NIC Bank')),
-              const SizedBox(height: 16),
-              const Text('Account Type'),
-              const SizedBox(height: 8),
-              DropdownButton<String>(
-                value: type,
-                isExpanded: true,
-                items: ['cash', 'bank', 'mobile_banking']
-                    .map((t) => DropdownMenuItem(
-                        value: t,
-                        child: Text(t.replaceAll('_', ' ').toUpperCase())))
-                    .toList(),
-                onChanged: (v) => setState(() => type = v ?? type),
-              ),
-              const SizedBox(height: 16),
-              const Text('Opening Balance (Rs.)'),
-              const SizedBox(height: 8),
-              TextField(
-                  controller: balCtrl,
-                  keyboardType: TextInputType.number,
-                  decoration: const InputDecoration(hintText: '0.00')),
-            ],
+          content: SingleChildScrollView(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const Text('Account Name'),
+                const SizedBox(height: 8),
+                TextField(
+                    controller: nameCtrl,
+                    decoration: const InputDecoration(
+                        hintText: 'e.g. Main Cash, NIC Bank')),
+                const SizedBox(height: 16),
+                const Text('Account Type'),
+                const SizedBox(height: 8),
+                DropdownButton<String>(
+                  value: type,
+                  isExpanded: true,
+                  items: ['cash', 'bank', 'mobile_banking']
+                      .map((t) => DropdownMenuItem(
+                          value: t,
+                          child: Text(t.replaceAll('_', ' ').toUpperCase())))
+                      .toList(),
+                  onChanged: (v) => setState(() => type = v ?? type),
+                ),
+                const SizedBox(height: 16),
+                const Text('Opening Balance (Rs.)'),
+                const SizedBox(height: 8),
+                TextField(
+                    controller: balCtrl,
+                    keyboardType: TextInputType.number,
+                    decoration: const InputDecoration(hintText: '0.00')),
+              ],
+            ),
           ),
           actions: [
             TextButton(

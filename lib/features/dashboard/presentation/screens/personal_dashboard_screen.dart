@@ -527,29 +527,35 @@ class _LifetimeStatsGrid extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final fmt = NumberFormat('#,##,##0');
-    return GridView.count(
-      crossAxisCount: 2,
-      crossAxisSpacing: 12,
-      mainAxisSpacing: 12,
-      childAspectRatio: 1.35,
-      shrinkWrap: true,
-      physics: const NeverScrollableScrollPhysics(),
-      children: [
-        _StatTile(
-            'Total Sales',
-            '${AppConstants.currencySymbol} ${fmt.format(stats.totalBusinessSales)}',
-            AppTheme.successColor,
-            Icons.trending_up_rounded),
-        _StatTile(
-            'Total Expenses',
-            '${AppConstants.currencySymbol} ${fmt.format(stats.totalBusinessExpenses)}',
-            AppTheme.errorColor,
-            Icons.trending_down_rounded),
-        _StatTile('Total Parties', '${stats.totalParties}', AppTheme.infoColor,
-            Icons.people_outline),
-        _StatTile('Products', '${stats.totalProducts}', AppTheme.accentColor,
-            Icons.inventory_2_outlined),
-      ],
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final cols = constraints.maxWidth > 600 ? 4 : 2;
+        final ratio = constraints.maxWidth > 600 ? 1.6 : 1.35;
+        return GridView.count(
+          crossAxisCount: cols,
+          crossAxisSpacing: 12,
+          mainAxisSpacing: 12,
+          childAspectRatio: ratio,
+          shrinkWrap: true,
+          physics: const NeverScrollableScrollPhysics(),
+          children: [
+            _StatTile(
+                'Total Sales',
+                '${AppConstants.currencySymbol} ${fmt.format(stats.totalBusinessSales)}',
+                AppTheme.successColor,
+                Icons.trending_up_rounded),
+            _StatTile(
+                'Total Expenses',
+                '${AppConstants.currencySymbol} ${fmt.format(stats.totalBusinessExpenses)}',
+                AppTheme.errorColor,
+                Icons.trending_down_rounded),
+            _StatTile('Total Parties', '${stats.totalParties}', AppTheme.infoColor,
+                Icons.people_outline),
+            _StatTile('Products', '${stats.totalProducts}', AppTheme.accentColor,
+                Icons.inventory_2_outlined),
+          ],
+        );
+      },
     ).animate(delay: 200.ms).fadeIn();
   }
 }

@@ -320,30 +320,36 @@ class _ReportsScreenState extends ConsumerState<ReportsScreen> {
                         .animate()
                         .fadeIn(),
                     const SizedBox(height: 12),
-                    GridView.count(
-                      crossAxisCount: 2,
-                      crossAxisSpacing: 12,
-                      mainAxisSpacing: 12,
-                      childAspectRatio: 1.35,
-                      shrinkWrap: true,
-                      physics: const NeverScrollableScrollPhysics(),
-                      children: [
-                        _ReportCard('Total Sales', report.totalSales,
-                            AppTheme.successColor, Icons.trending_up_rounded),
-                        _ReportCard('Total Purchases', report.totalPurchases,
-                            AppTheme.infoColor, Icons.shopping_bag_outlined),
-                        _ReportCard('Total Expenses', report.totalExpenses,
-                            AppTheme.errorColor, Icons.wallet_outlined),
-                        _ReportCard(
-                            'Net Profit',
-                            report.netProfit,
-                            report.netProfit >= 0
-                                ? AppTheme.accentColor
-                                : AppTheme.errorColor,
-                            report.netProfit >= 0
-                                ? Icons.emoji_events_outlined
-                                : Icons.sentiment_dissatisfied_outlined),
-                      ],
+                    LayoutBuilder(
+                      builder: (context, constraints) {
+                        final cols = constraints.maxWidth > 600 ? 4 : 2;
+                        final ratio = constraints.maxWidth > 600 ? 1.6 : 1.35;
+                        return GridView.count(
+                          crossAxisCount: cols,
+                          crossAxisSpacing: 12,
+                          mainAxisSpacing: 12,
+                          childAspectRatio: ratio,
+                          shrinkWrap: true,
+                          physics: const NeverScrollableScrollPhysics(),
+                          children: [
+                            _ReportCard('Total Sales', report.totalSales,
+                                AppTheme.successColor, Icons.trending_up_rounded),
+                            _ReportCard('Total Purchases', report.totalPurchases,
+                                AppTheme.infoColor, Icons.shopping_bag_outlined),
+                            _ReportCard('Total Expenses', report.totalExpenses,
+                                AppTheme.errorColor, Icons.wallet_outlined),
+                            _ReportCard(
+                                'Net Profit',
+                                report.netProfit,
+                                report.netProfit >= 0
+                                    ? AppTheme.accentColor
+                                    : AppTheme.errorColor,
+                                report.netProfit >= 0
+                                    ? Icons.emoji_events_outlined
+                                    : Icons.sentiment_dissatisfied_outlined),
+                          ],
+                        );
+                      },
                     ).animate(delay: 50.ms).fadeIn().slideY(begin: 0.1, end: 0),
 
                     const SizedBox(height: 24),

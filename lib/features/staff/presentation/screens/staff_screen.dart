@@ -289,31 +289,33 @@ class StaffScreen extends ConsumerWidget {
           title: const Text('Invite Staff Member'),
           shape:
               RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-          content: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              const Text('Email Address'),
-              const SizedBox(height: 8),
-              TextField(
-                controller: emailCtrl,
-                keyboardType: TextInputType.emailAddress,
-                decoration:
-                    const InputDecoration(hintText: 'staff@example.com'),
-              ),
-              const SizedBox(height: 16),
-              const Text('Role'),
-              const SizedBox(height: 8),
-              DropdownButton<String>(
-                value: role,
-                isExpanded: true,
-                items: ['admin', 'manager', 'cashier', 'accountant']
-                    .map((r) => DropdownMenuItem(
-                        value: r, child: Text(r.toUpperCase())))
-                    .toList(),
-                onChanged: (v) => setState(() => role = v ?? role),
-              ),
-            ],
+          content: SingleChildScrollView(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const Text('Email Address'),
+                const SizedBox(height: 8),
+                TextField(
+                  controller: emailCtrl,
+                  keyboardType: TextInputType.emailAddress,
+                  decoration:
+                      const InputDecoration(hintText: 'staff@example.com'),
+                ),
+                const SizedBox(height: 16),
+                const Text('Role'),
+                const SizedBox(height: 8),
+                DropdownButton<String>(
+                  value: role,
+                  isExpanded: true,
+                  items: ['admin', 'manager', 'cashier', 'accountant']
+                      .map((r) => DropdownMenuItem(
+                          value: r, child: Text(r.toUpperCase())))
+                      .toList(),
+                  onChanged: (v) => setState(() => role = v ?? role),
+                ),
+              ],
+            ),
           ),
           actions: [
             TextButton(

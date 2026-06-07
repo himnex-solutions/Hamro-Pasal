@@ -225,39 +225,87 @@ class _EmiCalculatorScreenState extends State<EmiCalculatorScreen>
 
               const SizedBox(height: 16),
 
-              // ── Summary Row ──────────────────────────────────
-              Row(
-                children: [
-                  Expanded(
-                    child: _SummaryTile(
-                      isDark: isDark,
-                      label: 'Principal',
-                      value: 'रु. ${_fmtShort.format(_principal)}',
-                      icon: Icons.account_balance_wallet_rounded,
-                      color: AppTheme.primaryColor,
-                    ),
-                  ),
-                  const SizedBox(width: 10),
-                  Expanded(
-                    child: _SummaryTile(
-                      isDark: isDark,
-                      label: 'Total Interest',
-                      value: 'रु. ${_fmtShort.format(_totalInterest)}',
-                      icon: Icons.trending_up_rounded,
-                      color: AppTheme.warningColor,
-                    ),
-                  ),
-                  const SizedBox(width: 10),
-                  Expanded(
-                    child: _SummaryTile(
-                      isDark: isDark,
-                      label: 'Total Payable',
-                      value: 'रु. ${_fmtShort.format(_totalPayable)}',
-                      icon: Icons.receipt_long_rounded,
-                      color: AppTheme.successColor,
-                    ),
-                  ),
-                ],
+              // ── Summary Row (responsive) ─────────────────────
+              LayoutBuilder(
+                builder: (context, constraints) {
+                  final isNarrow = constraints.maxWidth < 480;
+                  if (isNarrow) {
+                    return Column(
+                      children: [
+                        Row(
+                          children: [
+                            Expanded(
+                              child: _SummaryTile(
+                                isDark: isDark,
+                                label: 'Principal',
+                                value: 'रु. ${_fmtShort.format(_principal)}',
+                                icon: Icons.account_balance_wallet_rounded,
+                                color: AppTheme.primaryColor,
+                              ),
+                            ),
+                            const SizedBox(width: 10),
+                            Expanded(
+                              child: _SummaryTile(
+                                isDark: isDark,
+                                label: 'Total Interest',
+                                value: 'रु. ${_fmtShort.format(_totalInterest)}',
+                                icon: Icons.trending_up_rounded,
+                                color: AppTheme.warningColor,
+                              ),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 10),
+                        Row(
+                          children: [
+                            Expanded(
+                              child: _SummaryTile(
+                                isDark: isDark,
+                                label: 'Total Payable',
+                                value: 'रु. ${_fmtShort.format(_totalPayable)}',
+                                icon: Icons.receipt_long_rounded,
+                                color: AppTheme.successColor,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ],
+                    );
+                  }
+                  return Row(
+                    children: [
+                      Expanded(
+                        child: _SummaryTile(
+                          isDark: isDark,
+                          label: 'Principal',
+                          value: 'रु. ${_fmtShort.format(_principal)}',
+                          icon: Icons.account_balance_wallet_rounded,
+                          color: AppTheme.primaryColor,
+                        ),
+                      ),
+                      const SizedBox(width: 10),
+                      Expanded(
+                        child: _SummaryTile(
+                          isDark: isDark,
+                          label: 'Total Interest',
+                          value: 'रु. ${_fmtShort.format(_totalInterest)}',
+                          icon: Icons.trending_up_rounded,
+                          color: AppTheme.warningColor,
+                        ),
+                      ),
+                      const SizedBox(width: 10),
+                      Expanded(
+                        child: _SummaryTile(
+                          isDark: isDark,
+                          label: 'Total Payable',
+                          value: 'रु. ${_fmtShort.format(_totalPayable)}',
+                          icon: Icons.receipt_long_rounded,
+                          color: AppTheme.successColor,
+                        ),
+                      ),
+                    ],
+                  );
+                },
               ).animate().fadeIn(delay: 150.ms),
 
               const SizedBox(height: 16),

@@ -111,52 +111,58 @@ class DashboardScreen extends ConsumerWidget {
       _SectionHeader(title: l.overviewToday),
       const SizedBox(height: 12),
 
-      // KPI Cards — 2-column staggered grid
+      // KPI Cards — responsive staggered grid
       AnimationLimiter(
-        child: GridView.count(
-          crossAxisCount: 2,
-          crossAxisSpacing: 12,
-          mainAxisSpacing: 12,
-          childAspectRatio: 1.45,
-          shrinkWrap: true,
-          physics: const NeverScrollableScrollPhysics(),
-          children: AnimationConfiguration.toStaggeredList(
-            duration: const Duration(milliseconds: 380),
-            childAnimationBuilder: (w) => SlideAnimation(
-              verticalOffset: 24,
-              child: FadeInAnimation(child: w),
-            ),
-            children: [
-              _KpiCard(
-                label: l.todaySales,
-                value: 'Rs. ${fmt.format(stats.todaySales)}',
-                icon: Icons.trending_up_rounded,
-                color: const Color(0xFF10B981),
-                sparkData: _mockSparkData(stats.todaySales),
+        child: LayoutBuilder(
+          builder: (context, constraints) {
+            final cols = constraints.maxWidth > 600 ? 4 : 2;
+            final ratio = constraints.maxWidth > 600 ? 1.6 : 1.45;
+            return GridView.count(
+              crossAxisCount: cols,
+              crossAxisSpacing: 12,
+              mainAxisSpacing: 12,
+              childAspectRatio: ratio,
+              shrinkWrap: true,
+              physics: const NeverScrollableScrollPhysics(),
+              children: AnimationConfiguration.toStaggeredList(
+                duration: const Duration(milliseconds: 380),
+                childAnimationBuilder: (w) => SlideAnimation(
+                  verticalOffset: 24,
+                  child: FadeInAnimation(child: w),
+                ),
+                children: [
+                  _KpiCard(
+                    label: l.todaySales,
+                    value: 'Rs. ${fmt.format(stats.todaySales)}',
+                    icon: Icons.trending_up_rounded,
+                    color: const Color(0xFF10B981),
+                    sparkData: _mockSparkData(stats.todaySales),
+                  ),
+                  _KpiCard(
+                    label: l.todayExpenses,
+                    value: 'Rs. ${fmt.format(stats.todayExpenses)}',
+                    icon: Icons.trending_down_rounded,
+                    color: const Color(0xFFEF4444),
+                    sparkData: _mockSparkData(stats.todayExpenses),
+                  ),
+                  _KpiCard(
+                    label: l.receivables,
+                    value: 'Rs. ${fmt.format(stats.totalReceivables)}',
+                    icon: Icons.account_balance_wallet_outlined,
+                    color: const Color(0xFF3B82F6),
+                    sparkData: _mockSparkData(stats.totalReceivables),
+                  ),
+                  _KpiCard(
+                    label: l.payables,
+                    value: 'Rs. ${fmt.format(stats.totalPayables)}',
+                    icon: Icons.payments_outlined,
+                    color: const Color(0xFFF59E0B),
+                    sparkData: _mockSparkData(stats.totalPayables),
+                  ),
+                ],
               ),
-              _KpiCard(
-                label: l.todayExpenses,
-                value: 'Rs. ${fmt.format(stats.todayExpenses)}',
-                icon: Icons.trending_down_rounded,
-                color: const Color(0xFFEF4444),
-                sparkData: _mockSparkData(stats.todayExpenses),
-              ),
-              _KpiCard(
-                label: l.receivables,
-                value: 'Rs. ${fmt.format(stats.totalReceivables)}',
-                icon: Icons.account_balance_wallet_outlined,
-                color: const Color(0xFF3B82F6),
-                sparkData: _mockSparkData(stats.totalReceivables),
-              ),
-              _KpiCard(
-                label: l.payables,
-                value: 'Rs. ${fmt.format(stats.totalPayables)}',
-                icon: Icons.payments_outlined,
-                color: const Color(0xFFF59E0B),
-                sparkData: _mockSparkData(stats.totalPayables),
-              ),
-            ],
-          ),
+            );
+          },
         ),
       ),
 
@@ -915,14 +921,28 @@ class _QuickActionsGrid extends StatelessWidget {
           AppRoutes.settings),
     ];
 
-    return GridView.count(
-      crossAxisCount: 3,
-      crossAxisSpacing: 10,
-      mainAxisSpacing: 10,
-      childAspectRatio: 1.05,
-      shrinkWrap: true,
-      physics: const NeverScrollableScrollPhysics(),
-      children: actions.map((a) => _QACard(action: a)).toList(),
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final cols = constraints.maxWidth > 800
+            ? 9
+            : constraints.maxWidth > 500
+                ? 6
+                : 3;
+        final ratio = constraints.maxWidth > 800
+            ? 1.1
+            : constraints.maxWidth > 500
+                ? 1.05
+                : 1.05;
+        return GridView.count(
+          crossAxisCount: cols,
+          crossAxisSpacing: 10,
+          mainAxisSpacing: 10,
+          childAspectRatio: ratio,
+          shrinkWrap: true,
+          physics: const NeverScrollableScrollPhysics(),
+          children: actions.map((a) => _QACard(action: a)).toList(),
+        );
+      },
     );
   }
 }
