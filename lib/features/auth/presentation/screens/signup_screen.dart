@@ -3,20 +3,19 @@ import 'package:flutter/services.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/flutter_svg.dart';
-import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:go_router/go_router.dart';
 import 'package:hamro_pasal/core/router/app_router.dart';
 import 'package:hamro_pasal/core/widgets/app_snackbar.dart';
 import 'package:hamro_pasal/features/auth/presentation/providers/auth_provider.dart';
 
-// Color tokens (shared with login screen)
-const _teal = Color(0xFF0D7E8A);
-const _tealLink = Color(0xFF10B4C3);
-const _dark = Color(0xFF0F172A);
-const _grey = Color(0xFF94A3B8);
-const _border = Color(0xFFE2E8F0);
-const _bgDark1 = Color(0xFF07242B); // matches login exactly
-const _bgDark2 = Color(0xFF0F4850); // matches login exactly
+import 'package:hamro_pasal/core/widgets/wavy_divider.dart';
+
+// ── Color tokens (matching login screen exactly) ────────────
+const _gradientStart = Color(0xFF1E2ED2); // royal blue
+const _gradientEnd = Color(0xFF6B58F5); // light purple/blue
+const _dark = Color(0xFF0F172A); // slate-black for titles
+const _grey = Color(0xFF94A3B8); // slate-grey for subtitle
+const _border = Color(0xFFE2E8F0); // border color
 
 class SignupScreen extends ConsumerStatefulWidget {
   const SignupScreen({super.key});
@@ -32,16 +31,13 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
   final _passwordCtrl = TextEditingController();
   final _confirmCtrl = TextEditingController();
 
-  // Focus nodes — needed to detect when the user leaves a field
   final _phoneFocus = FocusNode();
   final _emailFocus = FocusNode();
 
   bool _obscurePassword = true;
   bool _obscureConfirm = true;
-  bool _rememberMe = false;
   bool _isLoading = false;
 
-  // Inline duplicate errors (set after focus-out async check)
   String? _phoneError;
   String? _emailError;
   bool _checkingPhone = false;
@@ -51,22 +47,19 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
   void initState() {
     super.initState();
 
-    // Check phone uniqueness when user leaves the phone field
     _phoneFocus.addListener(() {
       if (!_phoneFocus.hasFocus) _checkPhone();
     });
 
-    // Check email uniqueness when user leaves the email field
     _emailFocus.addListener(() {
       if (!_emailFocus.hasFocus) _checkEmail();
     });
   }
 
-  /// Async check: is this phone already registered?
   Future<void> _checkPhone() async {
     final phone = _phoneCtrl.text.trim();
     final digits = phone.replaceAll(RegExp(r'[^0-9]'), '');
-    if (digits.length != 10) return; // let the format validator handle it
+    if (digits.length != 10) return;
 
     setState(() => _checkingPhone = true);
     final taken = await ref.read(authProvider.notifier).isPhoneTaken(phone);
@@ -77,13 +70,12 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
           ? 'This phone number is already registered. Please use a different number.'
           : null;
     });
-    _formKey.currentState?.validate(); // refresh inline error immediately
+    _formKey.currentState?.validate();
   }
 
-  /// Async check: is this email already registered?
   Future<void> _checkEmail() async {
     final email = _emailCtrl.text.trim();
-    if (!email.contains('@')) return; // let the format validator handle it
+    if (!email.contains('@')) return;
 
     setState(() => _checkingEmail = true);
     final taken = await ref.read(authProvider.notifier).isEmailTaken(email);
@@ -94,7 +86,7 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
           ? 'This email is already registered. Please sign in instead.'
           : null;
     });
-    _formKey.currentState?.validate(); // refresh inline error immediately
+    _formKey.currentState?.validate();
   }
 
   @override
@@ -110,13 +102,11 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
   }
 
   Future<void> _signup() async {
-    // Force async checks on both fields before final validate
     if (_phoneFocus.hasFocus || _emailFocus.hasFocus) {
       FocusScope.of(context).unfocus();
       await Future.delayed(const Duration(milliseconds: 300));
     }
     if (!_formKey.currentState!.validate()) return;
-    // Guard: block if inline duplicate errors are still set
     if (_phoneError != null || _emailError != null) return;
     setState(() => _isLoading = true);
     final success = await ref.read(authProvider.notifier).signUp(
@@ -136,7 +126,6 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
       );
       context.go(AppRoutes.login);
     } else {
-      // Server-side duplicate errors (edge case: race condition)
       final msg = ref.read(authProvider).errorMessage ?? 'Registration failed';
       if (msg.toLowerCase().contains('phone')) {
         setState(() => _phoneError = msg);
@@ -166,29 +155,64 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
   @override
   Widget build(BuildContext context) {
     final screenHeight = MediaQuery.of(context).size.height;
-    // Signup has one extra field so keep the logo zone a touch smaller
-    final topSectionHeight = screenHeight * 0.30;
+    final topSectionHeight = screenHeight * 0.28;
 
     return Scaffold(
       resizeToAvoidBottomInset: true,
-      backgroundColor: _bgDark1,
+      backgroundColor: _gradientStart,
       body: Stack(
         children: [
-          // ── Full-screen gradient + blob background (same as login) ──
+          // ── Top Gradient Section ──────────────────
           Positioned.fill(
             child: Container(
               decoration: const BoxDecoration(
                 gradient: LinearGradient(
-                  colors: [_bgDark1, _bgDark2],
-                  begin: Alignment.topLeft,
-                  end: Alignment.bottomRight,
+                  colors: [_gradientStart, _gradientEnd],
+                  begin: Alignment.bottomLeft,
+                  end: Alignment.topRight,
                 ),
               ),
-              child: CustomPaint(painter: _AuthBgPainter()),
             ),
           ),
 
-          // Logo centered in the top section
+          // ── Top Navigation Row ──────────────────
+          Positioned(
+            top: 0,
+            left: 0,
+            right: 0,
+            child: SafeArea(
+              bottom: false,
+              child: Padding(
+                padding:
+                    const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    // Back Arrow
+                    GestureDetector(
+                      onTap: () {
+                        if (Navigator.of(context).canPop()) {
+                          context.pop();
+                        } else {
+                          context.go(AppRoutes.login);
+                        }
+                      },
+                      child: const Padding(
+                        padding: EdgeInsets.all(8.0),
+                        child: Icon(
+                          Icons.arrow_back_ios_new_rounded,
+                          color: Colors.white,
+                          size: 18,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ),
+
+          // ── Title "HamroPasal" centered in top section ──────────────────
           Positioned(
             top: 0,
             left: 0,
@@ -197,32 +221,31 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
             child: SafeArea(
               bottom: false,
               child: Center(
-                child: Image.asset(
-                  'assets/images/logo.png',
-                  width: 80,
-                  height: 80,
-                  fit: BoxFit.contain,
-                  errorBuilder: (_, __, ___) => const _FallbackLogo(),
+                child: const Text(
+                  'HamroPasal',
+                  style: TextStyle(
+                    fontSize: 42,
+                    fontWeight: FontWeight.w800,
+                    color: Colors.white,
+                    letterSpacing: -0.6,
+                  ),
                 ).animate().fadeIn(duration: 700.ms).scale(
-                    begin: const Offset(0.75, 0.75), curve: Curves.easeOutBack),
+                    begin: const Offset(0.9, 0.9), curve: Curves.easeOutBack),
               ),
             ),
           ),
 
-          // White bottom-sheet form card
+          // ── White bottom-sheet card with wavy divider ───────────────────────────
           Positioned(
             left: 0,
             right: 0,
             bottom: 0,
-            top: topSectionHeight - 30,
-            child: Container(
-              decoration: const BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.vertical(top: Radius.circular(36)),
-              ),
+            top: topSectionHeight - 45,
+            child: WavyDivider(
               child: SingleChildScrollView(
                 physics: const BouncingScrollPhysics(),
-                padding: const EdgeInsets.fromLTRB(28, 26, 28, 24),
+                padding: const EdgeInsets.only(
+                    left: 24, right: 24, top: 60, bottom: 28),
                 child: _buildForm(),
               ),
             ).animate(delay: 150.ms).slideY(
@@ -239,53 +262,13 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          // Title
-          const Text(
-            'Sign Up',
-            textAlign: TextAlign.center,
-            style: TextStyle(
-              fontSize: 26,
-              fontWeight: FontWeight.w800,
-              color: _dark,
-              letterSpacing: -0.3,
-            ),
-          ).animate().fadeIn(delay: 200.ms),
-
-          const SizedBox(height: 6),
-
-          // Subtitle
-          Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              const Flexible(
-                child: Text(
-                  'Already Have An Account? ',
-                  style: TextStyle(fontSize: 13.5, color: _grey),
-                  overflow: TextOverflow.ellipsis,
-                ),
-              ),
-              GestureDetector(
-                onTap: () => context.go(AppRoutes.login),
-                child: const Text(
-                  'Sign In',
-                  style: TextStyle(
-                    fontSize: 13.5,
-                    color: _tealLink,
-                    fontWeight: FontWeight.w700,
-                  ),
-                ),
-              ),
-            ],
-          ).animate().fadeIn(delay: 240.ms),
-
-          const SizedBox(height: 20),
+          const SizedBox(height: 24),
 
           // Full Name
-          _AuthField(
+          _CustomAuthField(
             controller: _fullNameCtrl,
-            hint: 'Enter your full name',
-            prefixIcon: Icons.person_outline_rounded,
+            label: 'Full Name',
+            icon: Icons.person_outline_rounded,
             textInputAction: TextInputAction.next,
             validator: (v) {
               if (v == null || v.trim().isEmpty) return 'Full name is required';
@@ -294,84 +277,79 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
             },
           ).animate().fadeIn(delay: 255.ms),
 
-          const SizedBox(height: 12),
+          const SizedBox(height: 14),
 
           // Phone Number
-          Stack(
-            children: [
-              _AuthField(
-                controller: _phoneCtrl,
-                focusNode: _phoneFocus,
-                hint: '98XXXXXXXX',
-                prefixIcon: Icons.phone_outlined,
-                keyboardType: TextInputType.phone,
-                textInputAction: TextInputAction.next,
-                inputFormatters: [
-                  FilteringTextInputFormatter.digitsOnly,
-                  LengthLimitingTextInputFormatter(10),
-                ],
-                validator: (v) {
-                  if (v == null || v.trim().isEmpty) return 'Phone number is required';
-                  final digits = v.trim().replaceAll(RegExp(r'[^0-9]'), '');
-                  if (digits.length != 10) return 'Phone number must be exactly 10 digits';
-                  if (_phoneError != null) return _phoneError;
-                  return null;
-                },
-              ),
-              if (_checkingPhone)
-                const Positioned(
-                  right: 16,
-                  top: 16,
-                  child: SizedBox(
+          _CustomAuthField(
+            controller: _phoneCtrl,
+            focusNode: _phoneFocus,
+            label: 'Phone Number',
+            icon: Icons.phone_iphone_rounded,
+            keyboardType: TextInputType.phone,
+            textInputAction: TextInputAction.next,
+            inputFormatters: [
+              FilteringTextInputFormatter.digitsOnly,
+              LengthLimitingTextInputFormatter(10),
+            ],
+            prefix: const _NepalPhonePrefix(),
+            suffix: _checkingPhone
+                ? const SizedBox(
                     width: 16,
                     height: 16,
                     child: CircularProgressIndicator(
-                        strokeWidth: 2, color: _teal),
-                  ),
-                ),
-            ],
+                      strokeWidth: 2,
+                      color: Color(0xFF2C3BD5),
+                    ),
+                  )
+                : null,
+            validator: (v) {
+              if (v == null || v.trim().isEmpty) {
+                return 'Phone number is required';
+              }
+              final digits = v.trim().replaceAll(RegExp(r'[^0-9]'), '');
+              if (digits.length != 10) {
+                return 'Phone number must be exactly 10 digits';
+              }
+              if (_phoneError != null) return _phoneError;
+              return null;
+            },
           ).animate().fadeIn(delay: 265.ms),
 
-          const SizedBox(height: 12),
+          const SizedBox(height: 14),
 
           // Email
-          Stack(
-            children: [
-              _AuthField(
-                controller: _emailCtrl,
-                focusNode: _emailFocus,
-                hint: 'Enter your email address',
-                prefixIcon: Icons.mail_outline_rounded,
-                keyboardType: TextInputType.emailAddress,
-                textInputAction: TextInputAction.next,
-                validator: (v) {
-                  if (v == null || v.isEmpty) return 'Email is required';
-                  if (!v.contains('@')) return 'Enter a valid email';
-                  if (_emailError != null) return _emailError;
-                  return null;
-                },
-              ),
-              if (_checkingEmail)
-                const Positioned(
-                  right: 16,
-                  top: 16,
-                  child: SizedBox(
+          _CustomAuthField(
+            controller: _emailCtrl,
+            focusNode: _emailFocus,
+            label: 'Email Address',
+            icon: Icons.mail_outline_rounded,
+            keyboardType: TextInputType.emailAddress,
+            textInputAction: TextInputAction.next,
+            suffix: _checkingEmail
+                ? const SizedBox(
                     width: 16,
                     height: 16,
                     child: CircularProgressIndicator(
-                        strokeWidth: 2, color: _teal),
-                  ),
-                ),
-            ],
+                      strokeWidth: 2,
+                      color: Color(0xFF2C3BD5),
+                    ),
+                  )
+                : null,
+            validator: (v) {
+              if (v == null || v.isEmpty) return 'Email is required';
+              if (!v.contains('@')) return 'Enter a valid email';
+              if (_emailError != null) return _emailError;
+              return null;
+            },
           ).animate().fadeIn(delay: 270.ms),
 
-          const SizedBox(height: 12),
+          const SizedBox(height: 14),
 
           // Password
-          _AuthField(
+          _CustomAuthField(
             controller: _passwordCtrl,
-            hint: 'Password',
-            prefixIcon: Icons.lock_outline_rounded,
+            label: 'Password',
+            icon: Icons.lock_outline_rounded,
             obscureText: _obscurePassword,
             textInputAction: TextInputAction.next,
             suffix: GestureDetector(
@@ -391,13 +369,13 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
             },
           ).animate().fadeIn(delay: 300.ms),
 
-          const SizedBox(height: 12),
+          const SizedBox(height: 14),
 
           // Confirm Password
-          _AuthField(
+          _CustomAuthField(
             controller: _confirmCtrl,
-            hint: 'Confirm Password',
-            prefixIcon: Icons.lock_outline_rounded,
+            label: 'Confirm Password',
+            icon: Icons.lock_outline_rounded,
             obscureText: _obscureConfirm,
             textInputAction: TextInputAction.done,
             onSubmitted: (_) => _signup(),
@@ -418,101 +396,98 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
             },
           ).animate().fadeIn(delay: 330.ms),
 
-          const SizedBox(height: 14),
-
-          // Remember me + Forgot password
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Row(
-                children: [
-                  SizedBox(
-                    width: 20,
-                    height: 20,
-                    child: Checkbox(
-                      value: _rememberMe,
-                      onChanged: (v) =>
-                          setState(() => _rememberMe = v ?? false),
-                      activeColor: _teal,
-                      checkColor: Colors.white,
-                      shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(4)),
-                      side: BorderSide(
-                          color: _rememberMe ? _teal : _border, width: 1.5),
-                      materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                    ),
-                  ),
-                  const SizedBox(width: 8),
-                  const Text('Remember Me',
-                      style: TextStyle(fontSize: 13, color: _dark)),
-                ],
-              ),
-              GestureDetector(
-                onTap: () => context.push(AppRoutes.forgotPassword),
-                child: const Text(
-                  'Forgot Password?',
-                  style: TextStyle(
-                      fontSize: 13,
-                      color: _tealLink,
-                      fontWeight: FontWeight.w600),
-                ),
-              ),
-            ],
-          ).animate().fadeIn(delay: 360.ms),
-
-          const SizedBox(height: 18),
+          const SizedBox(height: 24),
 
           // Sign Up button
-          _PillButton(
+          _GradientButton(
             label: 'Sign Up',
             isLoading: _isLoading,
             onPressed: _signup,
-          ).animate().fadeIn(delay: 390.ms),
+          ).animate().fadeIn(delay: 360.ms),
 
-          const SizedBox(height: 18),
+          const SizedBox(height: 22),
 
           // Divider
           const Row(children: [
             Expanded(child: Divider(color: _border, thickness: 1)),
             Padding(
-              padding: EdgeInsets.symmetric(horizontal: 14),
+              padding: EdgeInsets.symmetric(horizontal: 16),
               child: Text(
-                'Or Continue With',
+                'Or sign up with',
                 style: TextStyle(
-                  fontSize: 12,
-                  color: Color(0xFF9E9E9E),
+                  fontSize: 13,
+                  color: _grey,
                   fontWeight: FontWeight.w500,
                 ),
               ),
             ),
             Expanded(child: Divider(color: _border, thickness: 1)),
-          ]).animate().fadeIn(delay: 420.ms),
+          ]).animate().fadeIn(delay: 390.ms),
 
-          const SizedBox(height: 16),
+          const SizedBox(height: 18),
 
           // Social buttons
           Row(
             children: [
+              // Google
               Expanded(
-                child: _SocialPillButton(
-                  label: 'Apple',
-                  icon: const FaIcon(FontAwesomeIcons.apple,
-                      size: 20, color: Colors.white),
-                  isDark: true,
-                  onTap: () {},
-                ),
-              ),
-              const SizedBox(width: 14),
-              Expanded(
-                child: _SocialPillButton(
+                child: _SocialBorderButton(
                   label: 'Google',
                   icon: _GoogleLogo(),
-                  isDark: false,
+                  textColor: _dark,
                   onTap: _googleSignup,
                 ),
               ),
+              const SizedBox(width: 16),
+              // Apple
+              Expanded(
+                child: _SocialBorderButton(
+                  label: 'Apple',
+                  icon: const Icon(
+                    Icons.apple,
+                    color: Colors.black,
+                    size: 24,
+                  ),
+                  textColor: Colors.black,
+                  onTap: () {
+                    AppSnackbar.show(
+                      context,
+                      'Apple signup is not configured yet.',
+                      isError: false,
+                    );
+                  },
+                ),
+              ),
             ],
-          ).animate().fadeIn(delay: 450.ms),
+          ).animate().fadeIn(delay: 420.ms),
+
+          const SizedBox(height: 28),
+
+          // Already have an account? Sign In
+          Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              const Text(
+                'Already have an account? ',
+                style: TextStyle(
+                  color: Color(0xFF64748B), // Slate 500
+                  fontSize: 14,
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
+              GestureDetector(
+                onTap: () => context.go(AppRoutes.login),
+                child: const Text(
+                  'Sign In',
+                  style: TextStyle(
+                    color: Color(0xFF2C3BD5), // Accent blue
+                    fontSize: 14,
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+              ),
+            ],
+          ).animate().fadeIn(delay: 440.ms),
         ],
       ),
     );
@@ -520,401 +495,371 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
 }
 
 // ─────────────────────────────────────────────────────────────
-//  Shared auth background painter — identical to login screen
+//  Nepal Phone Prefix Widget  🇳🇵 +977
 // ─────────────────────────────────────────────────────────────
 
-class _AuthBgPainter extends CustomPainter {
-  @override
-  void paint(Canvas canvas, Size size) {
-    final W = size.width;
-    final H = size.height;
-
-    // ── 1. Primary hero orb — top-left, large, rich teal ─────
-    _drawOrb(
-      canvas,
-      center: Offset(W * -0.05, H * 0.05),
-      radius: W * 0.80,
-      colors: [
-        const Color(0xFF1FE0F0).withValues(alpha: 0.55),
-        const Color(0xFF0DA8B8).withValues(alpha: 0.22),
-        Colors.transparent,
-      ],
-      stops: const [0.0, 0.45, 1.0],
-    );
-
-    // ── 2. Secondary orb — upper-right, cool cyan ─────────────
-    _drawOrb(
-      canvas,
-      center: Offset(W * 1.05, H * -0.02),
-      radius: W * 0.55,
-      colors: [
-        const Color(0xFF38EAF7).withValues(alpha: 0.38),
-        const Color(0xFF0B7A87).withValues(alpha: 0.14),
-        Colors.transparent,
-      ],
-      stops: const [0.0, 0.50, 1.0],
-    );
-
-    // ── 3. Mid orb — center-left, warm teal-indigo blend ──────
-    _drawOrb(
-      canvas,
-      center: Offset(W * 0.20, H * 0.42),
-      radius: W * 0.50,
-      colors: [
-        const Color(0xFF0CCEDF).withValues(alpha: 0.18),
-        const Color(0xFF0A3D6B).withValues(alpha: 0.08),
-        Colors.transparent,
-      ],
-      stops: const [0.0, 0.55, 1.0],
-    );
-
-    // ── 4. Diagonal aurora / light beam ───────────────────────
-    final beamPath = Path()
-      ..moveTo(W * -0.10, H * 0.30)
-      ..lineTo(W * 0.45, H * 0.00)
-      ..lineTo(W * 0.65, H * 0.00)
-      ..lineTo(W * 0.10, H * 0.30)
-      ..close();
-    canvas.drawPath(
-      beamPath,
-      Paint()
-        ..shader = LinearGradient(
-          colors: [
-            const Color(0xFF1FE0F0).withValues(alpha: 0.22),
-            Colors.transparent,
-          ],
-          begin: Alignment.topCenter,
-          end: Alignment.bottomCenter,
-        ).createShader(Rect.fromLTWH(0, 0, W, H * 0.30)),
-    );
-
-    // ── 5. Upper wave band ─────────────────────────────────────
-    _drawWave(
-      canvas,
-      W,
-      H,
-      y1: 0.16,
-      cp1x: 0.28,
-      cp1y: 0.09,
-      cp2x: 0.65,
-      cp2y: 0.23,
-      y2: 0.20,
-      color: const Color(0xFF0ECFDD).withValues(alpha: 0.13),
-    );
-
-    // ── 6. Second wave band (offset) ──────────────────────────
-    _drawWave(
-      canvas,
-      W,
-      H,
-      y1: 0.24,
-      cp1x: 0.30,
-      cp1y: 0.14,
-      cp2x: 0.68,
-      cp2y: 0.30,
-      y2: 0.28,
-      color: const Color(0xFF0BBAC8).withValues(alpha: 0.09),
-    );
-
-    // ── 7. Bottom dark swoosh ──────────────────────────────────
-    final swoosh = Path()
-      ..moveTo(0, H * 0.70)
-      ..cubicTo(W * 0.25, H * 0.55, W * 0.75, H * 0.78, W, H * 0.62)
-      ..lineTo(W, H)
-      ..lineTo(0, H)
-      ..close();
-    canvas.drawPath(
-      swoosh,
-      Paint()
-        ..shader = LinearGradient(
-          colors: [
-            Colors.black.withValues(alpha: 0.22),
-            Colors.black.withValues(alpha: 0.06),
-          ],
-          begin: Alignment.bottomCenter,
-          end: Alignment.topCenter,
-        ).createShader(Rect.fromLTWH(0, H * 0.60, W, H * 0.40)),
-    );
-
-    // ── 8. Concentric glowing rings — left anchor ─────────────
-    _drawRing(canvas, Offset(W * -0.02, H * 0.14), W * 0.46,
-        const Color(0xFF1DD8E8).withValues(alpha: 0.18), 1.4);
-    _drawRing(canvas, Offset(W * -0.02, H * 0.14), W * 0.62,
-        const Color(0xFF1DD8E8).withValues(alpha: 0.10), 0.9);
-    _drawRing(canvas, Offset(W * -0.02, H * 0.14), W * 0.80,
-        const Color(0xFF1DD8E8).withValues(alpha: 0.05), 0.6);
-
-    // ── 9. Scattered sparkle dots ─────────────────────────────
-    final sparkles = [
-      (W * 0.78, H * 0.05, 2.8),
-      (W * 0.85, H * 0.02, 1.8),
-      (W * 0.91, H * 0.07, 3.2),
-      (W * 0.82, H * 0.11, 1.5),
-      (W * 0.95, H * 0.03, 2.2),
-      (W * 0.88, H * 0.20, 2.0),
-      (W * 0.94, H * 0.25, 1.4),
-      (W * 0.80, H * 0.28, 2.5),
-      (W * 0.12, H * 0.30, 1.6),
-      (W * 0.06, H * 0.34, 2.2),
-      (W * 0.18, H * 0.32, 1.2),
-    ];
-    for (final s in sparkles) {
-      canvas.drawCircle(
-        Offset(s.$1, s.$2),
-        s.$3 * 2.8,
-        Paint()..color = const Color(0xFF1DD8E8).withValues(alpha: 0.10),
-      );
-      canvas.drawCircle(
-        Offset(s.$1, s.$2),
-        s.$3,
-        Paint()..color = const Color(0xFF6FF6FF).withValues(alpha: 0.75),
-      );
-    }
-
-    // ── 10. Subtle horizontal shimmer line ────────────────────
-    canvas.drawLine(
-      Offset(0, H * 0.295),
-      Offset(W, H * 0.295),
-      Paint()
-        ..shader = LinearGradient(
-          colors: [
-            Colors.transparent,
-            const Color(0xFF1DD8E8).withValues(alpha: 0.25),
-            Colors.transparent,
-          ],
-          stops: const [0.0, 0.5, 1.0],
-        ).createShader(Rect.fromLTWH(0, H * 0.295, W, 1))
-        ..strokeWidth = 1.0
-        ..style = PaintingStyle.stroke,
-    );
-  }
-
-  void _drawOrb(
-    Canvas canvas, {
-    required Offset center,
-    required double radius,
-    required List<Color> colors,
-    required List<double> stops,
-  }) {
-    canvas.drawCircle(
-      center,
-      radius,
-      Paint()
-        ..shader = RadialGradient(colors: colors, stops: stops)
-            .createShader(Rect.fromCircle(center: center, radius: radius)),
-    );
-  }
-
-  void _drawWave(
-    Canvas canvas,
-    double W,
-    double H, {
-    required double y1,
-    required double cp1x,
-    required double cp1y,
-    required double cp2x,
-    required double cp2y,
-    required double y2,
-    required Color color,
-  }) {
-    final path = Path()
-      ..moveTo(0, H * y1)
-      ..cubicTo(W * cp1x, H * cp1y, W * cp2x, H * cp2y, W, H * y2)
-      ..lineTo(W, 0)
-      ..lineTo(0, 0)
-      ..close();
-    canvas.drawPath(
-        path,
-        Paint()
-          ..color = color
-          ..style = PaintingStyle.fill);
-  }
-
-  void _drawRing(Canvas canvas, Offset c, double r, Color color, double width) {
-    canvas.drawCircle(
-        c,
-        r,
-        Paint()
-          ..color = color
-          ..style = PaintingStyle.stroke
-          ..strokeWidth = width);
-  }
+class _NepalPhonePrefix extends StatelessWidget {
+  const _NepalPhonePrefix();
 
   @override
-  bool shouldRepaint(covariant CustomPainter _) => false;
+  Widget build(BuildContext context) {
+    return const Row(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        // Nepal flag using Unicode flag emoji
+        Text(
+          '🇳🇵',
+          style: TextStyle(fontSize: 20, height: 1),
+        ),
+        SizedBox(width: 6),
+        Text(
+          '+977',
+          style: TextStyle(
+            fontSize: 14,
+            fontWeight: FontWeight.w600,
+            color: Color(0xFF0F172A),
+            letterSpacing: 0.3,
+          ),
+        ),
+      ],
+    );
+  }
 }
 
 // ─────────────────────────────────────────────────────────────
-//  Fallback Logo
+//  Custom Auth Text Field (label-inside-border custom design)
 // ─────────────────────────────────────────────────────────────
 
-class _FallbackLogo extends StatelessWidget {
-  const _FallbackLogo();
-  @override
-  Widget build(BuildContext context) =>
-      CustomPaint(size: const Size(80, 80), painter: _ArrowLogoPainter());
-}
-
-class _ArrowLogoPainter extends CustomPainter {
-  @override
-  void paint(Canvas canvas, Size size) {
-    final paint = Paint()
-      ..color = Colors.white
-      ..style = PaintingStyle.stroke
-      ..strokeWidth = 3.5
-      ..strokeCap = StrokeCap.round
-      ..strokeJoin = StrokeJoin.round;
-    final w = size.width;
-    final h = size.height;
-    final outer = Path()
-      ..moveTo(w * 0.5, h * 0.05)
-      ..lineTo(w * 0.95, h * 0.92)
-      ..lineTo(w * 0.05, h * 0.92)
-      ..close();
-    canvas.drawPath(outer, paint);
-    final inner = Path()
-      ..moveTo(w * 0.5, h * 0.30)
-      ..lineTo(w * 0.68, h * 0.68)
-      ..lineTo(w * 0.50, h * 0.55)
-      ..lineTo(w * 0.32, h * 0.68)
-      ..close();
-    canvas.drawPath(inner, paint..style = PaintingStyle.fill);
-  }
-
-  @override
-  bool shouldRepaint(covariant CustomPainter _) => false;
-}
-
-// ─────────────────────────────────────────────────────────────
-//  Auth Text Field
-// ─────────────────────────────────────────────────────────────
-
-class _AuthField extends StatefulWidget {
+class _CustomAuthField extends StatefulWidget {
   final TextEditingController controller;
-  final String hint;
-  final IconData prefixIcon;
+  final String label;
+  final IconData? icon;
+  final FocusNode? focusNode;
   final bool obscureText;
   final TextInputType keyboardType;
   final TextInputAction? textInputAction;
   final String? Function(String?)? validator;
   final void Function(String)? onSubmitted;
   final Widget? suffix;
-  final FocusNode? focusNode;
   final List<TextInputFormatter>? inputFormatters;
+  final Widget? prefix;
 
-  const _AuthField({
+  const _CustomAuthField({
     required this.controller,
-    required this.hint,
-    required this.prefixIcon,
+    required this.label,
+    this.icon,
+    this.focusNode,
     this.obscureText = false,
     this.keyboardType = TextInputType.text,
     this.textInputAction,
     this.validator,
     this.onSubmitted,
     this.suffix,
-    this.focusNode,
     this.inputFormatters,
+    this.prefix,
   });
 
   @override
-  State<_AuthField> createState() => _AuthFieldState();
+  State<_CustomAuthField> createState() => _CustomAuthFieldState();
 }
 
-class _AuthFieldState extends State<_AuthField> {
+class _CustomAuthFieldState extends State<_CustomAuthField> {
   late FocusNode _internalFocus;
-  bool _focused = false;
+  bool _isFocused = false;
+  String? _errorText;
 
   @override
   void initState() {
     super.initState();
-    // Use the external FocusNode if provided, otherwise create our own
     _internalFocus = widget.focusNode ?? FocusNode();
-    _internalFocus.addListener(
-        () => setState(() => _focused = _internalFocus.hasFocus));
+    _internalFocus.addListener(_onFocusChange);
+    widget.controller.addListener(_onTextChanged);
+  }
+
+  void _onFocusChange() {
+    if (mounted) {
+      setState(() {
+        _isFocused = _internalFocus.hasFocus;
+      });
+    }
+  }
+
+  void _onTextChanged() {
+    if (mounted) {
+      setState(() {});
+    }
   }
 
   @override
   void dispose() {
-    // Only dispose if we created the node ourselves
-    if (widget.focusNode == null) _internalFocus.dispose();
+    _internalFocus.removeListener(_onFocusChange);
+    widget.controller.removeListener(_onTextChanged);
+    if (widget.focusNode == null) {
+      _internalFocus.dispose();
+    }
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
-    return Focus(
-      onFocusChange: (v) => setState(() => _focused = v),
-      child: TextFormField(
-        controller: widget.controller,
-        focusNode: _internalFocus,
-        keyboardType: widget.keyboardType,
-        obscureText: widget.obscureText,
-        textInputAction: widget.textInputAction,
-        inputFormatters: widget.inputFormatters,
-        validator: widget.validator,
-        onFieldSubmitted: widget.onSubmitted,
-        style: const TextStyle(
-            fontSize: 14.5, color: _dark, fontWeight: FontWeight.w500),
-        decoration: InputDecoration(
-          hintText: widget.hint,
-          hintStyle: const TextStyle(
-              color: _grey, fontSize: 14.5, fontWeight: FontWeight.w400),
-          prefixIcon: Padding(
-            padding: const EdgeInsets.only(left: 18, right: 10),
-            child: Icon(widget.prefixIcon,
-                size: 20, color: _focused ? _teal : _grey),
+    final hasError = _errorText != null;
+    final hasPrefix = widget.prefix != null;
+    final isFloated = widget.controller.text.isNotEmpty || _isFocused;
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        GestureDetector(
+          onTap: () => _internalFocus.requestFocus(),
+          child: Container(
+            height: 60,
+            padding: const EdgeInsets.symmetric(horizontal: 16),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(16),
+              border: Border.all(
+                color: hasError
+                    ? const Color(0xFFEF4444)
+                    : _isFocused
+                        ? const Color(0xFF2C3BD5)
+                        : const Color(0xFFE2E8F0),
+                width: _isFocused || hasError ? 1.5 : 1.2,
+              ),
+            ),
+            child: hasPrefix
+                // ── PREFIX MODE: flag + code | input ────────────────────
+                ? Row(
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    children: [
+                      // The prefix widget (Nepal flag + +977)
+                      widget.prefix!,
+                      // Thin divider
+                      Container(
+                        width: 1,
+                        height: 28,
+                        margin: const EdgeInsets.symmetric(horizontal: 10),
+                        color: const Color(0xFFE2E8F0),
+                      ),
+                      // Floating-label stack for the text input portion
+                      Expanded(
+                        child: Stack(
+                          children: [
+                            TextFormField(
+                              controller: widget.controller,
+                              focusNode: _internalFocus,
+                              obscureText: widget.obscureText,
+                              keyboardType: widget.keyboardType,
+                              textInputAction: widget.textInputAction,
+                              inputFormatters: widget.inputFormatters,
+                              onFieldSubmitted: widget.onSubmitted,
+                              style: const TextStyle(
+                                fontSize: 14.5,
+                                color: Color(0xFF0F172A),
+                                fontWeight: FontWeight.w500,
+                              ),
+                              decoration: const InputDecoration(
+                                isDense: true,
+                                contentPadding:
+                                    EdgeInsets.only(top: 24, bottom: 8),
+                                border: InputBorder.none,
+                                enabledBorder: InputBorder.none,
+                                focusedBorder: InputBorder.none,
+                                errorBorder: InputBorder.none,
+                                focusedErrorBorder: InputBorder.none,
+                                disabledBorder: InputBorder.none,
+                                filled: false,
+                                errorStyle: TextStyle(
+                                  color: Colors.transparent,
+                                  fontSize: 0,
+                                  height: 0,
+                                ),
+                              ),
+                              validator: (value) {
+                                if (widget.validator != null) {
+                                  final err = widget.validator!(value);
+                                  if (_errorText != err) {
+                                    WidgetsBinding.instance
+                                        .addPostFrameCallback((_) {
+                                      if (mounted) {
+                                        setState(() => _errorText = err);
+                                      }
+                                    });
+                                  }
+                                  return err;
+                                }
+                                return null;
+                              },
+                            ),
+                            // Floating label
+                            AnimatedPositioned(
+                              duration: const Duration(milliseconds: 200),
+                              curve: Curves.easeOut,
+                              left: 0,
+                              top: isFloated ? 6 : 15,
+                              child: IgnorePointer(
+                                child: AnimatedDefaultTextStyle(
+                                  duration: const Duration(milliseconds: 200),
+                                  style: TextStyle(
+                                    color: _isFocused
+                                        ? const Color(0xFF2C3BD5)
+                                        : const Color(0xFF94A3B8),
+                                    fontSize: isFloated ? 11 : 14.5,
+                                    fontWeight: isFloated
+                                        ? FontWeight.w600
+                                        : FontWeight.w400,
+                                  ),
+                                  child: Text(widget.label),
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                      // Suffix (spinner etc.)
+                      if (widget.suffix != null) ...[
+                        const SizedBox(width: 6),
+                        widget.suffix!,
+                      ],
+                    ],
+                  )
+                // ── NORMAL MODE (no prefix) ──────────────────────────────
+                : Stack(
+                    children: [
+                      TextFormField(
+                        controller: widget.controller,
+                        focusNode: _internalFocus,
+                        obscureText: widget.obscureText,
+                        keyboardType: widget.keyboardType,
+                        textInputAction: widget.textInputAction,
+                        inputFormatters: widget.inputFormatters,
+                        onFieldSubmitted: widget.onSubmitted,
+                        textAlign: TextAlign.left,
+                        style: const TextStyle(
+                          fontSize: 14.5,
+                          color: Color(0xFF0F172A),
+                          fontWeight: FontWeight.w500,
+                        ),
+                        decoration: const InputDecoration(
+                          isDense: true,
+                          contentPadding: EdgeInsets.only(top: 26, bottom: 6),
+                          border: InputBorder.none,
+                          enabledBorder: InputBorder.none,
+                          focusedBorder: InputBorder.none,
+                          errorBorder: InputBorder.none,
+                          focusedErrorBorder: InputBorder.none,
+                          disabledBorder: InputBorder.none,
+                          filled: false,
+                          fillColor: Colors.transparent,
+                          errorStyle: TextStyle(
+                            color: Colors.transparent,
+                            fontSize: 0,
+                            height: 0,
+                          ),
+                        ),
+                        validator: (value) {
+                          if (widget.validator != null) {
+                            final err = widget.validator!(value);
+                            if (_errorText != err) {
+                              WidgetsBinding.instance.addPostFrameCallback((_) {
+                                if (mounted) {
+                                  setState(() => _errorText = err);
+                                }
+                              });
+                            }
+                            return err;
+                          }
+                          return null;
+                        },
+                      ),
+                      // Smooth animated floating label and icon
+                      AnimatedPositioned(
+                        duration: const Duration(milliseconds: 200),
+                        curve: Curves.easeOut,
+                        left: 0,
+                        top: isFloated ? 6 : 20,
+                        child: IgnorePointer(
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              if (widget.icon != null) ...[
+                                Icon(
+                                  widget.icon,
+                                  size: isFloated ? 14 : 18,
+                                  color: _isFocused
+                                      ? const Color(0xFF2C3BD5)
+                                      : const Color(0xFF94A3B8),
+                                ),
+                                const SizedBox(width: 8),
+                              ],
+                              AnimatedDefaultTextStyle(
+                                duration: const Duration(milliseconds: 200),
+                                style: TextStyle(
+                                  color: _isFocused
+                                      ? const Color(0xFF2C3BD5)
+                                      : const Color(0xFF94A3B8),
+                                  fontSize: isFloated ? 11 : 14.5,
+                                  fontWeight: isFloated
+                                      ? FontWeight.w600
+                                      : FontWeight.w400,
+                                ),
+                                child: Text(widget.label),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                      // Suffix (like Visibility Toggle)
+                      if (widget.suffix != null)
+                        Positioned(
+                          right: 0,
+                          top: 0,
+                          bottom: 0,
+                          child: Center(child: widget.suffix!),
+                        ),
+                    ],
+                  ),
           ),
-          prefixIconConstraints:
-              const BoxConstraints(minWidth: 0, minHeight: 0),
-          suffixIcon: widget.suffix != null
-              ? Padding(
-                  padding: const EdgeInsets.only(right: 16),
-                  child: widget.suffix)
-              : null,
-          suffixIconConstraints:
-              const BoxConstraints(minWidth: 0, minHeight: 0),
-          filled: true,
-          fillColor: Colors.white,
-          contentPadding:
-              const EdgeInsets.symmetric(horizontal: 22, vertical: 15),
-          enabledBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(50),
-              borderSide: const BorderSide(color: _border, width: 1.2)),
-          focusedBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(50),
-              borderSide: const BorderSide(color: _teal, width: 1.5)),
-          errorBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(50),
-              borderSide:
-                  const BorderSide(color: Color(0xFFEF4444), width: 1.2)),
-          focusedErrorBorder: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(50),
-              borderSide:
-                  const BorderSide(color: Color(0xFFEF4444), width: 1.5)),
-          border: InputBorder.none,
-          errorStyle: const TextStyle(fontSize: 11, color: Color(0xFFEF4444)),
         ),
-      ),
+        if (hasError) ...[
+          const SizedBox(height: 4),
+          Padding(
+            padding: const EdgeInsets.only(left: 12),
+            child: Text(
+              _errorText!,
+              style: const TextStyle(
+                color: Color(0xFFEF4444),
+                fontSize: 11,
+              ),
+            ),
+          ),
+        ],
+      ],
     );
   }
 }
 
 // ─────────────────────────────────────────────────────────────
-//  Pill primary button
+//  Gradient-filled primary button
 // ─────────────────────────────────────────────────────────────
 
-class _PillButton extends StatefulWidget {
+class _GradientButton extends StatefulWidget {
   final String label;
   final bool isLoading;
   final VoidCallback onPressed;
-  const _PillButton(
-      {required this.label, required this.isLoading, required this.onPressed});
+
+  const _GradientButton({
+    required this.label,
+    required this.isLoading,
+    required this.onPressed,
+  });
+
   @override
-  State<_PillButton> createState() => _PillButtonState();
+  State<_GradientButton> createState() => _GradientButtonState();
 }
 
-class _PillButtonState extends State<_PillButton> {
+class _GradientButtonState extends State<_GradientButton> {
   bool _pressed = false;
+
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
@@ -928,11 +873,25 @@ class _PillButtonState extends State<_PillButton> {
         scale: _pressed ? 0.97 : 1.0,
         duration: const Duration(milliseconds: 80),
         child: Container(
-          height: 52,
+          height: 54,
           width: double.infinity,
           decoration: BoxDecoration(
-            color: _pressed ? const Color(0xFF0A6872) : _teal,
-            borderRadius: BorderRadius.circular(50),
+            gradient: const LinearGradient(
+              colors: [
+                _gradientStart,
+                _gradientEnd,
+              ],
+              begin: Alignment.centerLeft,
+              end: Alignment.centerRight,
+            ),
+            borderRadius: BorderRadius.circular(16),
+            boxShadow: [
+              BoxShadow(
+                color: _gradientStart.withValues(alpha: 0.25),
+                blurRadius: 12,
+                offset: const Offset(0, 4),
+              ),
+            ],
           ),
           alignment: Alignment.center,
           child: widget.isLoading
@@ -940,7 +899,10 @@ class _PillButtonState extends State<_PillButton> {
                   width: 22,
                   height: 22,
                   child: CircularProgressIndicator(
-                      strokeWidth: 2.5, color: Colors.white))
+                    strokeWidth: 2.5,
+                    color: Colors.white,
+                  ),
+                )
               : Text(
                   widget.label,
                   style: const TextStyle(
@@ -957,7 +919,7 @@ class _PillButtonState extends State<_PillButton> {
 }
 
 // ─────────────────────────────────────────────────────────────
-//  Google logo SVG
+//  Google SVG Logo
 // ─────────────────────────────────────────────────────────────
 
 class _GoogleLogo extends StatelessWidget {
@@ -968,41 +930,44 @@ class _GoogleLogo extends StatelessWidget {
   <path fill="#4CAF50" d="M24 44c5.2 0 9.9-2 13.4-5.2l-6.2-5.2C29.2 35.1 26.7 36 24 36c-5.2 0-9.6-3.3-11.3-7.9l-6.5 5C9.5 39.6 16.2 44 24 44z"/>
   <path fill="#1976D2" d="M43.6 20H24v8h11.3c-.8 2.2-2.2 4.2-4.1 5.6l6.2 5.2C41 36 44 30.5 44 24c0-1.3-.2-2.7-.4-4z"/>
 </svg>''';
+
   @override
   Widget build(BuildContext context) =>
       SvgPicture.string(_svg, width: 22, height: 22);
 }
 
 // ─────────────────────────────────────────────────────────────
-//  Social pill button
+//  Social Login Border Button
 // ─────────────────────────────────────────────────────────────
 
-class _SocialPillButton extends StatelessWidget {
+class _SocialBorderButton extends StatelessWidget {
   final String label;
   final Widget icon;
-  final bool isDark;
+  final Color textColor;
   final VoidCallback onTap;
-  const _SocialPillButton(
-      {required this.label,
-      required this.icon,
-      required this.isDark,
-      required this.onTap});
+
+  const _SocialBorderButton({
+    required this.label,
+    required this.icon,
+    required this.textColor,
+    required this.onTap,
+  });
 
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
       onTap: onTap,
       child: Container(
-        height: 50,
+        height: 52,
         decoration: BoxDecoration(
-          color: isDark ? _dark : Colors.white,
-          borderRadius: BorderRadius.circular(50),
-          border: isDark ? null : Border.all(color: _border, width: 1.2),
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(color: const Color(0xFFE2E8F0), width: 1.2),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withValues(alpha: isDark ? 0.18 : 0.05),
-              blurRadius: 8,
-              offset: const Offset(0, 2),
+              color: Colors.black.withValues(alpha: 0.04),
+              blurRadius: 6,
+              offset: const Offset(0, 1),
             ),
           ],
         ),
@@ -1010,11 +975,11 @@ class _SocialPillButton extends StatelessWidget {
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             icon,
-            const SizedBox(width: 8),
+            const SizedBox(width: 10),
             Text(
               label,
               style: TextStyle(
-                color: isDark ? Colors.white : _dark,
+                color: textColor,
                 fontSize: 14.5,
                 fontWeight: FontWeight.w600,
               ),

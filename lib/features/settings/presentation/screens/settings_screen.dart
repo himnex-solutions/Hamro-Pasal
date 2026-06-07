@@ -96,7 +96,7 @@ class SettingsScreen extends ConsumerWidget {
             icon: Icons.build_outlined,
             title: 'Business Tools',
             subtitle: 'Calculators & Utilities',
-            color: const Color(0xFF0D7E8A),
+            color: AppTheme.primaryColor,
             onTap: () => context.go(AppRoutes.tools),
           ),
 
@@ -169,21 +169,64 @@ class SettingsScreen extends ConsumerWidget {
               final confirmed = await showDialog<bool>(
                 context: context,
                 builder: (ctx) => AlertDialog(
-                  title: Text(l.signOut),
-                  content: Text(l.signOutConfirm),
+
                   shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(16)),
-                  actions: [
-                    TextButton(
-                        onPressed: () => Navigator.pop(ctx, false),
-                        child: Text(l.cancel)),
-                    ElevatedButton(
-                      style: ElevatedButton.styleFrom(
-                          backgroundColor: AppTheme.errorColor),
-                      onPressed: () => Navigator.pop(ctx, true),
-                      child: Text(l.signOut),
-                    ),
-                  ],
+                  title: Text(
+                    l.signOut,
+                    style: const TextStyle(fontWeight: FontWeight.w700),
+                  ),
+                  content: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        l.signOutConfirm,
+                      ),
+                      const SizedBox(height: 24),
+                      Row(
+                        children: [
+                          Expanded(
+                            child: ElevatedButton(
+                              onPressed: () => Navigator.pop(ctx, true),
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: AppTheme.errorColor,
+                                foregroundColor: Colors.white,
+                                padding:
+                                    const EdgeInsets.symmetric(vertical: 12),
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(8),
+                                ),
+                              ),
+                              child: Text(l.signOut,
+                                  style: const TextStyle(
+                                      fontWeight: FontWeight.w600)),
+                            ),
+                          ),
+                          const SizedBox(width: 12),
+                          Expanded(
+                            child: OutlinedButton(
+                              onPressed: () => Navigator.pop(ctx, false),
+                              style: OutlinedButton.styleFrom(
+                                foregroundColor: AppTheme.lightTextSecondary,
+                                side: BorderSide(
+                                    color: AppTheme.lightTextSecondary
+                                        .withValues(alpha: 0.4)),
+                                padding:
+                                    const EdgeInsets.symmetric(vertical: 12),
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(8),
+                                ),
+                              ),
+                              child: Text(l.cancel,
+                                  style: const TextStyle(
+                                      fontWeight: FontWeight.w500)),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ],
+                  ),
                 ),
               );
               if (confirmed == true) {
