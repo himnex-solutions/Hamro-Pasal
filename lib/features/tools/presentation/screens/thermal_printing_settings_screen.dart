@@ -41,6 +41,9 @@ class _ThermalPrintingSettingsScreenState
     _prefixCtrl = TextEditingController(text: settings.prefix);
     _showTax = settings.showTax;
     _showDiscount = settings.showDiscount;
+    _showAddress = settings.showAddress;
+    _showPhone = settings.showPhone;
+    _showPAN = settings.showPAN;
     
     // Fallback if template is not thermal
     if (settings.printTemplate == 'thermal_58' ||
@@ -68,6 +71,9 @@ class _ThermalPrintingSettingsScreenState
       showTax: _showTax,
       showDiscount: _showDiscount,
       printTemplate: _printTemplate,
+      showAddress: _showAddress,
+      showPhone: _showPhone,
+      showPAN: _showPAN,
     );
 
     ref.read(invoiceSettingsProvider.notifier).updateSettings(updated);

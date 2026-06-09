@@ -39,6 +39,7 @@ import 'package:hamro_pasal/features/tools/presentation/screens/tools_screen.dar
 import 'package:hamro_pasal/features/tools/presentation/screens/calculator_screen.dart';
 import 'package:hamro_pasal/features/tools/presentation/screens/emi_calculator_screen.dart';
 import 'package:hamro_pasal/features/tools/presentation/screens/thermal_label_screen.dart';
+import 'package:hamro_pasal/features/tools/presentation/screens/thermal_printing_settings_screen.dart';
 import 'package:hamro_pasal/core/shell/main_shell_screen.dart';
 import 'package:hamro_pasal/features/admin/presentation/providers/admin_auth_provider.dart';
 import 'package:hamro_pasal/features/admin/presentation/screens/admin_login_screen.dart';
@@ -79,6 +80,7 @@ class AppRoutes {
   static const String calculator = '/home/tools/calculator';
   static const String emiCalculator = '/home/tools/emi';
   static const String thermalLabel = '/home/tools/thermal';
+  static const String thermalPrinting = '/home/tools/thermal-settings';
 
   static const String subscription = '/subscription';
   static const String trialExpired = '/trial-expired';
@@ -309,6 +311,10 @@ final appRouterProvider = Provider<GoRouter>((ref) {
               GoRoute(
                 path: 'thermal',
                 builder: (_, __) => const ThermalLabelScreen(),
+              ),
+              GoRoute(
+                path: 'thermal-settings',
+                builder: (_, __) => const ThermalPrintingSettingsScreen(),
               ),
             ],
           ),

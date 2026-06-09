@@ -707,60 +707,89 @@ class _ManualPaymentModalState extends State<_ManualPaymentModal> {
   }
 
   void _showZoomedQR(BuildContext context, String assetPath) {
+    final methodLabel = _paymentMethod == 'esewa'
+        ? 'eSewa QR Code'
+        : _paymentMethod == 'khalti'
+            ? 'Khalti QR Code'
+            : 'Prabhu Bank QR Code';
+
     showDialog(
       context: context,
+      barrierColor: Colors.black54,
       builder: (dialogCtx) => Dialog(
-        backgroundColor: Colors.transparent,
-        insetPadding: const EdgeInsets.all(24),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Container(
-              padding: const EdgeInsets.all(16),
-              decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(24),
-              ),
-              child: SingleChildScrollView(
-                child: Column(
+        backgroundColor: Colors.white,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
+        insetPadding: const EdgeInsets.symmetric(horizontal: 40, vertical: 60),
+        child: ConstrainedBox(
+          constraints: const BoxConstraints(maxWidth: 400, maxHeight: 520),
+          child: Padding(
+            padding: const EdgeInsets.all(20),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                // Header
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Text(
-                          _paymentMethod == 'esewa'
-                              ? 'eSewa QR Code'
-                              : _paymentMethod == 'khalti'
-                                  ? 'Khalti QR Code'
-                                  : 'Prabhu Bank QR Code',
-                          style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16, color: Colors.black87),
-                        ),
-                        IconButton(
-                          icon: const Icon(Icons.close, color: Colors.black54),
-                          onPressed: () => Navigator.pop(dialogCtx),
-                        ),
-                      ],
+                    Text(
+                      methodLabel,
+                      style: const TextStyle(
+                          fontWeight: FontWeight.bold,
+                          fontSize: 16,
+                          color: Colors.black87),
                     ),
-                    const SizedBox(height: 12),
-                    ClipRRect(
-                      borderRadius: BorderRadius.circular(16),
-                      child: Image.asset(
-                        assetPath,
-                        width: MediaQuery.of(dialogCtx).size.width * 0.8,
-                        height: MediaQuery.of(dialogCtx).size.width * 0.8,
-                        fit: BoxFit.contain,
-                      ),
-                    ),
-                    const SizedBox(height: 12),
-                    const Text(
-                      'Scan or download this QR code to pay.',
-                      style: TextStyle(color: Colors.black54, fontSize: 12),
+                    IconButton(
+                      icon: const Icon(Icons.close_rounded, color: Colors.black54),
+                      onPressed: () => Navigator.pop(dialogCtx),
                     ),
                   ],
                 ),
-              ),
+                const SizedBox(height: 12),
+                // QR image — constrained, never overflows
+                ClipRRect(
+                  borderRadius: BorderRadius.circular(16),
+                  child: ConstrainedBox(
+                    constraints: const BoxConstraints(
+                      maxWidth: 300,
+                      maxHeight: 300,
+                    ),
+                    child: Image.asset(
+                      assetPath,
+                      fit: BoxFit.contain,
+                      errorBuilder: (_, __, ___) => const SizedBox(
+                        width: 200,
+                        height: 200,
+                        child: Center(
+                          child: Icon(Icons.qr_code_2_rounded,
+                              size: 100, color: Colors.black54),
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 16),
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                  decoration: BoxDecoration(
+                    color: Colors.grey.shade100,
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                  child: const Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Icon(Icons.qr_code_scanner_rounded,
+                          size: 16, color: Colors.black54),
+                      SizedBox(width: 6),
+                      Text(
+                        'Scan with your payment app to pay',
+                        style: TextStyle(color: Colors.black54, fontSize: 12),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
             ),
-          ],
+          ),
         ),
       ),
     );

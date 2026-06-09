@@ -194,16 +194,16 @@ class _InvoiceDetailScreenState extends ConsumerState<InvoiceDetailScreen> {
                     ),
                     textAlign: pw.TextAlign.center,
                   ),
-                  if (biz?['address'] != null)
+                  if (settings.showAddress && biz?['address'] != null)
                     pw.Text(biz!['address'] as String,
                         style: pw.TextStyle(font: textFont, fontSize: 8), textAlign: pw.TextAlign.center),
-                  if (biz?['phone'] != null)
+                  if (settings.showPhone && biz?['phone'] != null)
                     pw.Text('Tel: ${biz!['phone']}',
                         style: pw.TextStyle(font: textFont, fontSize: 8), textAlign: pw.TextAlign.center),
-                  if (biz?['email'] != null)
+                  if (settings.showPhone && biz?['email'] != null)
                     pw.Text(biz!['email'] as String,
                         style: pw.TextStyle(font: textFont, fontSize: 8), textAlign: pw.TextAlign.center),
-                  if (biz?['pan_number'] != null)
+                  if (settings.showPAN && biz?['pan_number'] != null)
                     pw.Text('PAN: ${biz!['pan_number']}',
                         style: pw.TextStyle(font: textFont, fontSize: 8), textAlign: pw.TextAlign.center),
                   

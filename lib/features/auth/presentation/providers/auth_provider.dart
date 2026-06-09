@@ -146,7 +146,6 @@ class AuthNotifier extends StateNotifier<AuthState> {
 
     // Initialization complete — from this point a signedOut event means the
     // user actively signed out (or their refresh token expired permanently).
-    _isInitializing = false;
   }
 
 

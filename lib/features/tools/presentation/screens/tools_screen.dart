@@ -56,6 +56,21 @@ class ToolsScreen extends ConsumerWidget {
         showLock: isBasic,
       ),
       _ToolItem(
+        title: 'Thermal Receipt Settings',
+        subtitle: canUseThermal
+            ? 'Customize paper size, headers, footer & visibility'
+            : '🔒 Gold & Diamond · Configure thermal receipt layout',
+        icon: Icons.tune_rounded,
+        gradient: const LinearGradient(
+          colors: [Color(0xFF0891B2), Color(0xFF38BDF8)],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
+        route: AppRoutes.thermalPrinting,
+        planBadge: plan == 'diamond' ? '💎' : plan == 'gold' ? '🥇' : '🔒',
+        showLock: isBasic,
+      ),
+      _ToolItem(
         title: 'Coming Soon',
         subtitle: 'GST Calculator, Currency Converter & more',
         icon: Icons.more_horiz_rounded,

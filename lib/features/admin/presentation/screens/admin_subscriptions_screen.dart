@@ -593,143 +593,187 @@ class _AdminSubscriptionsScreenState extends State<AdminSubscriptionsScreen> {
   void _showScreenshotDialog(String url) {
     showDialog(
       context: context,
-      builder: (ctx) => Dialog(
-        backgroundColor: AppTheme.darkCard,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-        child: Container(
-          constraints: BoxConstraints(
-            maxWidth: 600,
-            maxHeight: MediaQuery.sizeOf(context).height * 0.85,
-          ),
-          padding: const EdgeInsets.all(20),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      barrierColor: Colors.black87,
+      builder: (ctx) {
+        final screenH = MediaQuery.sizeOf(context).height;
+        return Dialog(
+          backgroundColor: AppTheme.darkCard,
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+          insetPadding: const EdgeInsets.symmetric(horizontal: 28, vertical: 40),
+          child: ConstrainedBox(
+            constraints: BoxConstraints(
+              maxWidth: 640,
+              maxHeight: screenH * 0.88,
+            ),
+            child: Padding(
+              padding: const EdgeInsets.all(20),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
-                  const Row(
+                  // ── Header ──────────────────────────────
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      Icon(Icons.receipt_long_rounded, color: AppTheme.primaryLight, size: 20),
-                      SizedBox(width: 8),
-                      Text(
-                        'Payment Proof Receipt',
-                        style: TextStyle(
-                          color: Colors.white,
-                          fontWeight: FontWeight.bold,
-                          fontSize: 16,
-                        ),
+                      const Row(
+                        children: [
+                          Icon(Icons.receipt_long_rounded, color: AppTheme.primaryLight, size: 20),
+                          SizedBox(width: 8),
+                          Text(
+                            'Payment Proof Receipt',
+                            style: TextStyle(
+                              color: Colors.white,
+                              fontWeight: FontWeight.bold,
+                              fontSize: 16,
+                            ),
+                          ),
+                        ],
+                      ),
+                      IconButton(
+                        icon: const Icon(Icons.close_rounded, color: Colors.white60, size: 22),
+                        onPressed: () => Navigator.pop(ctx),
                       ),
                     ],
                   ),
-                  IconButton(
-                    icon: const Icon(Icons.close, color: Colors.white60, size: 22),
-                    onPressed: () => Navigator.pop(ctx),
-                  ),
-                ],
-              ),
-              const Divider(color: Colors.white12, height: 20),
-              const SizedBox(height: 8),
-              Expanded(
-                child: ClipRRect(
-                  borderRadius: BorderRadius.circular(12),
-                  child: Container(
-                    color: Colors.black38,
-                    child: InteractiveViewer(
-                      minScale: 1.0,
-                      maxScale: 5.0,
-                      child: Image.network(
-                        url,
-                        fit: BoxFit.contain,
-                        loadingBuilder: (context, child, loadingProgress) {
-                          if (loadingProgress == null) return child;
-                          return const Center(
-                            child: CircularProgressIndicator(
-                              color: AppTheme.primaryLight,
-                            ),
-                          );
-                        },
-                        errorBuilder: (_, __, ___) => const Center(
-                          child: Padding(
-                            padding: EdgeInsets.all(24),
-                            child: Column(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              children: [
-                                Icon(Icons.image_not_supported_outlined, color: AppTheme.errorColor, size: 48),
-                                SizedBox(height: 12),
-                                Text(
-                                  'Unable to Preview Image',
-                                  style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 14),
+                  const Divider(color: Colors.white12, height: 20),
+
+                  // ── Image (fills available space) ────────
+                  Expanded(
+                    child: ClipRRect(
+                      borderRadius: BorderRadius.circular(14),
+                      child: ColoredBox(
+                        color: Colors.black45,
+                        child: InteractiveViewer(
+                          minScale: 0.8,
+                          maxScale: 6.0,
+                          child: Image.network(
+                            url,
+                            fit: BoxFit.contain,
+                            width: double.infinity,
+                            height: double.infinity,
+                            headers: const {'Cache-Control': 'no-cache'},
+                            loadingBuilder: (context, child, progress) {
+                              if (progress == null) return child;
+                              final pct = progress.expectedTotalBytes != null
+                                  ? progress.cumulativeBytesLoaded /
+                                      progress.expectedTotalBytes!
+                                  : null;
+                              return Center(
+                                child: Column(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    CircularProgressIndicator(
+                                      value: pct,
+                                      color: AppTheme.primaryLight,
+                                      strokeWidth: 2.5,
+                                    ),
+                                    const SizedBox(height: 12),
+                                    Text(
+                                      pct != null
+                                          ? 'Loading ${(pct * 100).toStringAsFixed(0)}%'
+                                          : 'Loading image…',
+                                      style: const TextStyle(color: Colors.white54, fontSize: 12),
+                                    ),
+                                  ],
                                 ),
-                                const SizedBox(height: 8),
-                                Text(
-                                  'Browser security policies (CORS) or private storage settings may block in-app preview. Use the button below to view it directly.',
-                                  style: TextStyle(color: Colors.white54, fontSize: 12),
-                                  textAlign: TextAlign.center,
+                              );
+                            },
+                            errorBuilder: (_, __, ___) => const Center(
+                              child: Padding(
+                                padding: EdgeInsets.all(32),
+                                child: Column(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    Icon(Icons.image_not_supported_outlined,
+                                        color: AppTheme.errorColor, size: 56),
+                                    SizedBox(height: 14),
+                                    Text(
+                                      'Unable to Preview Image',
+                                      style: TextStyle(
+                                          color: Colors.white,
+                                          fontWeight: FontWeight.bold,
+                                          fontSize: 15),
+                                    ),
+                                    SizedBox(height: 8),
+                                    Text(
+                                      'CORS or private storage settings may block\nin-app preview. Tap "Open in New Tab" below.',
+                                      style: TextStyle(color: Colors.white54, fontSize: 12),
+                                      textAlign: TextAlign.center,
+                                    ),
+                                  ],
                                 ),
-                              ],
+                              ),
                             ),
                           ),
                         ),
                       ),
                     ),
                   ),
-                ),
-              ),
-              const SizedBox(height: 20),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  const Text(
-                    'Pinch to zoom • Drag to pan',
-                    style: TextStyle(color: Colors.white38, fontSize: 11, fontStyle: FontStyle.italic),
-                  ),
+
+                  const SizedBox(height: 16),
+
+                  // ── Footer actions ────────────────────────
                   Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      TextButton(
-                        onPressed: () => Navigator.pop(ctx),
-                        child: const Text('Close', style: TextStyle(color: Colors.white70)),
+                      const Text(
+                        'Pinch/scroll to zoom  •  Drag to pan',
+                        style: TextStyle(
+                            color: Colors.white30, fontSize: 10, fontStyle: FontStyle.italic),
                       ),
-                      const SizedBox(width: 12),
-                      ElevatedButton.icon(
-                        onPressed: () async {
-                          try {
-                            final uri = Uri.parse(url);
-                            if (await canLaunchUrl(uri)) {
-                              await launchUrl(uri, mode: LaunchMode.externalApplication);
-                            } else {
-                              if (mounted) {
-                                ScaffoldMessenger.of(context).showSnackBar(
-                                  const SnackBar(content: Text('Could not launch payment receipt URL.')),
-                                );
+                      Row(
+                        children: [
+                          TextButton(
+                            onPressed: () => Navigator.pop(ctx),
+                            child: const Text('Close',
+                                style: TextStyle(color: Colors.white60)),
+                          ),
+                          const SizedBox(width: 8),
+                          ElevatedButton.icon(
+                            onPressed: () async {
+                              try {
+                                final uri = Uri.parse(url);
+                                if (await canLaunchUrl(uri)) {
+                                  await launchUrl(uri,
+                                      mode: LaunchMode.externalApplication);
+                                } else if (mounted) {
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    const SnackBar(
+                                        content: Text(
+                                            'Could not launch receipt URL.')),
+                                  );
+                                }
+                              } catch (e) {
+                                if (mounted) {
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    SnackBar(
+                                        content: Text('Error: $e')),
+                                  );
+                                }
                               }
-                            }
-                          } catch (e) {
-                            if (mounted) {
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                SnackBar(content: Text('Error launching URL: $e')),
-                              );
-                            }
-                          }
-                        },
-                        icon: const Icon(Icons.open_in_new_rounded, size: 14),
-                        label: const Text('Open in New Tab', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12)),
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: AppTheme.primaryLight,
-                          foregroundColor: Colors.black,
-                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-                          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-                        ),
+                            },
+                            icon: const Icon(Icons.open_in_new_rounded, size: 14),
+                            label: const Text('Open in New Tab',
+                                style: TextStyle(
+                                    fontWeight: FontWeight.bold, fontSize: 12)),
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: AppTheme.primaryLight,
+                              foregroundColor: Colors.black,
+                              shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(10)),
+                              padding: const EdgeInsets.symmetric(
+                                  horizontal: 16, vertical: 12),
+                            ),
+                          ),
+                        ],
                       ),
                     ],
                   ),
                 ],
               ),
-            ],
+            ),
           ),
-        ),
-      ),
+        );
+      },
     );
   }
 

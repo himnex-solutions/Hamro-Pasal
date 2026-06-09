@@ -163,6 +163,17 @@ class PersonalDashboardNotifier extends AsyncNotifier<PersonalStats> {
     state = const AsyncValue.loading();
     state = await AsyncValue.guard(_fetch);
   }
+
+  Future<void> updateName(String newName) async {
+    final supabase = Supabase.instance.client;
+    final userId = supabase.auth.currentUser?.id;
+    if (userId == null) return;
+    await supabase
+        .from('user_profiles')
+        .update({'full_name': newName.trim()})
+        .eq('id', userId);
+    await refresh();
+  }
 }
 
 // ── Personal Dashboard Screen ─────────────────────────────────
@@ -217,10 +228,6 @@ class PersonalDashboardScreen extends ConsumerWidget {
                           child: FadeInAnimation(child: widget),
                         ),
                         children: [
-                          // Profile card
-                          _ProfileCard(stats: stats),
-                          const SizedBox(height: 24),
-
                           // Business summary header
                           if (stats.businessName.isNotEmpty) ...[
                             Row(
@@ -309,6 +316,16 @@ class _PersonalAppBar extends StatelessWidget {
   final WidgetRef ref;
   const _PersonalAppBar({required this.stats, required this.ref});
 
+  // ── Profile Edit Sheet (tapped from avatar) ─────────────────
+  void _showProfileSheet(BuildContext context) {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (_) => _ProfileEditSheet(stats: stats, ref: ref),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final initial = stats.fullName.isNotEmpty
@@ -331,8 +348,8 @@ class _PersonalAppBar extends StatelessWidget {
                 decoration: BoxDecoration(
                   gradient: LinearGradient(
                     colors: [
-                      const Color(0xFF6B21A8).withValues(alpha: 0.85), // Rich violet
-                      const Color(0xFF1E3A8A).withValues(alpha: 0.85), // Navy blue
+                      const Color(0xFF6B21A8).withValues(alpha: 0.85),
+                      const Color(0xFF1E3A8A).withValues(alpha: 0.85),
                     ],
                     begin: Alignment.topLeft,
                     end: Alignment.bottomRight,
@@ -363,34 +380,59 @@ class _PersonalAppBar extends StatelessWidget {
                   children: [
                     Row(
                       children: [
-                        // Glowing gradient profile ring
-                        Container(
-                          padding: const EdgeInsets.all(2.5),
-                          decoration: const BoxDecoration(
-                            shape: BoxShape.circle,
-                            gradient: LinearGradient(
-                              colors: [Colors.pinkAccent, Colors.purpleAccent, Colors.blueAccent],
-                              begin: Alignment.topLeft,
-                              end: Alignment.bottomRight,
-                            ),
-                            boxShadow: [
-                              BoxShadow(
-                                color: Colors.purpleAccent,
-                                blurRadius: 12,
-                                spreadRadius: -2,
-                              ),
-                            ],
-                          ),
-                          child: CircleAvatar(
-                            radius: 26,
-                            backgroundColor: Colors.black87,
-                            child: Text(
-                              initial,
-                              style: const TextStyle(
-                                  color: Colors.white,
-                                  fontWeight: FontWeight.w900,
-                                  fontSize: 22,
-                                  letterSpacing: -0.5),
+                        // Tappable glowing gradient profile ring
+                        GestureDetector(
+                          onTap: () => _showProfileSheet(context),
+                          child: Tooltip(
+                            message: 'Edit Profile',
+                            child: Stack(
+                              children: [
+                                Container(
+                                  padding: const EdgeInsets.all(2.5),
+                                  decoration: const BoxDecoration(
+                                    shape: BoxShape.circle,
+                                    gradient: LinearGradient(
+                                      colors: [Colors.pinkAccent, Colors.purpleAccent, Colors.blueAccent],
+                                      begin: Alignment.topLeft,
+                                      end: Alignment.bottomRight,
+                                    ),
+                                    boxShadow: [
+                                      BoxShadow(
+                                        color: Colors.purpleAccent,
+                                        blurRadius: 12,
+                                        spreadRadius: -2,
+                                      ),
+                                    ],
+                                  ),
+                                  child: CircleAvatar(
+                                    radius: 26,
+                                    backgroundColor: Colors.black87,
+                                    child: Text(
+                                      initial,
+                                      style: const TextStyle(
+                                          color: Colors.white,
+                                          fontWeight: FontWeight.w900,
+                                          fontSize: 22,
+                                          letterSpacing: -0.5),
+                                    ),
+                                  ),
+                                ),
+                                // Edit pencil badge
+                                Positioned(
+                                  right: 0,
+                                  bottom: 0,
+                                  child: Container(
+                                    padding: const EdgeInsets.all(3),
+                                    decoration: BoxDecoration(
+                                      color: Colors.white,
+                                      shape: BoxShape.circle,
+                                      border: Border.all(color: Colors.black26, width: 0.5),
+                                    ),
+                                    child: const Icon(Icons.edit_rounded,
+                                        size: 10, color: Colors.black87),
+                                  ),
+                                ),
+                              ],
                             ),
                           ),
                         ),
@@ -424,35 +466,38 @@ class _PersonalAppBar extends StatelessWidget {
                       ],
                     ),
                     const SizedBox(height: 12),
-                    // Glassmorphic Space Badge
-                    Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 5),
-                      decoration: BoxDecoration(
-                        color: Colors.white.withValues(alpha: 0.08),
-                        borderRadius: BorderRadius.circular(20),
-                        border: Border.all(color: Colors.white.withValues(alpha: 0.15)),
-                        boxShadow: const [
-                          BoxShadow(
-                            color: Colors.black12,
-                            blurRadius: 8,
-                          ),
-                        ],
-                      ),
-                      child: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Icon(Icons.face_retouching_natural_rounded, color: Colors.purple[200], size: 14),
-                          const SizedBox(width: 6),
-                          const Text(
-                            'Personal Space',
-                            style: TextStyle(
-                              color: Colors.white,
-                              fontSize: 10,
-                              fontWeight: FontWeight.w800,
-                              letterSpacing: 0.5,
+                    // Tappable Glassmorphic Space Badge
+                    GestureDetector(
+                      onTap: () => _showProfileSheet(context),
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 5),
+                        decoration: BoxDecoration(
+                          color: Colors.white.withValues(alpha: 0.08),
+                          borderRadius: BorderRadius.circular(20),
+                          border: Border.all(color: Colors.white.withValues(alpha: 0.15)),
+                          boxShadow: const [
+                            BoxShadow(
+                              color: Colors.black12,
+                              blurRadius: 8,
                             ),
-                          ),
-                        ],
+                          ],
+                        ),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Icon(Icons.manage_accounts_rounded, color: Colors.purple[200], size: 14),
+                            const SizedBox(width: 6),
+                            const Text(
+                              'Personal Space  •  Tap to Edit',
+                              style: TextStyle(
+                                color: Colors.white,
+                                fontSize: 10,
+                                fontWeight: FontWeight.w800,
+                                letterSpacing: 0.4,
+                              ),
+                            ),
+                          ],
+                        ),
                       ),
                     ),
                   ],
@@ -643,6 +688,387 @@ class _InfoRow extends StatelessWidget {
           ),
         ],
       ),
+    );
+  }
+}
+
+// ── Profile Edit Sheet (Personal Space Modal) ─────────────────
+class _ProfileEditSheet extends ConsumerStatefulWidget {
+  final PersonalStats stats;
+  final WidgetRef ref;
+  const _ProfileEditSheet({required this.stats, required this.ref});
+
+  @override
+  ConsumerState<_ProfileEditSheet> createState() => _ProfileEditSheetState();
+}
+
+class _ProfileEditSheetState extends ConsumerState<_ProfileEditSheet> {
+  late TextEditingController _nameCtrl;
+  bool _saving = false;
+  String? _error;
+
+  @override
+  void initState() {
+    super.initState();
+    _nameCtrl = TextEditingController(text: widget.stats.fullName);
+  }
+
+  @override
+  void dispose() {
+    _nameCtrl.dispose();
+    super.dispose();
+  }
+
+  Future<void> _save() async {
+    final name = _nameCtrl.text.trim();
+    if (name.isEmpty) {
+      setState(() => _error = 'Name cannot be empty');
+      return;
+    }
+    setState(() {
+      _saving = true;
+      _error = null;
+    });
+    try {
+      await widget.ref
+          .read(personalDashboardProvider.notifier)
+          .updateName(name);
+      if (mounted) Navigator.pop(context);
+    } catch (e) {
+      if (mounted) setState(() => _error = 'Failed to save: $e');
+    } finally {
+      if (mounted) setState(() => _saving = false);
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final bottomInset = MediaQuery.viewInsetsOf(context).bottom;
+    final initial = widget.stats.fullName.isNotEmpty
+        ? widget.stats.fullName.trim()[0].toUpperCase()
+        : '?';
+
+    return Padding(
+      padding: EdgeInsets.only(bottom: bottomInset),
+      child: Container(
+        decoration: BoxDecoration(
+          color: isDark ? const Color(0xFF0F172A) : const Color(0xFFF8FAFC),
+          borderRadius: const BorderRadius.vertical(top: Radius.circular(28)),
+          border: Border.all(
+            color: isDark
+                ? Colors.white.withValues(alpha: 0.08)
+                : Colors.black.withValues(alpha: 0.06),
+          ),
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            // Drag handle
+            const SizedBox(height: 12),
+            Container(
+              width: 40,
+              height: 4,
+              decoration: BoxDecoration(
+                color: isDark ? Colors.white24 : Colors.black12,
+                borderRadius: BorderRadius.circular(4),
+              ),
+            ),
+            const SizedBox(height: 20),
+
+            // Gradient header banner
+            Container(
+              width: double.infinity,
+              margin: const EdgeInsets.symmetric(horizontal: 20),
+              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 18),
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(20),
+                gradient: const LinearGradient(
+                  colors: [Color(0xFF6B21A8), Color(0xFF1E3A8A)],
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                ),
+                boxShadow: [
+                  BoxShadow(
+                    color: const Color(0xFF6B21A8).withValues(alpha: 0.3),
+                    blurRadius: 20,
+                    offset: const Offset(0, 8),
+                  ),
+                ],
+              ),
+              child: Row(
+                children: [
+                  Container(
+                    padding: const EdgeInsets.all(2.5),
+                    decoration: const BoxDecoration(
+                      shape: BoxShape.circle,
+                      gradient: LinearGradient(
+                        colors: [Colors.pinkAccent, Colors.purpleAccent],
+                      ),
+                    ),
+                    child: CircleAvatar(
+                      radius: 24,
+                      backgroundColor: Colors.black87,
+                      child: Text(
+                        initial,
+                        style: const TextStyle(
+                          color: Colors.white,
+                          fontWeight: FontWeight.w900,
+                          fontSize: 20,
+                        ),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 14),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        const Text(
+                          'Personal Space',
+                          style: TextStyle(
+                            color: Colors.white70,
+                            fontSize: 10,
+                            fontWeight: FontWeight.w700,
+                            letterSpacing: 1.2,
+                          ),
+                        ),
+                        const SizedBox(height: 3),
+                        Text(
+                          widget.stats.fullName.isEmpty
+                              ? 'No Name Set'
+                              : widget.stats.fullName,
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontWeight: FontWeight.w900,
+                            fontSize: 17,
+                            letterSpacing: -0.3,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            ),
+
+            const SizedBox(height: 24),
+
+            // Editable name field
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 20),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const Text(
+                    'DISPLAY NAME',
+                    style: TextStyle(
+                      fontSize: 10,
+                      fontWeight: FontWeight.w800,
+                      color: AppTheme.lightTextHint,
+                      letterSpacing: 1.2,
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  TextField(
+                    controller: _nameCtrl,
+                    textCapitalization: TextCapitalization.words,
+                    style: TextStyle(
+                      fontSize: 15,
+                      fontWeight: FontWeight.w600,
+                      color: isDark ? Colors.white : Colors.black87,
+                    ),
+                    decoration: InputDecoration(
+                      hintText: 'Enter your full name',
+                      prefixIcon: const Icon(Icons.person_rounded,
+                          color: Colors.purple, size: 20),
+                      errorText: _error,
+                      filled: true,
+                      fillColor: isDark
+                          ? Colors.white.withValues(alpha: 0.05)
+                          : Colors.black.withValues(alpha: 0.04),
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(14),
+                        borderSide: BorderSide.none,
+                      ),
+                      focusedBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(14),
+                        borderSide: const BorderSide(
+                            color: Colors.purpleAccent, width: 1.5),
+                      ),
+                      contentPadding: const EdgeInsets.symmetric(
+                          horizontal: 16, vertical: 14),
+                    ),
+                    onChanged: (_) => setState(() => _error = null),
+                    onSubmitted: (_) => _save(),
+                  ),
+                ],
+              ),
+            ),
+
+            const SizedBox(height: 20),
+
+            // Read-only info fields
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 20),
+              child: Container(
+                padding: const EdgeInsets.all(16),
+                decoration: BoxDecoration(
+                  color: isDark
+                      ? Colors.white.withValues(alpha: 0.04)
+                      : Colors.black.withValues(alpha: 0.03),
+                  borderRadius: BorderRadius.circular(16),
+                  border: Border.all(
+                    color: isDark
+                        ? Colors.white.withValues(alpha: 0.07)
+                        : Colors.black.withValues(alpha: 0.06),
+                  ),
+                ),
+                child: Column(
+                  children: [
+                    _ReadOnlyInfoRow(
+                      icon: Icons.email_outlined,
+                      label: 'Email',
+                      value: widget.stats.email.isEmpty
+                          ? 'Not linked'
+                          : widget.stats.email,
+                      iconColor: Colors.blue,
+                    ),
+                    if (widget.stats.phone.isNotEmpty) ...[
+                      const Divider(height: 20),
+                      _ReadOnlyInfoRow(
+                        icon: Icons.phone_outlined,
+                        label: 'Phone',
+                        value: widget.stats.phone,
+                        iconColor: Colors.teal,
+                      ),
+                    ],
+                    const Divider(height: 20),
+                    const Row(
+                      children: [
+                        Icon(Icons.lock_outline_rounded,
+                            size: 14, color: AppTheme.lightTextHint),
+                        SizedBox(width: 6),
+                        Text(
+                          'Email and phone are managed by your account settings',
+                          style: TextStyle(
+                              fontSize: 10,
+                              color: AppTheme.lightTextHint,
+                              fontStyle: FontStyle.italic),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+            ),
+
+            const SizedBox(height: 24),
+
+            // Save button
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 20),
+              child: SizedBox(
+                width: double.infinity,
+                height: 50,
+                child: ElevatedButton(
+                  onPressed: _saving ? null : _save,
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: const Color(0xFF6B21A8),
+                    foregroundColor: Colors.white,
+                    shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(16)),
+                    elevation: 0,
+                  ),
+                  child: _saving
+                      ? const SizedBox(
+                          width: 20,
+                          height: 20,
+                          child: CircularProgressIndicator(
+                              color: Colors.white, strokeWidth: 2),
+                        )
+                      : const Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Icon(Icons.check_rounded, size: 18),
+                            SizedBox(width: 8),
+                            Text(
+                              'Save Name',
+                              style: TextStyle(
+                                fontWeight: FontWeight.w800,
+                                fontSize: 15,
+                                letterSpacing: 0.3,
+                              ),
+                            ),
+                          ],
+                        ),
+                ),
+              ),
+            ),
+
+            const SizedBox(height: 36),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _ReadOnlyInfoRow extends StatelessWidget {
+  final IconData icon;
+  final Color iconColor;
+  final String label;
+  final String value;
+
+  const _ReadOnlyInfoRow({
+    required this.icon,
+    required this.iconColor,
+    required this.label,
+    required this.value,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      children: [
+        Container(
+          width: 34,
+          height: 34,
+          decoration: BoxDecoration(
+            color: iconColor.withValues(alpha: 0.1),
+            shape: BoxShape.circle,
+          ),
+          child: Icon(icon, size: 16, color: iconColor),
+        ),
+        const SizedBox(width: 12),
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                label.toUpperCase(),
+                style: const TextStyle(
+                  fontSize: 9,
+                  fontWeight: FontWeight.w800,
+                  color: AppTheme.lightTextHint,
+                  letterSpacing: 0.8,
+                ),
+              ),
+              const SizedBox(height: 2),
+              Text(
+                value,
+                style: const TextStyle(
+                  fontSize: 13,
+                  fontWeight: FontWeight.w600,
+                ),
+                overflow: TextOverflow.ellipsis,
+              ),
+            ],
+          ),
+        ),
+        const Icon(Icons.lock_outline_rounded,
+            size: 13, color: AppTheme.lightTextHint),
+      ],
     );
   }
 }

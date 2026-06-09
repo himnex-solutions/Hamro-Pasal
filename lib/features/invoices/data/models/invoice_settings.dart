@@ -8,6 +8,9 @@ class InvoiceSettings {
   final String title;
   final String footerNote;
   final String printTemplate; // 'a4', 'a5', 'thermal_58', 'thermal_80'
+  final bool showAddress;
+  final bool showPhone;
+  final bool showPAN;
 
   InvoiceSettings({
     this.prefix = 'INV',
@@ -17,6 +20,9 @@ class InvoiceSettings {
     this.title = 'TAX INVOICE',
     this.footerNote = 'Thank you for your business!',
     this.printTemplate = 'a4',
+    this.showAddress = true,
+    this.showPhone = true,
+    this.showPAN = true,
   });
 
   InvoiceSettings copyWith({
@@ -27,6 +33,9 @@ class InvoiceSettings {
     String? title,
     String? footerNote,
     String? printTemplate,
+    bool? showAddress,
+    bool? showPhone,
+    bool? showPAN,
   }) {
     return InvoiceSettings(
       prefix: prefix ?? this.prefix,
@@ -36,6 +45,9 @@ class InvoiceSettings {
       title: title ?? this.title,
       footerNote: footerNote ?? this.footerNote,
       printTemplate: printTemplate ?? this.printTemplate,
+      showAddress: showAddress ?? this.showAddress,
+      showPhone: showPhone ?? this.showPhone,
+      showPAN: showPAN ?? this.showPAN,
     );
   }
 
@@ -48,6 +60,9 @@ class InvoiceSettings {
       'title': title,
       'footerNote': footerNote,
       'printTemplate': printTemplate,
+      'showAddress': showAddress,
+      'showPhone': showPhone,
+      'showPAN': showPAN,
     };
   }
 
@@ -60,6 +75,9 @@ class InvoiceSettings {
       title: map['title'] ?? 'TAX INVOICE',
       footerNote: map['footerNote'] ?? 'Thank you for your business!',
       printTemplate: map['printTemplate'] ?? 'a4',
+      showAddress: map['showAddress'] ?? true,
+      showPhone: map['showPhone'] ?? true,
+      showPAN: map['showPAN'] ?? true,
     );
   }
 
