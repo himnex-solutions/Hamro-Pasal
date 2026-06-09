@@ -712,15 +712,19 @@ class _AdminSubscriptionsScreenState extends State<AdminSubscriptionsScreen> {
                   const SizedBox(height: 16),
 
                   // ── Footer actions ────────────────────────
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  Column(
+                    mainAxisSize: MainAxisSize.min,
                     children: [
-                      const Text(
-                        'Pinch/scroll to zoom  •  Drag to pan',
-                        style: TextStyle(
-                            color: Colors.white30, fontSize: 10, fontStyle: FontStyle.italic),
+                      const Center(
+                        child: Text(
+                          'Pinch/scroll to zoom  •  Drag to pan',
+                          style: TextStyle(
+                              color: Colors.white30, fontSize: 10, fontStyle: FontStyle.italic),
+                        ),
                       ),
+                      const SizedBox(height: 12),
                       Row(
+                        mainAxisAlignment: MainAxisAlignment.end,
                         children: [
                           TextButton(
                             onPressed: () => Navigator.pop(ctx),
@@ -758,6 +762,7 @@ class _AdminSubscriptionsScreenState extends State<AdminSubscriptionsScreen> {
                             style: ElevatedButton.styleFrom(
                               backgroundColor: AppTheme.primaryLight,
                               foregroundColor: Colors.black,
+                              minimumSize: const Size(120, 40),
                               shape: RoundedRectangleBorder(
                                   borderRadius: BorderRadius.circular(10)),
                               padding: const EdgeInsets.symmetric(
