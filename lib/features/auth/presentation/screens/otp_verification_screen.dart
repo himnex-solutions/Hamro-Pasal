@@ -150,178 +150,184 @@ class _OtpVerificationScreenState extends ConsumerState<OtpVerificationScreen> {
 
     return Scaffold(
       body: SafeArea(
-        child: SingleChildScrollView(
-          padding: const EdgeInsets.all(24),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              const SizedBox(height: 16),
-
-              // Back arrow
-              IconButton(
-                onPressed: () => context.go(AppRoutes.login),
-                icon: const Icon(Icons.arrow_back_rounded),
-                padding: EdgeInsets.zero,
-              ).animate().fadeIn(),
-
-              const SizedBox(height: 24),
-
-              // Icon + title
-              Center(
-                child: Column(
-                  children: [
-                    Container(
-                      width: 80,
-                      height: 80,
-                      decoration: BoxDecoration(
-                        gradient: const LinearGradient(
-                          colors: [
-                            AppTheme.primaryColor,
-                            AppTheme.primaryLight
-                          ],
-                          begin: Alignment.topLeft,
-                          end: Alignment.bottomRight,
-                        ),
-                        borderRadius: BorderRadius.circular(24),
-                        boxShadow: [
-                          BoxShadow(
-                            color: AppTheme.primaryColor.withValues(alpha: 0.3),
-                            blurRadius: 20,
-                            offset: const Offset(0, 8),
-                          ),
-                        ],
-                      ),
-                      child: const Icon(Icons.mark_email_read_rounded,
-                          size: 40, color: Colors.white),
-                    )
-                        .animate()
-                        .scale(duration: 600.ms, curve: Curves.elasticOut)
-                        .fadeIn(duration: 400.ms),
-                    const SizedBox(height: 24),
-                    Text(
-                      'Verify Your Email',
-                      style: Theme.of(context)
-                          .textTheme
-                          .headlineMedium
-                          ?.copyWith(fontWeight: FontWeight.w700),
-                      textAlign: TextAlign.center,
-                    ).animate(delay: 150.ms).fadeIn().slideY(begin: 0.2),
-                    const SizedBox(height: 10),
-                    RichText(
-                      textAlign: TextAlign.center,
-                      text: TextSpan(
-                        style: Theme.of(context)
-                            .textTheme
-                            .bodyMedium
-                            ?.copyWith(color: AppTheme.lightTextSecondary),
-                        children: [
-                          const TextSpan(text: 'We sent a 6-digit code to\n'),
-                          TextSpan(
-                            text: widget.email,
-                            style: const TextStyle(
-                              color: AppTheme.primaryColor,
-                              fontWeight: FontWeight.w600,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ).animate(delay: 200.ms).fadeIn(),
-                  ],
-                ),
-              ),
-
-              const SizedBox(height: 40),
-
-              // OTP boxes
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: List.generate(
-                    6,
-                    (i) => _OtpBox(
-                          controller: _controllers[i],
-                          focusNode: _focusNodes[i],
-                          onChanged: (v) => _onDigitChanged(i, v),
-                        )).animate(delay: 250.ms).fadeIn(),
-              ),
-
-              const SizedBox(height: 36),
-
-              // Verify button
-              AppButton(
-                label: 'Verify & Continue',
-                onPressed: canVerify ? _verify : null,
-                isLoading: _isLoading,
-                icon: Icons.verified_rounded,
-              ).animate(delay: 350.ms).fadeIn(),
-
-              const SizedBox(height: 28),
-
-              // Resend section
-              Center(
-                child: _secondsLeft > 0
-                    ? Text(
-                        'Resend code in ${_secondsLeft}s',
-                        style: Theme.of(context)
-                            .textTheme
-                            .bodyMedium
-                            ?.copyWith(color: AppTheme.lightTextSecondary),
-                      )
-                    : _isResending
-                        ? const SizedBox(
-                            height: 24,
-                            width: 24,
-                            child: CircularProgressIndicator(strokeWidth: 2),
-                          )
-                        : GestureDetector(
-                            onTap: _resend,
-                            child: RichText(
-                              text: TextSpan(
-                                style: Theme.of(context).textTheme.bodyMedium,
-                                children: const [
-                                  TextSpan(text: "Didn't receive it? "),
-                                  TextSpan(
-                                    text: 'Resend OTP',
-                                    style: TextStyle(
-                                      color: AppTheme.primaryColor,
-                                      fontWeight: FontWeight.w700,
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ),
-                          ),
-              ).animate(delay: 400.ms).fadeIn(),
-
-              const SizedBox(height: 32),
-
-              // Info note
-              Container(
-                padding: const EdgeInsets.all(14),
-                decoration: BoxDecoration(
-                  color: AppTheme.infoColor.withValues(alpha: 0.08),
-                  borderRadius: BorderRadius.circular(12),
-                  border: Border.all(
-                      color: AppTheme.infoColor.withValues(alpha: 0.25)),
-                ),
-                child: Row(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    const Icon(Icons.info_outline,
-                        size: 18, color: AppTheme.infoColor),
-                    const SizedBox(width: 10),
-                    Expanded(
-                      child: Text(
-                        'This one-time verification secures your account. '
-                        'The code expires in 10 minutes.',
-                        style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                              color: AppTheme.infoColor,
-                            ),
-                      ),
+        child: Center(
+          child: SingleChildScrollView(
+            child: Container(
+              constraints: const BoxConstraints(maxWidth: 450),
+              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 32),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  // Back arrow
+                  Align(
+                    alignment: Alignment.centerLeft,
+                    child: IconButton(
+                      onPressed: () => context.go(AppRoutes.login),
+                      icon: const Icon(Icons.arrow_back_rounded),
+                      padding: EdgeInsets.zero,
                     ),
-                  ],
-                ),
-              ).animate(delay: 450.ms).fadeIn(),
-            ],
+                  ).animate().fadeIn(),
+
+                  const SizedBox(height: 24),
+
+                  // Icon + title
+                  Center(
+                    child: Column(
+                      children: [
+                        Container(
+                          width: 80,
+                          height: 80,
+                          decoration: BoxDecoration(
+                            gradient: const LinearGradient(
+                              colors: [
+                                AppTheme.primaryColor,
+                                AppTheme.primaryLight
+                              ],
+                              begin: Alignment.topLeft,
+                              end: Alignment.bottomRight,
+                            ),
+                            borderRadius: BorderRadius.circular(24),
+                            boxShadow: [
+                              BoxShadow(
+                                color: AppTheme.primaryColor.withValues(alpha: 0.3),
+                                blurRadius: 20,
+                                offset: const Offset(0, 8),
+                              ),
+                            ],
+                          ),
+                          child: const Icon(Icons.mark_email_read_rounded,
+                              size: 40, color: Colors.white),
+                        )
+                            .animate()
+                            .scale(duration: 600.ms, curve: Curves.elasticOut)
+                            .fadeIn(duration: 400.ms),
+                        const SizedBox(height: 24),
+                        Text(
+                          'Verify Your Email',
+                          style: Theme.of(context)
+                              .textTheme
+                              .headlineMedium
+                              ?.copyWith(fontWeight: FontWeight.w700),
+                          textAlign: TextAlign.center,
+                        ).animate(delay: 150.ms).fadeIn().slideY(begin: 0.2),
+                        const SizedBox(height: 10),
+                        RichText(
+                          textAlign: TextAlign.center,
+                          text: TextSpan(
+                            style: Theme.of(context)
+                                .textTheme
+                                .bodyMedium
+                                ?.copyWith(color: AppTheme.lightTextSecondary),
+                            children: [
+                              const TextSpan(text: 'We sent a 6-digit code to\n'),
+                              TextSpan(
+                                text: widget.email,
+                                style: const TextStyle(
+                                  color: AppTheme.primaryColor,
+                                  fontWeight: FontWeight.w600,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ).animate(delay: 200.ms).fadeIn(),
+                      ],
+                    ),
+                  ),
+
+                  const SizedBox(height: 40),
+
+                  // OTP boxes
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: List.generate(
+                        6,
+                        (i) => _OtpBox(
+                              controller: _controllers[i],
+                              focusNode: _focusNodes[i],
+                              onChanged: (v) => _onDigitChanged(i, v),
+                            )).animate(delay: 250.ms).fadeIn(),
+                  ),
+
+                  const SizedBox(height: 36),
+
+                  // Verify button
+                  AppButton(
+                    label: 'Verify & Continue',
+                    onPressed: canVerify ? _verify : null,
+                    isLoading: _isLoading,
+                    icon: Icons.verified_rounded,
+                  ).animate(delay: 350.ms).fadeIn(),
+
+                  const SizedBox(height: 28),
+
+                  // Resend section
+                  Center(
+                    child: _secondsLeft > 0
+                        ? Text(
+                            'Resend code in ${_secondsLeft}s',
+                            style: Theme.of(context)
+                                .textTheme
+                                .bodyMedium
+                                ?.copyWith(color: AppTheme.lightTextSecondary),
+                          )
+                        : _isResending
+                            ? const SizedBox(
+                                height: 24,
+                                width: 24,
+                                child: CircularProgressIndicator(strokeWidth: 2),
+                              )
+                            : GestureDetector(
+                                onTap: _resend,
+                                child: RichText(
+                                  text: TextSpan(
+                                    style: Theme.of(context).textTheme.bodyMedium,
+                                    children: const [
+                                      TextSpan(text: "Didn't receive it? "),
+                                      TextSpan(
+                                        text: 'Resend OTP',
+                                        style: TextStyle(
+                                          color: AppTheme.primaryColor,
+                                          fontWeight: FontWeight.w700,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              ),
+                  ).animate(delay: 400.ms).fadeIn(),
+
+                  const SizedBox(height: 32),
+
+                  // Info note
+                  Container(
+                    padding: const EdgeInsets.all(14),
+                    decoration: BoxDecoration(
+                      color: AppTheme.infoColor.withValues(alpha: 0.08),
+                      borderRadius: BorderRadius.circular(12),
+                      border: Border.all(
+                          color: AppTheme.infoColor.withValues(alpha: 0.25)),
+                    ),
+                    child: Row(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        const Icon(Icons.info_outline,
+                            size: 18, color: AppTheme.infoColor),
+                        const SizedBox(width: 10),
+                        Expanded(
+                          child: Text(
+                            'This one-time verification secures your account. '
+                            'The code expires in 10 minutes.',
+                            style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                                  color: AppTheme.infoColor,
+                                ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ).animate(delay: 450.ms).fadeIn(),
+                ],
+              ),
+            ),
           ),
         ),
       ),

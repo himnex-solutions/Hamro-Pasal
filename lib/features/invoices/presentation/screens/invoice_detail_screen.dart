@@ -146,11 +146,11 @@ class _InvoiceDetailScreenState extends ConsumerState<InvoiceDetailScreen> {
           marginValue = 24;
           break;
         case 'thermal_58':
-          pageFormat = const PdfPageFormat(58 * PdfPageFormat.mm, 180 * PdfPageFormat.mm);
+          pageFormat = const PdfPageFormat(58 * PdfPageFormat.mm, 240 * PdfPageFormat.mm);
           marginValue = 12;
           break;
         case 'thermal_80':
-          pageFormat = const PdfPageFormat(80 * PdfPageFormat.mm, 240 * PdfPageFormat.mm);
+          pageFormat = const PdfPageFormat(80 * PdfPageFormat.mm, 320 * PdfPageFormat.mm);
           marginValue = 16;
           break;
         case 'a4':
@@ -164,229 +164,375 @@ class _InvoiceDetailScreenState extends ConsumerState<InvoiceDetailScreen> {
         pw.Page(
           pageFormat: pageFormat,
           margin: pw.EdgeInsets.all(marginValue),
-          build: (ctx) => pw.Column(
-            crossAxisAlignment: pw.CrossAxisAlignment.start,
-            children: [
-              // ── Header ─────────────────────────────────
-              pw.Row(
-                mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
-                crossAxisAlignment: pw.CrossAxisAlignment.start,
-                children: [
-                  pw.Column(
-                    crossAxisAlignment: pw.CrossAxisAlignment.start,
-                    children: [
-                      pw.Text(
-                        biz?['name'] as String? ?? 'Business',
-                        style: pw.TextStyle(
-                          fontSize: 22,
-                          fontWeight: pw.FontWeight.bold,
-                          color: primaryColor,
-                        ),
-                      ),
-                      if (biz?['address'] != null)
-                        pw.Text(biz!['address'] as String,
-                            style: pw.TextStyle(color: greyText, fontSize: 10)),
-                      if (biz?['phone'] != null)
-                        pw.Text('Tel: ${biz!['phone']}',
-                            style: pw.TextStyle(color: greyText, fontSize: 10)),
-                      if (biz?['email'] != null)
-                        pw.Text(biz!['email'] as String,
-                            style: pw.TextStyle(color: greyText, fontSize: 10)),
-                      if (biz?['pan_number'] != null)
-                        pw.Text('PAN: ${biz!['pan_number']}',
-                            style: pw.TextStyle(color: greyText, fontSize: 10)),
-                    ],
-                  ),
-                  pw.Column(
-                    crossAxisAlignment: pw.CrossAxisAlignment.end,
-                    children: [
-                      pw.Text(settings.title.toUpperCase(),
-                          style: pw.TextStyle(
-                            fontSize: 24,
-                            fontWeight: pw.FontWeight.bold,
-                            color: greyText,
-                          )),
-                      pw.SizedBox(height: 4),
-                      pw.Text('#${inv['invoice_number']}',
-                          style: pw.TextStyle(
-                              fontSize: 14,
-                              fontWeight: pw.FontWeight.bold,
-                              color: darkText)),
-                    ],
-                  ),
-                ],
-              ),
-              pw.SizedBox(height: 16),
-              pw.Divider(color: primaryColor, thickness: 2),
-              pw.SizedBox(height: 12),
+          build: (ctx) {
+            final isThermal = settings.printTemplate.startsWith('thermal_');
+            if (isThermal) {
+              final is58mm = settings.printTemplate == 'thermal_58';
+              final lineCharCount = is58mm ? 36 : 48;
+              final dividerText = '-' * lineCharCount;
+              final textFont = pw.Font.courier();
+              
+              pw.Widget thermalRow(String label, String value, {bool isBold = false}) {
+                return pw.Row(
+                  mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
+                  children: [
+                    pw.Text(label, style: pw.TextStyle(font: textFont, fontSize: 8, fontWeight: isBold ? pw.FontWeight.bold : pw.FontWeight.normal)),
+                    pw.Text(value, style: pw.TextStyle(font: textFont, fontSize: 8, fontWeight: isBold ? pw.FontWeight.bold : pw.FontWeight.normal)),
+                  ],
+                );
+              }
 
-              // ── Bill To & Dates ─────────────────────────
-              pw.Row(
-                crossAxisAlignment: pw.CrossAxisAlignment.start,
+              return pw.Column(
+                crossAxisAlignment: pw.CrossAxisAlignment.center,
                 children: [
-                  pw.Expanded(
+                  pw.Text(
+                    biz?['name'] as String? ?? 'Business',
+                    style: pw.TextStyle(
+                      font: textFont,
+                      fontSize: 12,
+                      fontWeight: pw.FontWeight.bold,
+                    ),
+                    textAlign: pw.TextAlign.center,
+                  ),
+                  if (biz?['address'] != null)
+                    pw.Text(biz!['address'] as String,
+                        style: pw.TextStyle(font: textFont, fontSize: 8), textAlign: pw.TextAlign.center),
+                  if (biz?['phone'] != null)
+                    pw.Text('Tel: ${biz!['phone']}',
+                        style: pw.TextStyle(font: textFont, fontSize: 8), textAlign: pw.TextAlign.center),
+                  if (biz?['email'] != null)
+                    pw.Text(biz!['email'] as String,
+                        style: pw.TextStyle(font: textFont, fontSize: 8), textAlign: pw.TextAlign.center),
+                  if (biz?['pan_number'] != null)
+                    pw.Text('PAN: ${biz!['pan_number']}',
+                        style: pw.TextStyle(font: textFont, fontSize: 8), textAlign: pw.TextAlign.center),
+                  
+                  pw.Text(dividerText, style: pw.TextStyle(font: textFont, fontSize: 8)),
+                  
+                  pw.Align(
+                    alignment: pw.Alignment.centerLeft,
                     child: pw.Column(
                       crossAxisAlignment: pw.CrossAxisAlignment.start,
                       children: [
-                        pw.Text('BILL TO',
-                            style: pw.TextStyle(
-                                fontSize: 9,
-                                fontWeight: pw.FontWeight.bold,
-                                color: greyText)),
-                        pw.SizedBox(height: 4),
                         pw.Text(
-                          inv['party_name'] as String? ?? 'Walk-in Customer',
-                          style: pw.TextStyle(
-                              fontSize: 13, fontWeight: pw.FontWeight.bold),
+                          '${settings.title.toUpperCase()}: #${inv['invoice_number']}',
+                          style: pw.TextStyle(font: textFont, fontWeight: pw.FontWeight.bold, fontSize: 8),
                         ),
+                        pw.Text('Date: ${dateFmt.format(invoiceDate)}',
+                            style: pw.TextStyle(font: textFont, fontSize: 8)),
+                        if (dueDate != null)
+                          pw.Text('Due Date: ${dateFmt.format(dueDate)}',
+                              style: pw.TextStyle(font: textFont, fontSize: 8)),
+                        pw.Text('Status: ${(inv['status'] as String).toUpperCase()}',
+                            style: pw.TextStyle(font: textFont, fontSize: 8)),
+                        pw.Text('Bill To: ${inv['party_name'] as String? ?? "Walk-in Customer"}',
+                            style: pw.TextStyle(font: textFont, fontSize: 8)),
                       ],
                     ),
                   ),
-                  pw.Column(
-                    crossAxisAlignment: pw.CrossAxisAlignment.end,
+                  
+                  pw.Text(dividerText, style: pw.TextStyle(font: textFont, fontSize: 8)),
+                  
+                  // 3-column table
+                  pw.Row(
                     children: [
-                      _pdfDateRow('Invoice Date', dateFmt.format(invoiceDate),
-                          darkText, greyText),
-                      if (dueDate != null)
-                        _pdfDateRow('Due Date', dateFmt.format(dueDate),
-                            darkText, greyText),
-                      _pdfDateRow(
-                        'Status',
-                        (inv['status'] as String).toUpperCase(),
-                        inv['status'] == 'paid'
-                            ? PdfColor.fromHex('2E7D32')
-                            : PdfColor.fromHex('C62828'),
-                        greyText,
+                      pw.Expanded(
+                        flex: 5,
+                        child: pw.Text('ITEM', style: pw.TextStyle(font: textFont, fontWeight: pw.FontWeight.bold, fontSize: 8)),
+                      ),
+                      pw.Expanded(
+                        flex: 3,
+                        child: pw.Text('QTY x PRICE', style: pw.TextStyle(font: textFont, fontWeight: pw.FontWeight.bold, fontSize: 8), textAlign: pw.TextAlign.center),
+                      ),
+                      pw.Expanded(
+                        flex: 3,
+                        child: pw.Text('TOTAL', style: pw.TextStyle(font: textFont, fontWeight: pw.FontWeight.bold, fontSize: 8), textAlign: pw.TextAlign.right),
                       ),
                     ],
                   ),
-                ],
-              ),
-              pw.SizedBox(height: 20),
-
-              // ── Items Table ─────────────────────────────
-              pw.Table(
-                border: pw.TableBorder.all(
-                    color: PdfColor.fromHex('E0E0E0'), width: 0.5),
-                columnWidths: {
-                  0: const pw.FlexColumnWidth(4),
-                  1: const pw.FlexColumnWidth(1.5),
-                  2: const pw.FlexColumnWidth(2),
-                  3: const pw.FlexColumnWidth(2),
-                },
-                children: [
-                  // Header
-                  pw.TableRow(
-                    decoration: pw.BoxDecoration(color: primaryColor),
-                    children: [
-                      _pdfCell('ITEM', isHeader: true),
-                      _pdfCell('QTY',
-                          isHeader: true, align: pw.TextAlign.center),
-                      _pdfCell('UNIT PRICE',
-                          isHeader: true, align: pw.TextAlign.right),
-                      _pdfCell('TOTAL',
-                          isHeader: true, align: pw.TextAlign.right),
-                    ],
-                  ),
-                  // Items
-                  ..._items.asMap().entries.map((e) {
-                    final item = e.value;
-                    final bg = e.key.isOdd ? lightGrey : PdfColors.white;
-                    return pw.TableRow(
-                      decoration: pw.BoxDecoration(color: bg),
-                      children: [
-                        _pdfCell(item['product_name'] as String? ?? ''),
-                        _pdfCell(
-                          (item['quantity'] as num).toStringAsFixed(0),
-                          align: pw.TextAlign.center,
-                        ),
-                        _pdfCell(
-                          '${AppConstants.currencySymbol} ${fmt.format((item['unit_price'] as num).toDouble())}',
-                          align: pw.TextAlign.right,
-                        ),
-                        _pdfCell(
-                          '${AppConstants.currencySymbol} ${fmt.format((item['total_price'] as num).toDouble())}',
-                          align: pw.TextAlign.right,
-                        ),
-                      ],
+                  pw.SizedBox(height: 2),
+                  ..._items.map((item) {
+                    final qty = (item['quantity'] as num).toDouble();
+                    final unitP = (item['unit_price'] as num).toDouble();
+                    final totalP = (item['total_price'] as num).toDouble();
+                    return pw.Padding(
+                      padding: const pw.EdgeInsets.symmetric(vertical: 1),
+                      child: pw.Row(
+                        crossAxisAlignment: pw.CrossAxisAlignment.start,
+                        children: [
+                          pw.Expanded(
+                            flex: 5,
+                            child: pw.Text(item['product_name'] as String? ?? '', style: pw.TextStyle(font: textFont, fontSize: 8)),
+                          ),
+                          pw.Expanded(
+                            flex: 3,
+                            child: pw.Text('${qty.toStringAsFixed(0)} x ${unitP.toStringAsFixed(0)}', style: pw.TextStyle(font: textFont, fontSize: 8), textAlign: pw.TextAlign.center),
+                          ),
+                          pw.Expanded(
+                            flex: 3,
+                            child: pw.Text(fmt.format(totalP), style: pw.TextStyle(font: textFont, fontSize: 8), textAlign: pw.TextAlign.right),
+                          ),
+                        ],
+                      ),
                     );
                   }),
+                  
+                  pw.Text(dividerText, style: pw.TextStyle(font: textFont, fontSize: 8)),
+                  
+                  thermalRow('Subtotal:', fmt.format(subtotal)),
+                  if (tax > 0) thermalRow('Tax:', '+${fmt.format(tax)}'),
+                  if (discount > 0) thermalRow('Discount:', '-${fmt.format(discount)}'),
+                  
+                  pw.Text(dividerText, style: pw.TextStyle(font: textFont, fontSize: 8)),
+                  thermalRow('GRAND TOTAL:', '${AppConstants.currencySymbol} ${fmt.format(total)}', isBold: true),
+                  thermalRow('Paid Amount:', '${AppConstants.currencySymbol} ${fmt.format(paid)}'),
+                  if (paid < total)
+                    thermalRow('Amount Due:', '${AppConstants.currencySymbol} ${fmt.format(total - paid)}', isBold: true),
+                  
+                  pw.Text(dividerText, style: pw.TextStyle(font: textFont, fontSize: 8)),
+                  
+                  if (settings.footerNote.isNotEmpty) ...[
+                    pw.Text(settings.footerNote, style: pw.TextStyle(font: textFont, fontSize: 8), textAlign: pw.TextAlign.center),
+                    pw.SizedBox(height: 4),
+                  ],
+                  if (ref.read(subscriptionManagerProvider).planCode == 'basic')
+                    pw.Text('Powered by Hamro Pasal', style: pw.TextStyle(font: textFont, fontSize: 7, fontStyle: pw.FontStyle.italic), textAlign: pw.TextAlign.center),
                 ],
-              ),
-              pw.SizedBox(height: 12),
+              );
+            }
 
-              // ── Totals ──────────────────────────────────
-              pw.Align(
-                alignment: pw.Alignment.centerRight,
-                child: pw.SizedBox(
-                  width: 220,
-                  child: pw.Column(
-                    children: [
-                      _pdfTotalRow(
-                          'Subtotal',
-                          '${AppConstants.currencySymbol} ${fmt.format(subtotal)}',
-                          darkText,
-                          greyText),
-                      if (tax > 0)
-                        _pdfTotalRow(
-                            'Tax',
-                            '+${AppConstants.currencySymbol} ${fmt.format(tax)}',
-                            darkText,
-                            greyText),
-                      if (discount > 0)
-                        _pdfTotalRow(
-                            'Discount',
-                            '-${AppConstants.currencySymbol} ${fmt.format(discount)}',
-                            darkText,
-                            greyText),
-                      pw.Divider(color: greyText),
-                      _pdfTotalRow(
-                        'TOTAL',
-                        '${AppConstants.currencySymbol} ${fmt.format(total)}',
-                        primaryColor,
-                        primaryColor,
-                        isBold: true,
-                        fontSize: 13,
-                      ),
-                      if (paid > 0 && paid < total)
-                        _pdfTotalRow(
-                          'Amount Due',
-                          '${AppConstants.currencySymbol} ${fmt.format(total - paid)}',
-                          PdfColor.fromHex('C62828'),
-                          PdfColor.fromHex('C62828'),
-                          isBold: true,
+            // Fallback: A4/A5 PDF layout
+            return pw.Column(
+              crossAxisAlignment: pw.CrossAxisAlignment.start,
+              children: [
+                // ── Header ─────────────────────────────────
+                pw.Row(
+                  mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
+                  crossAxisAlignment: pw.CrossAxisAlignment.start,
+                  children: [
+                    pw.Column(
+                      crossAxisAlignment: pw.CrossAxisAlignment.start,
+                      children: [
+                        pw.Text(
+                          biz?['name'] as String? ?? 'Business',
+                          style: pw.TextStyle(
+                            fontSize: 22,
+                            fontWeight: pw.FontWeight.bold,
+                            color: primaryColor,
+                          ),
                         ),
-                    ],
+                        if (biz?['address'] != null)
+                          pw.Text(biz!['address'] as String,
+                              style: pw.TextStyle(color: greyText, fontSize: 10)),
+                        if (biz?['phone'] != null)
+                          pw.Text('Tel: ${biz!['phone']}',
+                              style: pw.TextStyle(color: greyText, fontSize: 10)),
+                        if (biz?['email'] != null)
+                          pw.Text(biz!['email'] as String,
+                              style: pw.TextStyle(color: greyText, fontSize: 10)),
+                        if (biz?['pan_number'] != null)
+                          pw.Text('PAN: ${biz!['pan_number']}',
+                              style: pw.TextStyle(color: greyText, fontSize: 10)),
+                      ],
+                    ),
+                    pw.Column(
+                      crossAxisAlignment: pw.CrossAxisAlignment.end,
+                      children: [
+                        pw.Text(settings.title.toUpperCase(),
+                            style: pw.TextStyle(
+                              fontSize: 24,
+                              fontWeight: pw.FontWeight.bold,
+                              color: greyText,
+                            )),
+                        pw.SizedBox(height: 4),
+                        pw.Text('#${inv['invoice_number']}',
+                            style: pw.TextStyle(
+                                fontSize: 14,
+                                fontWeight: pw.FontWeight.bold,
+                                color: darkText)),
+                      ],
+                    ),
+                  ],
+                ),
+                pw.SizedBox(height: 16),
+                pw.Divider(color: primaryColor, thickness: 2),
+                pw.SizedBox(height: 12),
+
+                // ── Bill To & Dates ─────────────────────────
+                pw.Row(
+                  crossAxisAlignment: pw.CrossAxisAlignment.start,
+                  children: [
+                    pw.Expanded(
+                      child: pw.Column(
+                        crossAxisAlignment: pw.CrossAxisAlignment.start,
+                        children: [
+                          pw.Text('BILL TO',
+                              style: pw.TextStyle(
+                                  fontSize: 9,
+                                  fontWeight: pw.FontWeight.bold,
+                                  color: greyText)),
+                          pw.SizedBox(height: 4),
+                          pw.Text(
+                            inv['party_name'] as String? ?? 'Walk-in Customer',
+                            style: pw.TextStyle(
+                                fontSize: 13, fontWeight: pw.FontWeight.bold),
+                          ),
+                        ],
+                      ),
+                    ),
+                    pw.Column(
+                      crossAxisAlignment: pw.CrossAxisAlignment.end,
+                      children: [
+                        _pdfDateRow('Invoice Date', dateFmt.format(invoiceDate),
+                            darkText, greyText),
+                        if (dueDate != null)
+                          _pdfDateRow('Due Date', dateFmt.format(dueDate),
+                              darkText, greyText),
+                        _pdfDateRow(
+                          'Status',
+                          (inv['status'] as String).toUpperCase(),
+                          inv['status'] == 'paid'
+                              ? PdfColor.fromHex('2E7D32')
+                              : PdfColor.fromHex('C62828'),
+                          greyText,
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+                pw.SizedBox(height: 20),
+
+                // ── Items Table ─────────────────────────────
+                pw.Table(
+                  border: pw.TableBorder.all(
+                      color: PdfColor.fromHex('E0E0E0'), width: 0.5),
+                  columnWidths: {
+                    0: const pw.FlexColumnWidth(4),
+                    1: const pw.FlexColumnWidth(1.5),
+                    2: const pw.FlexColumnWidth(2),
+                    3: const pw.FlexColumnWidth(2),
+                  },
+                  children: [
+                    // Header
+                    pw.TableRow(
+                      decoration: pw.BoxDecoration(color: primaryColor),
+                      children: [
+                        _pdfCell('ITEM', isHeader: true),
+                        _pdfCell('QTY',
+                            isHeader: true, align: pw.TextAlign.center),
+                        _pdfCell('UNIT PRICE',
+                            isHeader: true, align: pw.TextAlign.right),
+                        _pdfCell('TOTAL',
+                            isHeader: true, align: pw.TextAlign.right),
+                      ],
+                    ),
+                    // Items
+                    ..._items.asMap().entries.map((e) {
+                      final item = e.value;
+                      final bg = e.key.isOdd ? lightGrey : PdfColors.white;
+                      return pw.TableRow(
+                        decoration: pw.BoxDecoration(color: bg),
+                        children: [
+                          _pdfCell(item['product_name'] as String? ?? ''),
+                          _pdfCell(
+                            (item['quantity'] as num).toStringAsFixed(0),
+                            align: pw.TextAlign.center,
+                          ),
+                          _pdfCell(
+                            '${AppConstants.currencySymbol} ${fmt.format((item['unit_price'] as num).toDouble())}',
+                            align: pw.TextAlign.right,
+                          ),
+                          _pdfCell(
+                            '${AppConstants.currencySymbol} ${fmt.format((item['total_price'] as num).toDouble())}',
+                            align: pw.TextAlign.right,
+                          ),
+                        ],
+                      );
+                    }),
+                  ],
+                ),
+                pw.SizedBox(height: 12),
+
+                // ── Totals ──────────────────────────────────
+                pw.Align(
+                  alignment: pw.Alignment.centerRight,
+                  child: pw.SizedBox(
+                    width: 220,
+                    child: pw.Column(
+                      children: [
+                        _pdfTotalRow(
+                            'Subtotal',
+                            '${AppConstants.currencySymbol} ${fmt.format(subtotal)}',
+                            darkText,
+                            greyText),
+                        if (tax > 0)
+                          _pdfTotalRow(
+                              'Tax',
+                              '+${AppConstants.currencySymbol} ${fmt.format(tax)}',
+                              darkText,
+                              greyText),
+                        if (discount > 0)
+                          _pdfTotalRow(
+                              'Discount',
+                              '-${AppConstants.currencySymbol} ${fmt.format(discount)}',
+                              darkText,
+                              greyText),
+                        pw.Divider(color: greyText),
+                        _pdfTotalRow(
+                          'TOTAL',
+                          '${AppConstants.currencySymbol} ${fmt.format(total)}',
+                          primaryColor,
+                          primaryColor,
+                          isBold: true,
+                          fontSize: 13,
+                        ),
+                        if (paid > 0)
+                          _pdfTotalRow(
+                            'Paid Amount',
+                            '${AppConstants.currencySymbol} ${fmt.format(paid)}',
+                            darkText,
+                            greyText,
+                          ),
+                        if (paid > 0 && paid < total)
+                          _pdfTotalRow(
+                            'Amount Due',
+                            '${AppConstants.currencySymbol} ${fmt.format(total - paid)}',
+                            PdfColor.fromHex('C62828'),
+                            PdfColor.fromHex('C62828'),
+                            isBold: true,
+                          ),
+                      ],
+                    ),
                   ),
                 ),
-              ),
 
-              if (inv['notes'] != null &&
-                  (inv['notes'] as String).isNotEmpty) ...[
-                pw.SizedBox(height: 16),
-                pw.Text('Notes',
-                    style: pw.TextStyle(
-                        fontWeight: pw.FontWeight.bold, fontSize: 11)),
-                pw.SizedBox(height: 4),
-                pw.Text(inv['notes'] as String,
-                    style: pw.TextStyle(color: greyText, fontSize: 10)),
-              ],
+                if (inv['notes'] != null &&
+                    (inv['notes'] as String).isNotEmpty) ...[
+                  pw.SizedBox(height: 16),
+                  pw.Text('Notes',
+                      style: pw.TextStyle(
+                          fontWeight: pw.FontWeight.bold, fontSize: 11)),
+                  pw.SizedBox(height: 4),
+                  pw.Text(inv['notes'] as String,
+                      style: pw.TextStyle(color: greyText, fontSize: 10)),
+                ],
 
-              pw.Spacer(),
-              pw.Divider(color: PdfColor.fromHex('E0E0E0')),
-              pw.Center(
-                child: pw.Text(settings.footerNote,
-                    style: pw.TextStyle(color: greyText, fontSize: 10)),
-              ),
-              if (ref.read(subscriptionManagerProvider).planCode == 'basic') ...[
-                pw.SizedBox(height: 8),
+                pw.Spacer(),
+                pw.Divider(color: PdfColor.fromHex('E0E0E0')),
                 pw.Center(
-                  child: pw.Text('Powered by Hamro Pasal',
-                      style: pw.TextStyle(color: greyText, fontSize: 8, fontStyle: pw.FontStyle.italic)),
+                  child: pw.Text(settings.footerNote,
+                      style: pw.TextStyle(color: greyText, fontSize: 10)),
                 ),
+                if (ref.read(subscriptionManagerProvider).planCode == 'basic') ...[
+                  pw.SizedBox(height: 8),
+                  pw.Center(
+                    child: pw.Text('Powered by Hamro Pasal',
+                        style: pw.TextStyle(color: greyText, fontSize: 8, fontStyle: pw.FontStyle.italic)),
+                  ),
+                ],
               ],
-            ],
-          ),
+            );
+          },
         ),
       );
 

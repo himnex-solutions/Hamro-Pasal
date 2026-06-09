@@ -22,71 +22,94 @@ class DashboardScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final mode = ref.watch(profileModeProvider);
-    if (mode == ProfileMode.personal) return const PersonalDashboardScreen();
 
-    return ref.watch(dashboardProvider).when(
-          loading: () => Scaffold(
-            body: Center(
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  LoadingAnimationWidget.fourRotatingDots(
-                      color: AppTheme.primaryColor, size: 48),
-                  const SizedBox(height: 16),
-                  Text('Loading dashboard…',
-                      style: TextStyle(fontSize: 13, color: Colors.grey[500])),
-                ],
+    return AnimatedSwitcher(
+      duration: const Duration(milliseconds: 600),
+      switchInCurve: Curves.easeInOutCubic,
+      switchOutCurve: Curves.easeInOutCubic,
+      transitionBuilder: (Widget child, Animation<double> animation) {
+        return FadeTransition(
+          opacity: animation,
+          child: SlideTransition(
+            position: animation.drive(
+              Tween<Offset>(
+                begin: const Offset(0.0, 0.04),
+                end: Offset.zero,
               ),
             ),
+            child: child,
           ),
-          error: (e, _) => Scaffold(
-            body: Center(
-              child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Icon(Icons.cloud_off_rounded,
-                        size: 48, color: Colors.grey[300]),
-                    const SizedBox(height: 16),
-                    Text('Could not load data',
-                        style: TextStyle(
-                            fontSize: 15,
-                            color: Colors.grey[600],
-                            fontWeight: FontWeight.w600)),
-                    const SizedBox(height: 8),
-                    Text('Check your connection and try again',
-                        style:
-                            TextStyle(fontSize: 13, color: Colors.grey[400])),
-                    const SizedBox(height: 24),
-                    OutlinedButton.icon(
-                      onPressed: () =>
-                          ref.read(dashboardProvider.notifier).refresh(),
-                      icon: const Icon(Icons.refresh_rounded, size: 16),
-                      label: const Text('Try again'),
+        );
+      },
+      child: mode == ProfileMode.personal
+          ? const PersonalDashboardScreen(key: ValueKey('personal_dash'))
+          : KeyedSubtree(
+              key: const ValueKey('business_dash'),
+              child: ref.watch(dashboardProvider).when(
+                    loading: () => Scaffold(
+                      body: Center(
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            LoadingAnimationWidget.fourRotatingDots(
+                                color: AppTheme.primaryColor, size: 48),
+                            const SizedBox(height: 16),
+                            Text('Loading dashboard…',
+                                style: TextStyle(fontSize: 13, color: Colors.grey[500])),
+                          ],
+                        ),
+                      ),
                     ),
-                  ]),
-            ),
-          ),
-          data: (stats) => Scaffold(
-            backgroundColor: Theme.of(context).scaffoldBackgroundColor,
-            body: RefreshIndicator(
-              color: AppTheme.primaryColor,
-              onRefresh: () => ref.read(dashboardProvider.notifier).refresh(),
-              child: CustomScrollView(
-                slivers: [
-                  _DashAppBar(stats: stats),
-                  SliverPadding(
-                    padding: const EdgeInsets.fromLTRB(16, 0, 16, 32),
-                    sliver: SliverList(
-                      delegate: SliverChildListDelegate(
-                        _buildBody(context, ref, stats),
+                    error: (e, _) => Scaffold(
+                      body: Center(
+                        child: Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Icon(Icons.cloud_off_rounded,
+                                  size: 48, color: Colors.grey[300]),
+                              const SizedBox(height: 16),
+                              Text('Could not load data',
+                                  style: TextStyle(
+                                      fontSize: 15,
+                                      color: Colors.grey[600],
+                                      fontWeight: FontWeight.w600)),
+                              const SizedBox(height: 8),
+                              Text('Check your connection and try again',
+                                  style:
+                                      TextStyle(fontSize: 13, color: Colors.grey[400])),
+                              const SizedBox(height: 24),
+                              OutlinedButton.icon(
+                                onPressed: () =>
+                                    ref.read(dashboardProvider.notifier).refresh(),
+                                icon: const Icon(Icons.refresh_rounded, size: 16),
+                                label: const Text('Try again'),
+                              ),
+                            ]),
+                      ),
+                    ),
+                    data: (stats) => Scaffold(
+                      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
+                      body: RefreshIndicator(
+                        color: AppTheme.primaryColor,
+                        onRefresh: () => ref.read(dashboardProvider.notifier).refresh(),
+                        child: CustomScrollView(
+                          slivers: [
+                            _DashAppBar(stats: stats),
+                            SliverPadding(
+                              padding: const EdgeInsets.fromLTRB(16, 0, 16, 32),
+                              sliver: SliverList(
+                                delegate: SliverChildListDelegate(
+                                  _buildBody(context, ref, stats),
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
                       ),
                     ),
                   ),
-                ],
-              ),
             ),
-          ),
-        );
+    );
   }
 
   List<Widget> _buildBody(

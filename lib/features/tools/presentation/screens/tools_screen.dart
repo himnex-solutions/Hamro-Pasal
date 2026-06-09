@@ -5,6 +5,7 @@ import 'package:go_router/go_router.dart';
 import 'package:hamro_pasal/core/router/app_router.dart';
 import 'package:hamro_pasal/core/theme/app_theme.dart';
 import 'package:hamro_pasal/features/subscription/data/services/subscription_manager.dart';
+import 'package:hamro_pasal/core/widgets/plan_limit_dialog.dart';
 
 class ToolsScreen extends ConsumerWidget {
   const ToolsScreen({super.key});
@@ -14,6 +15,7 @@ class ToolsScreen extends ConsumerWidget {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final plan = ref.watch(subscriptionManagerProvider).planCode;
     final canUseThermal = plan == 'gold' || plan == 'diamond';
+    final isBasic = plan == 'basic';
 
     final tools = [
       const _ToolItem(
@@ -51,6 +53,19 @@ class ToolsScreen extends ConsumerWidget {
         ),
         route: AppRoutes.thermalLabel,
         planBadge: plan == 'diamond' ? '💎' : plan == 'gold' ? '🥇' : '🔒',
+        showLock: isBasic,
+      ),
+      _ToolItem(
+        title: 'Coming Soon',
+        subtitle: 'GST Calculator, Currency Converter & more',
+        icon: Icons.more_horiz_rounded,
+        gradient: LinearGradient(
+          colors: [Colors.grey.shade400, Colors.grey.shade500],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
+        route: null,
+        locked: true,
       ),
     ];
 
@@ -112,9 +127,14 @@ class ToolsScreen extends ConsumerWidget {
               child: _ToolCard(
                 tool: tool,
                 isDark: isDark,
-                onTap: tool.route == null
+                onTap: tool.locked
                     ? null
-                    : () => context.push(tool.route!),
+                    : (tool.showLock
+                        ? () => PlanLimitDialog.showDiamondFeatureRequired(
+                              context,
+                              featureName: 'Thermal Printer Settings',
+                            )
+                        : () => context.push(tool.route!)),
               ),
             ).animate().fadeIn(delay: delay).slideY(begin: 0.06, end: 0);
           }),
@@ -131,6 +151,8 @@ class _ToolItem {
   final Gradient gradient;
   final String? route;
   final String? planBadge;
+  final bool locked;
+  final bool showLock;
 
   const _ToolItem({
     required this.title,
@@ -139,6 +161,8 @@ class _ToolItem {
     required this.gradient,
     required this.route,
     this.planBadge,
+    this.locked = false,
+    this.showLock = false,
   });
 }
 
@@ -206,12 +230,43 @@ class _ToolCardState extends State<_ToolCard> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(
-                      widget.tool.title,
-                      style: const TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.w700,
-                      ),
+                    Row(
+                      children: [
+                        Text(
+                          widget.tool.title,
+                          style: TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.w700,
+                            color: widget.tool.locked
+                                ? AppTheme.lightTextHint
+                                : null,
+                          ),
+                        ),
+                        if (widget.tool.planBadge != null && widget.tool.planBadge == '🔒') ...[
+                          const SizedBox(width: 6),
+                          Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                            decoration: BoxDecoration(
+                              color: AppTheme.warningColor.withValues(alpha: 0.15),
+                              borderRadius: BorderRadius.circular(6),
+                            ),
+                            child: const Row(
+                              children: [
+                                Icon(Icons.star_rounded, size: 10, color: AppTheme.warningColor),
+                                SizedBox(width: 2),
+                                Text(
+                                  'PRO',
+                                  style: TextStyle(
+                                    fontSize: 9,
+                                    fontWeight: FontWeight.w800,
+                                    color: AppTheme.warningColor,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ],
+                      ],
                     ),
                     const SizedBox(height: 3),
                     Text(
@@ -240,7 +295,7 @@ class _ToolCardState extends State<_ToolCard> {
                     style: const TextStyle(fontSize: 16),
                   ),
                 )
-              else
+              else if (!widget.tool.locked)
                 Icon(
                   Icons.chevron_right_rounded,
                   color: _hovered

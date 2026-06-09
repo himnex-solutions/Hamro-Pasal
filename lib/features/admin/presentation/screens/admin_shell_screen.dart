@@ -335,13 +335,28 @@ class _AdminShellScreenState extends ConsumerState<AdminShellScreen> {
                                 color: Colors.white38, size: 18),
                             const SizedBox(width: 8),
                             Expanded(
-                              child: Text(
-                                adminState.adminEmail ?? 'Admin',
-                                style: TextStyle(
-                                  color: Colors.white.withValues(alpha: 0.5),
-                                  fontSize: 11,
-                                ),
-                                overflow: TextOverflow.ellipsis,
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    adminState.adminFullName ?? adminState.adminEmail ?? 'Admin',
+                                    style: const TextStyle(
+                                      color: Colors.white,
+                                      fontSize: 13,
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                    overflow: TextOverflow.ellipsis,
+                                  ),
+                                  if (adminState.adminFullName != null && adminState.adminEmail != null)
+                                    Text(
+                                      adminState.adminEmail!,
+                                      style: TextStyle(
+                                        color: Colors.white.withValues(alpha: 0.4),
+                                        fontSize: 10,
+                                      ),
+                                      overflow: TextOverflow.ellipsis,
+                                    ),
+                                ],
                               ),
                             ),
                           ],

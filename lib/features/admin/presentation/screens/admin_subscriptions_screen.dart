@@ -595,46 +595,61 @@ class _AdminSubscriptionsScreenState extends State<AdminSubscriptionsScreen> {
       context: context,
       builder: (ctx) => Dialog(
         backgroundColor: AppTheme.darkCard,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
         child: Container(
-          constraints: const BoxConstraints(
-            maxWidth: 500,
+          constraints: BoxConstraints(
+            maxWidth: 600,
+            maxHeight: MediaQuery.sizeOf(context).height * 0.85,
           ),
-          padding: const EdgeInsets.all(16),
-          child: SingleChildScrollView(
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    const Text(
-                      'Payment Proof Receipt',
-                      style: TextStyle(
-                        color: Colors.white,
-                        fontWeight: FontWeight.bold,
-                        fontSize: 15,
+          padding: const EdgeInsets.all(20),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  const Row(
+                    children: [
+                      Icon(Icons.receipt_long_rounded, color: AppTheme.primaryLight, size: 20),
+                      SizedBox(width: 8),
+                      Text(
+                        'Payment Proof Receipt',
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontWeight: FontWeight.bold,
+                          fontSize: 16,
+                        ),
                       ),
-                    ),
-                    IconButton(
-                      icon: const Icon(Icons.close, color: Colors.white60, size: 20),
-                      onPressed: () => Navigator.pop(ctx),
-                    ),
-                  ],
-                ),
-                const Divider(color: Colors.white12, height: 16),
-                const SizedBox(height: 8),
-                ClipRRect(
-                  borderRadius: BorderRadius.circular(10),
+                    ],
+                  ),
+                  IconButton(
+                    icon: const Icon(Icons.close, color: Colors.white60, size: 22),
+                    onPressed: () => Navigator.pop(ctx),
+                  ),
+                ],
+              ),
+              const Divider(color: Colors.white12, height: 20),
+              const SizedBox(height: 8),
+              Expanded(
+                child: ClipRRect(
+                  borderRadius: BorderRadius.circular(12),
                   child: Container(
-                    height: 320,
-                    color: Colors.black26,
+                    color: Colors.black38,
                     child: InteractiveViewer(
-                      maxScale: 4.0,
+                      minScale: 1.0,
+                      maxScale: 5.0,
                       child: Image.network(
                         url,
                         fit: BoxFit.contain,
+                        loadingBuilder: (context, child, loadingProgress) {
+                          if (loadingProgress == null) return child;
+                          return const Center(
+                            child: CircularProgressIndicator(
+                              color: AppTheme.primaryLight,
+                            ),
+                          );
+                        },
                         errorBuilder: (_, __, ___) => const Center(
                           child: Padding(
                             padding: EdgeInsets.all(24),
@@ -645,12 +660,12 @@ class _AdminSubscriptionsScreenState extends State<AdminSubscriptionsScreen> {
                                 SizedBox(height: 12),
                                 Text(
                                   'Unable to Preview Image',
-                                  style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 13),
+                                  style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 14),
                                 ),
-                                SizedBox(height: 6),
+                                const SizedBox(height: 8),
                                 Text(
                                   'Browser security policies (CORS) or private storage settings may block in-app preview. Use the button below to view it directly.',
-                                  style: TextStyle(color: Colors.white54, fontSize: 11),
+                                  style: TextStyle(color: Colors.white54, fontSize: 12),
                                   textAlign: TextAlign.center,
                                 ),
                               ],
@@ -661,44 +676,53 @@ class _AdminSubscriptionsScreenState extends State<AdminSubscriptionsScreen> {
                     ),
                   ),
                 ),
-                const SizedBox(height: 16),
+              ),
+              const SizedBox(height: 20),
               Row(
-                mainAxisAlignment: MainAxisAlignment.end,
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  TextButton(
-                    onPressed: () => Navigator.pop(ctx),
-                    child: const Text('Close', style: TextStyle(color: Colors.white54)),
+                  const Text(
+                    'Pinch to zoom • Drag to pan',
+                    style: TextStyle(color: Colors.white38, fontSize: 11, fontStyle: FontStyle.italic),
                   ),
-                  const SizedBox(width: 10),
-                  ElevatedButton.icon(
-                    onPressed: () async {
-                      try {
-                        final uri = Uri.parse(url);
-                        if (await canLaunchUrl(uri)) {
-                          await launchUrl(uri, mode: LaunchMode.externalApplication);
-                        } else {
-                          if (mounted) {
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              const SnackBar(content: Text('Could not launch payment receipt URL.')),
-                            );
+                  Row(
+                    children: [
+                      TextButton(
+                        onPressed: () => Navigator.pop(ctx),
+                        child: const Text('Close', style: TextStyle(color: Colors.white70)),
+                      ),
+                      const SizedBox(width: 12),
+                      ElevatedButton.icon(
+                        onPressed: () async {
+                          try {
+                            final uri = Uri.parse(url);
+                            if (await canLaunchUrl(uri)) {
+                              await launchUrl(uri, mode: LaunchMode.externalApplication);
+                            } else {
+                              if (mounted) {
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  const SnackBar(content: Text('Could not launch payment receipt URL.')),
+                                );
+                              }
+                            }
+                          } catch (e) {
+                            if (mounted) {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                SnackBar(content: Text('Error launching URL: $e')),
+                              );
+                            }
                           }
-                        }
-                      } catch (e) {
-                        if (mounted) {
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            SnackBar(content: Text('Error launching URL: $e')),
-                          );
-                        }
-                      }
-                    },
-                    icon: const Icon(Icons.open_in_new_rounded, size: 14),
-                    label: const Text('Open in New Tab', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 11)),
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: AppTheme.primaryColor,
-                      foregroundColor: Colors.white,
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-                      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
-                    ),
+                        },
+                        icon: const Icon(Icons.open_in_new_rounded, size: 14),
+                        label: const Text('Open in New Tab', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12)),
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: AppTheme.primaryLight,
+                          foregroundColor: Colors.black,
+                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                        ),
+                      ),
+                    ],
                   ),
                 ],
               ),
@@ -706,9 +730,8 @@ class _AdminSubscriptionsScreenState extends State<AdminSubscriptionsScreen> {
           ),
         ),
       ),
-    ),
-  );
-}
+    );
+  }
 
   // ── Filters & Search Handlers ─────────────────────────────────────
 
@@ -1053,30 +1076,48 @@ class _AdminSubscriptionsScreenState extends State<AdminSubscriptionsScreen> {
                               if (req['screenshot_url'] != null)
                                 GestureDetector(
                                   onTap: () => _showScreenshotDialog(req['screenshot_url']),
-                                  child: ClipRRect(
-                                    borderRadius: BorderRadius.circular(10),
-                                    child: Container(
-                                      width: 75,
-                                      height: 75,
-                                      color: Colors.black26,
-                                      child: Image.network(
-                                        req['screenshot_url'],
-                                        fit: BoxFit.cover,
-                                        errorBuilder: (_, __, ___) => Container(
-                                          color: Colors.white.withValues(alpha: 0.05),
-                                          child: const Column(
-                                            mainAxisAlignment: MainAxisAlignment.center,
-                                            children: [
-                                              Icon(Icons.image_not_supported_outlined, color: AppTheme.primaryLight, size: 22),
-                                              SizedBox(height: 4),
-                                              Text(
-                                                'View Proof',
-                                                style: TextStyle(color: Colors.white70, fontSize: 8, fontWeight: FontWeight.bold),
-                                                textAlign: TextAlign.center,
-                                              ),
-                                            ],
-                                          ),
+                                  child: Container(
+                                    width: 80,
+                                    height: 80,
+                                    decoration: BoxDecoration(
+                                      borderRadius: BorderRadius.circular(12),
+                                      border: Border.all(color: Colors.white24, width: 1.5),
+                                      boxShadow: const [
+                                        BoxShadow(
+                                          color: Colors.black26,
+                                          blurRadius: 6,
+                                          offset: Offset(0, 2),
                                         ),
+                                      ],
+                                    ),
+                                    child: ClipRRect(
+                                      borderRadius: BorderRadius.circular(10),
+                                      child: Stack(
+                                        fit: StackFit.expand,
+                                        children: [
+                                          Image.network(
+                                            req['screenshot_url'],
+                                            fit: BoxFit.cover,
+                                            errorBuilder: (_, __, ___) => Container(
+                                              color: Colors.white.withValues(alpha: 0.05),
+                                              child: const Center(
+                                                child: Icon(Icons.image_not_supported_outlined, color: AppTheme.primaryLight, size: 24),
+                                              ),
+                                            ),
+                                          ),
+                                          Positioned(
+                                            bottom: 4,
+                                            right: 4,
+                                            child: Container(
+                                              padding: const EdgeInsets.all(4),
+                                              decoration: BoxDecoration(
+                                                color: Colors.black54,
+                                                borderRadius: BorderRadius.circular(6),
+                                              ),
+                                              child: const Icon(Icons.zoom_in_rounded, color: Colors.white, size: 12),
+                                            ),
+                                          ),
+                                        ],
                                       ),
                                     ),
                                   ),

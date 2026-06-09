@@ -8,16 +8,22 @@ class AdminAuthState {
   final AdminAuthStatus status;
   final String? errorMessage;
   final String? adminEmail;
+  final String? adminFullName;
   const AdminAuthState({
     required this.status,
     this.errorMessage,
     this.adminEmail,
+    this.adminFullName,
   });
 
   factory AdminAuthState.initial() =>
       const AdminAuthState(status: AdminAuthStatus.initial);
-  factory AdminAuthState.authenticated(String email) =>
-      AdminAuthState(status: AdminAuthStatus.authenticated, adminEmail: email);
+  factory AdminAuthState.authenticated(String email, String? fullName) =>
+      AdminAuthState(
+        status: AdminAuthStatus.authenticated,
+        adminEmail: email,
+        adminFullName: fullName,
+      );
   factory AdminAuthState.unauthenticated() =>
       const AdminAuthState(status: AdminAuthStatus.unauthenticated);
   factory AdminAuthState.error(String msg) =>
@@ -55,11 +61,14 @@ class AdminAuthNotifier extends StateNotifier<AdminAuthState> {
       }
       final profile = await _supabase
           .from('user_profiles')
-          .select('is_admin, email')
+          .select('is_admin, email, full_name')
           .eq('id', userId)
           .single();
       if (profile['is_admin'] == true) {
-        state = AdminAuthState.authenticated(profile['email'] as String);
+        state = AdminAuthState.authenticated(
+          profile['email'] as String,
+          profile['full_name'] as String?,
+        );
         return true;
       } else {
         await _supabase.auth.signOut();

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_staggered_animations/flutter_staggered_animations.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
@@ -172,71 +173,130 @@ class PersonalDashboardScreen extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final statsAsync = ref.watch(personalDashboardProvider);
 
-    return statsAsync.when(
-      loading: () => const Center(child: CircularProgressIndicator()),
-      error: (e, _) => Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            const Icon(Icons.error_outline,
-                size: 48, color: AppTheme.errorColor),
-            const SizedBox(height: 16),
-            Text('Failed to load profile',
-                style: Theme.of(context).textTheme.titleMedium),
-            const SizedBox(height: 8),
-            ElevatedButton(
-              onPressed: () =>
-                  ref.read(personalDashboardProvider.notifier).refresh(),
-              child: const Text('Retry'),
-            ),
-          ],
+    return Scaffold(
+      backgroundColor: Theme.of(context).brightness == Brightness.dark
+          ? const Color(0xFF0F172A)
+          : const Color(0xFFF8FAFC),
+      body: statsAsync.when(
+        loading: () => const Center(
+          child: CircularProgressIndicator(color: Colors.purple),
         ),
-      ),
-      data: (stats) => RefreshIndicator(
-        onRefresh: () => ref.read(personalDashboardProvider.notifier).refresh(),
-        child: CustomScrollView(
-          slivers: [
-            _PersonalAppBar(stats: stats, ref: ref),
-            SliverPadding(
-              padding: const EdgeInsets.all(16),
-              sliver: SliverList(
-                delegate: SliverChildListDelegate([
-                  // Profile card
-                  _ProfileCard(stats: stats),
-                  const SizedBox(height: 20),
-
-                  // Business summary header
-                  if (stats.businessName.isNotEmpty) ...[
-                    Text('Business Overview',
-                            style: Theme.of(context).textTheme.titleLarge)
-                        .animate(delay: 100.ms)
-                        .fadeIn(),
-                    const SizedBox(height: 12),
-
-                    // Business card
-                    _BusinessSummaryCard(stats: stats),
-                    const SizedBox(height: 20),
-
-                    // Lifetime stats grid
-                    Text('Lifetime Stats',
-                            style: Theme.of(context).textTheme.titleLarge)
-                        .animate(delay: 200.ms)
-                        .fadeIn(),
-                    const SizedBox(height: 12),
-                    _LifetimeStatsGrid(stats: stats),
-                    const SizedBox(height: 20),
-
-                    // Subscription card
-                    _SubscriptionCard(stats: stats),
-                  ] else ...[
-                    _NoBusinessCard(),
-                  ],
-
-                  const SizedBox(height: 80),
-                ]),
+        error: (e, _) => Center(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              const Icon(Icons.error_outline,
+                  size: 48, color: AppTheme.errorColor),
+              const SizedBox(height: 16),
+              Text('Failed to load profile',
+                  style: Theme.of(context).textTheme.titleMedium),
+              const SizedBox(height: 8),
+              ElevatedButton(
+                onPressed: () =>
+                    ref.read(personalDashboardProvider.notifier).refresh(),
+                child: const Text('Retry'),
               ),
+            ],
+          ),
+        ),
+        data: (stats) => RefreshIndicator(
+          color: Colors.purple,
+          onRefresh: () => ref.read(personalDashboardProvider.notifier).refresh(),
+          child: AnimationLimiter(
+            child: CustomScrollView(
+              slivers: [
+                _PersonalAppBar(stats: stats, ref: ref),
+                SliverPadding(
+                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 20),
+                  sliver: SliverList(
+                    delegate: SliverChildListDelegate(
+                      AnimationConfiguration.toStaggeredList(
+                        duration: const Duration(milliseconds: 450),
+                        childAnimationBuilder: (widget) => SlideAnimation(
+                          verticalOffset: 50.0,
+                          child: FadeInAnimation(child: widget),
+                        ),
+                        children: [
+                          // Profile card
+                          _ProfileCard(stats: stats),
+                          const SizedBox(height: 24),
+
+                          // Business summary header
+                          if (stats.businessName.isNotEmpty) ...[
+                            Row(
+                              children: [
+                                Container(
+                                  width: 4,
+                                  height: 18,
+                                  decoration: BoxDecoration(
+                                    gradient: const LinearGradient(
+                                      colors: [Colors.purple, Colors.blue],
+                                      begin: Alignment.topCenter,
+                                      end: Alignment.bottomCenter,
+                                    ),
+                                    borderRadius: BorderRadius.circular(2),
+                                  ),
+                                ),
+                                const SizedBox(width: 8),
+                                Text(
+                                  'Linked Business',
+                                  style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                                        fontWeight: FontWeight.w800,
+                                        letterSpacing: -0.5,
+                                      ),
+                                ),
+                              ],
+                            ),
+                            const SizedBox(height: 12),
+
+                            // Business card
+                            _BusinessSummaryCard(stats: stats),
+                            const SizedBox(height: 28),
+
+                            // Lifetime stats grid header
+                            Row(
+                              children: [
+                                Container(
+                                  width: 4,
+                                  height: 18,
+                                  decoration: BoxDecoration(
+                                    gradient: const LinearGradient(
+                                      colors: [Colors.indigo, Colors.purple],
+                                      begin: Alignment.topCenter,
+                                      end: Alignment.bottomCenter,
+                                    ),
+                                    borderRadius: BorderRadius.circular(2),
+                                  ),
+                                ),
+                                const SizedBox(width: 8),
+                                Text(
+                                  'Lifetime Performance',
+                                  style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                                        fontWeight: FontWeight.w800,
+                                        letterSpacing: -0.5,
+                                      ),
+                                ),
+                              ],
+                            ),
+                            const SizedBox(height: 12),
+                            _LifetimeStatsGrid(stats: stats),
+                            const SizedBox(height: 28),
+
+                            // Subscription card
+                            _SubscriptionCard(stats: stats),
+                          ] else ...[
+                            _NoBusinessCard(),
+                          ],
+
+                          const SizedBox(height: 100),
+                        ],
+                      ),
+                    ),
+                  ),
+                ),
+              ],
             ),
-          ],
+          ),
         ),
       ),
     );
@@ -254,211 +314,340 @@ class _PersonalAppBar extends StatelessWidget {
     final initial = stats.fullName.isNotEmpty
         ? stats.fullName.trim()[0].toUpperCase()
         : '?';
+
     return SliverAppBar(
-      expandedHeight: 150,
+      expandedHeight: 160,
       floating: true,
-      pinned: false,
+      pinned: true,
+      elevation: 0,
+      backgroundColor: Colors.transparent,
       flexibleSpace: FlexibleSpaceBar(
-        background: PolyMeshBackground(
-          child: SafeArea(
-            child: Padding(
-              padding: const EdgeInsets.fromLTRB(16, 8, 16, 12),
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.end,
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Row(
-                    children: [
-                      Container(
-                        width: 48,
-                        height: 48,
-                        decoration: BoxDecoration(
-                          color: Colors.white.withValues(alpha: 0.25),
-                          shape: BoxShape.circle,
-                          border: Border.all(
-                              color: Colors.white.withValues(alpha: 0.5),
-                              width: 2),
-                        ),
-                        child: Center(
-                          child: Text(
-                            initial,
-                            style: const TextStyle(
-                                color: Colors.white,
-                                fontWeight: FontWeight.bold,
-                                fontSize: 22),
-                          ),
-                        ),
-                      ),
-                      const SizedBox(width: 12),
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              stats.fullName.isEmpty
-                                  ? 'My Profile'
-                                  : stats.fullName,
-                              style: const TextStyle(
-                                  color: Colors.white,
-                                  fontWeight: FontWeight.bold,
-                                  fontSize: 18),
-                            ),
-                            Text(
-                              stats.email,
-                              style: TextStyle(
-                                  color: Colors.white.withValues(alpha: 0.8),
-                                  fontSize: 12),
-                            ),
-                          ],
-                        ),
-                      ),
+        background: Stack(
+          fit: StackFit.expand,
+          children: [
+            // Mesh background layer
+            PolyMeshBackground(
+              child: Container(
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    colors: [
+                      const Color(0xFF6B21A8).withValues(alpha: 0.85), // Rich violet
+                      const Color(0xFF1E3A8A).withValues(alpha: 0.85), // Navy blue
                     ],
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
                   ),
-                  const SizedBox(height: 8),
-                  // Mode pill
-                  Container(
-                    padding:
-                        const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                    decoration: BoxDecoration(
-                      color: Colors.white.withValues(alpha: 0.2),
-                      borderRadius: BorderRadius.circular(20),
-                    ),
-                    child: const Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Icon(Icons.person_rounded,
-                            color: Colors.white, size: 14),
-                        SizedBox(width: 4),
-                        Text('Personal Mode',
-                            style: TextStyle(
-                                color: Colors.white,
-                                fontSize: 11,
-                                fontWeight: FontWeight.w600)),
-                      ],
-                    ),
-                  ),
-                ],
+                ),
               ),
             ),
-          ),
+            // Aurora blur visual effect
+            Positioned(
+              right: -50,
+              top: -30,
+              child: Container(
+                width: 200,
+                height: 200,
+                decoration: BoxDecoration(
+                  color: Colors.pink.withValues(alpha: 0.18),
+                  shape: BoxShape.circle,
+                ),
+              ).animate(onPlay: (controller) => controller.repeat(reverse: true))
+                  .scale(duration: 4.seconds, begin: const Offset(0.9, 0.9), end: const Offset(1.2, 1.2)),
+            ),
+            SafeArea(
+              child: Padding(
+                padding: const EdgeInsets.fromLTRB(20, 16, 20, 12),
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.end,
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      children: [
+                        // Glowing gradient profile ring
+                        Container(
+                          padding: const EdgeInsets.all(2.5),
+                          decoration: const BoxDecoration(
+                            shape: BoxShape.circle,
+                            gradient: LinearGradient(
+                              colors: [Colors.pinkAccent, Colors.purpleAccent, Colors.blueAccent],
+                              begin: Alignment.topLeft,
+                              end: Alignment.bottomRight,
+                            ),
+                            boxShadow: [
+                              BoxShadow(
+                                color: Colors.purpleAccent,
+                                blurRadius: 12,
+                                spreadRadius: -2,
+                              ),
+                            ],
+                          ),
+                          child: CircleAvatar(
+                            radius: 26,
+                            backgroundColor: Colors.black87,
+                            child: Text(
+                              initial,
+                              style: const TextStyle(
+                                  color: Colors.white,
+                                  fontWeight: FontWeight.w900,
+                                  fontSize: 22,
+                                  letterSpacing: -0.5),
+                            ),
+                          ),
+                        ),
+                        const SizedBox(width: 14),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Text(
+                                stats.fullName.isEmpty
+                                    ? 'My ProfileSpace'
+                                    : stats.fullName,
+                                style: const TextStyle(
+                                    color: Colors.white,
+                                    fontWeight: FontWeight.w900,
+                                    fontSize: 19,
+                                    letterSpacing: -0.4),
+                              ),
+                              const SizedBox(height: 2),
+                              Text(
+                                stats.email,
+                                style: TextStyle(
+                                    color: Colors.white.withValues(alpha: 0.7),
+                                    fontSize: 12,
+                                    fontWeight: FontWeight.w500),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 12),
+                    // Glassmorphic Space Badge
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 5),
+                      decoration: BoxDecoration(
+                        color: Colors.white.withValues(alpha: 0.08),
+                        borderRadius: BorderRadius.circular(20),
+                        border: Border.all(color: Colors.white.withValues(alpha: 0.15)),
+                        boxShadow: const [
+                          BoxShadow(
+                            color: Colors.black12,
+                            blurRadius: 8,
+                          ),
+                        ],
+                      ),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Icon(Icons.face_retouching_natural_rounded, color: Colors.purple[200], size: 14),
+                          const SizedBox(width: 6),
+                          const Text(
+                            'Personal Space',
+                            style: TextStyle(
+                              color: Colors.white,
+                              fontSize: 10,
+                              fontWeight: FontWeight.w800,
+                              letterSpacing: 0.5,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ],
         ),
       ),
       actions: [
         IconButton(
+          tooltip: 'Configure Space',
           onPressed: () => context.push(AppRoutes.settings),
           icon: const Icon(Icons.settings_outlined, color: Colors.white),
         ),
+        const SizedBox(width: 8),
       ],
     );
   }
 }
 
 // ── Profile Card ─────────────────────────────────────────────
-class _ProfileCard extends StatelessWidget {
+class _ProfileCard extends StatefulWidget {
   final PersonalStats stats;
   const _ProfileCard({required this.stats});
 
   @override
+  State<_ProfileCard> createState() => _ProfileCardState();
+}
+
+class _ProfileCardState extends State<_ProfileCard> {
+  bool _hovered = false;
+
+  @override
   Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.all(18),
-      decoration: BoxDecoration(
-        color: Theme.of(context).cardTheme.color,
-        borderRadius: BorderRadius.circular(20),
-        border: Border.all(
-            color: Theme.of(context).brightness == Brightness.dark
-                ? AppTheme.darkBorder
-                : Colors.white,
-            width: 1.5),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.04),
-            blurRadius: 20,
-            offset: const Offset(0, 8),
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
+    return MouseRegion(
+      onEnter: (_) => setState(() => _hovered = true),
+      onExit: (_) => setState(() => _hovered = false),
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 200),
+        curve: Curves.easeOutCubic,
+        transform: _hovered ? Matrix4.translationValues(0, -3, 0) : Matrix4.identity(),
+        padding: const EdgeInsets.all(20),
+        decoration: BoxDecoration(
+          color: isDark ? const Color(0xFF1E293B) : Colors.white,
+          borderRadius: BorderRadius.circular(24),
+          border: Border.all(
+            color: _hovered 
+                ? Colors.purple.withValues(alpha: 0.35)
+                : (isDark ? AppTheme.darkBorder : AppTheme.lightBorder),
+            width: _hovered ? 1.8 : 1.2,
           ),
-        ],
-        gradient: LinearGradient(
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-          colors: [
-            Theme.of(context).cardTheme.color ?? Colors.white,
-            (Theme.of(context).cardTheme.color ?? Colors.white)
-                .withValues(alpha: 0.7),
+          boxShadow: _hovered
+              ? [
+                  BoxShadow(
+                    color: Colors.purple.withValues(alpha: 0.08),
+                    blurRadius: 24,
+                    offset: const Offset(0, 12),
+                  ),
+                ]
+              : [
+                  BoxShadow(
+                    color: Colors.black.withValues(alpha: 0.03),
+                    blurRadius: 16,
+                    offset: const Offset(0, 8),
+                  ),
+                ],
+          gradient: LinearGradient(
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+            colors: [
+              isDark ? const Color(0xFF1E293B) : Colors.white,
+              isDark ? const Color(0xFF0F172A) : const Color(0xFFF8FAFC),
+            ],
+          ),
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                Container(
+                  width: 8,
+                  height: 8,
+                  decoration: const BoxDecoration(
+                    color: Colors.purple,
+                    shape: BoxShape.circle,
+                  ),
+                ),
+                const SizedBox(width: 8),
+                Text(
+                  'Account Details',
+                  style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                        fontWeight: FontWeight.w800,
+                        letterSpacing: -0.3,
+                      ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 20),
+            _InfoRow(
+              icon: Icons.person_rounded,
+              iconColor: Colors.purple,
+              label: 'Full Name',
+              value: widget.stats.fullName.isEmpty ? 'Not set' : widget.stats.fullName,
+            ),
+            const Padding(
+              padding: EdgeInsets.symmetric(vertical: 8),
+              child: Divider(color: Colors.white12, height: 1),
+            ),
+            _InfoRow(
+              icon: Icons.email_rounded,
+              iconColor: Colors.blue,
+              label: 'Email Address',
+              value: widget.stats.email.isEmpty ? 'Not set' : widget.stats.email,
+            ),
+            const Padding(
+              padding: EdgeInsets.symmetric(vertical: 8),
+              child: Divider(color: Colors.white12, height: 1),
+            ),
+            _InfoRow(
+              icon: Icons.phone_rounded,
+              iconColor: Colors.teal,
+              label: 'Phone Connection',
+              value: widget.stats.phone.isEmpty ? 'Not set' : widget.stats.phone,
+            ),
           ],
         ),
       ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              Container(
-                width: 10,
-                height: 10,
-                decoration: const BoxDecoration(
-                  color: Color(0xFF9B59B6),
-                  shape: BoxShape.circle,
-                ),
-              ),
-              const SizedBox(width: 8),
-              Text('Personal Information',
-                  style: Theme.of(context)
-                      .textTheme
-                      .titleMedium
-                      ?.copyWith(fontWeight: FontWeight.w700)),
-            ],
-          ),
-          const SizedBox(height: 16),
-          _InfoRow(
-              icon: Icons.person_outline,
-              label: 'Full Name',
-              value: stats.fullName.isEmpty ? 'Not set' : stats.fullName),
-          const Divider(height: 20),
-          _InfoRow(
-              icon: Icons.email_outlined,
-              label: 'Email',
-              value: stats.email.isEmpty ? 'Not set' : stats.email),
-          const Divider(height: 20),
-          _InfoRow(
-              icon: Icons.phone_outlined,
-              label: 'Phone',
-              value: stats.phone.isEmpty ? 'Not set' : stats.phone),
-        ],
-      ),
-    ).animate().fadeIn().slideY(begin: 0.1, end: 0);
+    );
   }
 }
 
 class _InfoRow extends StatelessWidget {
   final IconData icon;
+  final Color iconColor;
   final String label;
   final String value;
-  const _InfoRow(
-      {required this.icon, required this.label, required this.value});
+  const _InfoRow({
+    required this.icon,
+    required this.iconColor,
+    required this.label,
+    required this.value,
+  });
 
   @override
   Widget build(BuildContext context) {
-    return Row(
-      children: [
-        Icon(icon, size: 18, color: AppTheme.lightTextSecondary),
-        const SizedBox(width: 10),
-        Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(label,
-                style: Theme.of(context)
-                    .textTheme
-                    .labelSmall
-                    ?.copyWith(color: AppTheme.lightTextHint)),
-            Text(value, style: Theme.of(context).textTheme.bodyMedium),
-          ],
-        ),
-      ],
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 6),
+      child: Row(
+        children: [
+          // Circular backdrop icon wrapper
+          Container(
+            width: 38,
+            height: 38,
+            decoration: BoxDecoration(
+              color: iconColor.withValues(alpha: 0.1),
+              shape: BoxShape.circle,
+            ),
+            child: Icon(icon, size: 18, color: iconColor),
+          ),
+          const SizedBox(width: 14),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  label,
+                  style: const TextStyle(
+                    fontSize: 10,
+                    fontWeight: FontWeight.w700,
+                    color: AppTheme.lightTextHint,
+                  ),
+                ),
+                const SizedBox(height: 2),
+                Text(
+                  value,
+                  style: const TextStyle(
+                    fontSize: 14,
+                    fontWeight: FontWeight.w600,
+                  ),
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
     );
   }
 }
 
-// ── Business Summary Card ─────────────────────────────────────
+// ── Business Summary Card (Obsidian Credit Card) ──────────────────
 class _BusinessSummaryCard extends StatelessWidget {
   final PersonalStats stats;
   const _BusinessSummaryCard({required this.stats});
@@ -466,56 +655,183 @@ class _BusinessSummaryCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.all(16),
+      height: 180,
+      width: double.infinity,
       decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(24),
+        border: Border.all(color: Colors.white.withValues(alpha: 0.12), width: 1.5),
         gradient: const LinearGradient(
-          colors: [AppTheme.primaryLight, AppTheme.primaryColor],
+          colors: [
+            Color(0xFF0F172A), // Dark obsidian blue
+            Color(0xFF1E1E38), // Premium slate purple
+            Color(0xFF3B1E54), // Deep platinum glow leak
+          ],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
         ),
-        borderRadius: BorderRadius.circular(20),
-        border:
-            Border.all(color: Colors.white.withValues(alpha: 0.2), width: 1.5),
         boxShadow: [
           BoxShadow(
-            color: AppTheme.primaryColor.withValues(alpha: 0.3),
-            blurRadius: 24,
-            offset: const Offset(0, 8),
+            color: const Color(0xFF6B21A8).withValues(alpha: 0.22),
+            blurRadius: 28,
+            offset: const Offset(0, 10),
           ),
         ],
       ),
-      child: Row(
+      child: Stack(
+        fit: StackFit.expand,
         children: [
-          Container(
-            width: 48,
-            height: 48,
-            decoration: BoxDecoration(
-              color: Colors.white.withValues(alpha: 0.2),
-              borderRadius: BorderRadius.circular(12),
+          // Glossy vector light effect
+          Positioned(
+            left: -40,
+            bottom: -50,
+            child: Container(
+              width: 180,
+              height: 180,
+              decoration: BoxDecoration(
+                shape: BoxShape.circle,
+                gradient: RadialGradient(
+                  colors: [
+                    const Color(0xFFF1C40F).withValues(alpha: 0.08), // Platinum gold shimmer
+                    Colors.transparent
+                  ],
+                ),
+              ),
             ),
-            child:
-                const Icon(Icons.store_rounded, color: Colors.white, size: 26),
           ),
-          const SizedBox(width: 14),
-          Expanded(
+          Padding(
+            padding: const EdgeInsets.all(22),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Text(stats.businessName,
-                    style: const TextStyle(
-                        color: Colors.white,
-                        fontWeight: FontWeight.bold,
-                        fontSize: 16)),
-                Text(stats.businessType,
-                    style: TextStyle(
-                        color: Colors.white.withValues(alpha: 0.8),
-                        fontSize: 12)),
+                // Smart Chip + Wireless Sign
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    // Card chip
+                    Container(
+                      width: 40,
+                      height: 30,
+                      decoration: BoxDecoration(
+                        color: const Color(0xFFF1C40F).withValues(alpha: 0.75), // Gold smart chip
+                        borderRadius: BorderRadius.circular(6),
+                        border: Border.all(color: Colors.amber[200]!, width: 0.8),
+                        boxShadow: const [
+                          BoxShadow(
+                            color: Colors.black26,
+                            blurRadius: 4,
+                            offset: Offset(0, 1),
+                          )
+                        ],
+                      ),
+                      child: Stack(
+                        children: [
+                          Positioned(
+                            left: 10,
+                            top: 0,
+                            bottom: 0,
+                            child: Container(width: 1, color: Colors.black26),
+                          ),
+                          Positioned(
+                            right: 10,
+                            top: 0,
+                            bottom: 0,
+                            child: Container(width: 1, color: Colors.black26),
+                          ),
+                          Positioned(
+                            left: 0,
+                            right: 0,
+                            top: 10,
+                            child: Container(height: 1, color: Colors.black26),
+                          ),
+                          Positioned(
+                            left: 0,
+                            right: 0,
+                            bottom: 10,
+                            child: Container(height: 1, color: Colors.black26),
+                          ),
+                        ],
+                      ),
+                    ),
+                    const Icon(Icons.contactless_rounded, color: Colors.white60, size: 24),
+                  ],
+                ),
+                
+                // Credit Card Number
+                Text(
+                  '• • • •    • • • •    • • • •    ${stats.businessName.length.toString().padLeft(4, "0")}',
+                  style: const TextStyle(
+                    fontFamily: 'Courier',
+                    color: Colors.white70,
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
+                    letterSpacing: 2,
+                  ),
+                ),
+
+                // Cardholder details
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  crossAxisAlignment: CrossAxisAlignment.end,
+                  children: [
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          const Text(
+                            'BUSINESS OWNER CARD',
+                            style: TextStyle(
+                              color: Colors.white38,
+                              fontSize: 8,
+                              fontWeight: FontWeight.w800,
+                              letterSpacing: 1,
+                            ),
+                          ),
+                          const SizedBox(height: 3),
+                          Text(
+                            stats.businessName.toUpperCase(),
+                            style: const TextStyle(
+                              color: Colors.white,
+                              fontSize: 14,
+                              fontWeight: FontWeight.w800,
+                              letterSpacing: 0.5,
+                            ),
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ],
+                      ),
+                    ),
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.end,
+                      children: [
+                        const Text(
+                          'BUSINESS TYPE',
+                          style: TextStyle(
+                            color: Colors.white38,
+                            fontSize: 8,
+                            fontWeight: FontWeight.w800,
+                            letterSpacing: 1,
+                          ),
+                        ),
+                        const SizedBox(height: 3),
+                        Text(
+                          stats.businessType.toUpperCase(),
+                          style: const TextStyle(
+                            color: Color(0xFFF1C40F), // Gold platinum highlight
+                            fontSize: 12,
+                            fontWeight: FontWeight.w900,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
               ],
             ),
           ),
         ],
       ),
-    ).animate(delay: 150.ms).fadeIn().slideY(begin: 0.1, end: 0);
+    );
   }
 }
 
@@ -540,19 +856,29 @@ class _LifetimeStatsGrid extends StatelessWidget {
           physics: const NeverScrollableScrollPhysics(),
           children: [
             _StatTile(
-                'Total Sales',
-                '${AppConstants.currencySymbol} ${fmt.format(stats.totalBusinessSales)}',
-                AppTheme.successColor,
-                Icons.trending_up_rounded),
+              label: 'Lifetime Sales',
+              value: '${AppConstants.currencySymbol} ${fmt.format(stats.totalBusinessSales)}',
+              color: const Color(0xFF10B981),
+              icon: Icons.trending_up_rounded,
+            ),
             _StatTile(
-                'Total Expenses',
-                '${AppConstants.currencySymbol} ${fmt.format(stats.totalBusinessExpenses)}',
-                AppTheme.errorColor,
-                Icons.trending_down_rounded),
-            _StatTile('Total Parties', '${stats.totalParties}', AppTheme.infoColor,
-                Icons.people_outline),
-            _StatTile('Products', '${stats.totalProducts}', AppTheme.accentColor,
-                Icons.inventory_2_outlined),
+              label: 'Total Expenses',
+              value: '${AppConstants.currencySymbol} ${fmt.format(stats.totalBusinessExpenses)}',
+              color: const Color(0xFFEF4444),
+              icon: Icons.trending_down_rounded,
+            ),
+            _StatTile(
+              label: 'Client Parties',
+              value: '${stats.totalParties}',
+              color: const Color(0xFF3B82F6),
+              icon: Icons.groups_rounded,
+            ),
+            _StatTile(
+              label: 'Active Inventory',
+              value: '${stats.totalProducts}',
+              color: const Color(0xFF8B5CF6),
+              icon: Icons.widgets_outlined,
+            ),
           ],
         );
       },
@@ -560,78 +886,109 @@ class _LifetimeStatsGrid extends StatelessWidget {
   }
 }
 
-class _StatTile extends StatelessWidget {
+class _StatTile extends StatefulWidget {
   final String label;
   final String value;
   final Color color;
   final IconData icon;
-  const _StatTile(this.label, this.value, this.color, this.icon);
+
+  const _StatTile({
+    required this.label,
+    required this.value,
+    required this.color,
+    required this.icon,
+  });
+
+  @override
+  State<_StatTile> createState() => _StatTileState();
+}
+
+class _StatTileState extends State<_StatTile> {
+  bool _hovered = false;
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
-      decoration: BoxDecoration(
-        color: Theme.of(context).cardTheme.color,
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(
-            color: Theme.of(context).brightness == Brightness.dark
-                ? AppTheme.darkBorder
-                : Colors.white,
-            width: 1.5),
-        boxShadow: [
-          BoxShadow(
-            color: color.withValues(alpha: 0.12),
-            blurRadius: 16,
-            offset: const Offset(0, 6),
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
+    return MouseRegion(
+      onEnter: (_) => setState(() => _hovered = true),
+      onExit: (_) => setState(() => _hovered = false),
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 180),
+        padding: const EdgeInsets.all(14),
+        decoration: BoxDecoration(
+          color: isDark ? const Color(0xFF1E293B) : Colors.white,
+          borderRadius: BorderRadius.circular(20),
+          border: Border.all(
+            color: _hovered 
+                ? widget.color.withValues(alpha: 0.3) 
+                : (isDark ? AppTheme.darkBorder : AppTheme.lightBorder),
+            width: _hovered ? 1.5 : 1.0,
           ),
-        ],
-        gradient: LinearGradient(
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-          colors: [
-            Theme.of(context).cardTheme.color ?? Colors.white,
-            (Theme.of(context).cardTheme.color ?? Colors.white)
-                .withValues(alpha: 0.6),
+          boxShadow: _hovered
+              ? [
+                  BoxShadow(
+                    color: widget.color.withValues(alpha: 0.08),
+                    blurRadius: 18,
+                    offset: const Offset(0, 8),
+                  ),
+                ]
+              : [
+                  BoxShadow(
+                    color: Colors.black.withValues(alpha: 0.02),
+                    blurRadius: 12,
+                    offset: const Offset(0, 4),
+                  ),
+                ],
+          gradient: LinearGradient(
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+            colors: [
+              isDark ? const Color(0xFF1E293B) : Colors.white,
+              isDark ? const Color(0xFF0F172A) : const Color(0xFFF8FAFC),
+            ],
+          ),
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // Circular backdrop wrapper for icon
+            Container(
+              width: 32,
+              height: 32,
+              decoration: BoxDecoration(
+                color: widget.color.withValues(alpha: 0.1),
+                shape: BoxShape.circle,
+              ),
+              child: Icon(widget.icon, color: widget.color, size: 16),
+            ),
+            const Spacer(),
+            FittedBox(
+              fit: BoxFit.scaleDown,
+              alignment: Alignment.centerLeft,
+              child: Text(
+                widget.value,
+                style: TextStyle(
+                  color: isDark ? Colors.white : const Color(0xFF0F172A),
+                  fontWeight: FontWeight.w900,
+                  fontSize: 16,
+                  letterSpacing: -0.3,
+                ),
+              ),
+            ),
+            const SizedBox(height: 2),
+            Text(
+              widget.label,
+              style: const TextStyle(
+                fontSize: 11,
+                color: AppTheme.lightTextSecondary,
+                fontWeight: FontWeight.w600,
+              ),
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+            ),
           ],
         ),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          Icon(icon, color: color, size: 20),
-          const SizedBox(height: 4),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              mainAxisAlignment: MainAxisAlignment.end,
-              children: [
-                FittedBox(
-                  fit: BoxFit.scaleDown,
-                  alignment: Alignment.centerLeft,
-                  child: Text(
-                    value,
-                    style: Theme.of(context)
-                        .textTheme
-                        .titleMedium
-                        ?.copyWith(color: color, fontWeight: FontWeight.w700),
-                  ),
-                ),
-                const SizedBox(height: 2),
-                Text(
-                  label,
-                  style: Theme.of(context)
-                      .textTheme
-                      .bodySmall
-                      ?.copyWith(fontSize: 11),
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                ),
-              ],
-            ),
-          ),
-        ],
       ),
     );
   }
@@ -651,24 +1008,26 @@ class _SubscriptionCard extends StatelessWidget {
     final color = isExpired
         ? AppTheme.errorColor
         : isTrial
-            ? AppTheme.accentDark
-            : AppTheme.successColor;
+            ? const Color(0xFF8B5CF6) // Violet status
+            : const Color(0xFF10B981); // Emerald check status
     final label = isExpired
-        ? 'Subscription Expired'
+        ? 'Subscription Term Expired'
         : isTrial
-            ? 'Free Trial Active${stats.trialDaysLeft != null ? ' — ${stats.trialDaysLeft}d left' : ''}'
-            : 'Subscribed ✓';
+            ? 'Free Trial Activated${stats.trialDaysLeft != null ? ' — ${stats.trialDaysLeft}d left' : ''}'
+            : 'Subscribed Account Active ✓';
 
     return Container(
-      padding: const EdgeInsets.all(14),
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
       decoration: BoxDecoration(
-        color: Theme.of(context).cardTheme.color,
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: color.withValues(alpha: 0.3), width: 1.5),
+        color: Theme.of(context).brightness == Brightness.dark 
+            ? const Color(0xFF1E293B) 
+            : Colors.white,
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: color.withValues(alpha: 0.25), width: 1.5),
         boxShadow: [
           BoxShadow(
-            color: color.withValues(alpha: 0.08),
-            blurRadius: 16,
+            color: color.withValues(alpha: 0.05),
+            blurRadius: 18,
             offset: const Offset(0, 6),
           ),
         ],
@@ -676,36 +1035,64 @@ class _SubscriptionCard extends StatelessWidget {
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
           colors: [
-            color.withValues(alpha: 0.05),
-            color.withValues(alpha: 0.15),
+            color.withValues(alpha: 0.02),
+            color.withValues(alpha: 0.08),
           ],
         ),
       ),
       child: Row(
         children: [
-          Icon(
-            isExpired
-                ? Icons.timer_off_outlined
-                : isTrial
-                    ? Icons.rocket_launch_outlined
-                    : Icons.workspace_premium_outlined,
-            color: color,
-            size: 22,
+          // Glowing subscription status icon
+          Container(
+            width: 36,
+            height: 36,
+            decoration: BoxDecoration(
+              color: color.withValues(alpha: 0.1),
+              shape: BoxShape.circle,
+              boxShadow: [
+                BoxShadow(
+                  color: color.withValues(alpha: 0.25),
+                  blurRadius: 8,
+                ),
+              ],
+            ),
+            child: Icon(
+              isExpired
+                  ? Icons.timer_off_rounded
+                  : isTrial
+                      ? Icons.rocket_launch_rounded
+                      : Icons.workspace_premium_rounded,
+              color: color,
+              size: 18,
+            ),
           ),
-          const SizedBox(width: 10),
+          const SizedBox(width: 12),
           Expanded(
-            child: Text(label,
-                style: TextStyle(color: color, fontWeight: FontWeight.w600)),
+            child: Text(
+              label,
+              style: TextStyle(
+                color: color, 
+                fontWeight: FontWeight.w700,
+                fontSize: 13,
+              ),
+            ),
           ),
           if (isExpired || isTrial)
-            TextButton(
+            ElevatedButton(
               onPressed: () => context.push(AppRoutes.subscription),
-              style: TextButton.styleFrom(foregroundColor: color),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: color,
+                foregroundColor: Colors.white,
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                elevation: 0,
+                padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+                textStyle: const TextStyle(fontWeight: FontWeight.bold, fontSize: 12),
+              ),
               child: const Text('Manage'),
             ),
         ],
       ),
-    ).animate(delay: 300.ms).fadeIn();
+    );
   }
 }
 
@@ -713,26 +1100,46 @@ class _SubscriptionCard extends StatelessWidget {
 class _NoBusinessCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
     return Container(
-      padding: const EdgeInsets.all(24),
+      padding: const EdgeInsets.all(28),
       decoration: BoxDecoration(
-        color: AppTheme.lightTextHint.withValues(alpha: 0.06),
-        borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: AppTheme.lightBorder),
+        color: isDark ? const Color(0xFF1E293B) : Colors.white,
+        borderRadius: BorderRadius.circular(24),
+        border: Border.all(color: isDark ? AppTheme.darkBorder : AppTheme.lightBorder, width: 1.2),
+        boxShadow: const [
+          BoxShadow(
+            color: Colors.black12,
+            blurRadius: 16,
+            offset: Offset(0, 6),
+          ),
+        ],
       ),
       child: Column(
         children: [
-          const Icon(Icons.store_outlined,
-              size: 48, color: AppTheme.lightTextHint),
-          const SizedBox(height: 12),
-          Text('No Business Linked',
-              style: Theme.of(context).textTheme.titleMedium),
-          const SizedBox(height: 4),
-          Text('Set up a business to see detailed stats here.',
-              style: Theme.of(context).textTheme.bodySmall,
-              textAlign: TextAlign.center),
+          Container(
+            width: 64,
+            height: 64,
+            decoration: BoxDecoration(
+              color: Colors.purple.withValues(alpha: 0.1),
+              shape: BoxShape.circle,
+            ),
+            child: const Icon(Icons.store_rounded, size: 32, color: Colors.purple),
+          ),
+          const SizedBox(height: 16),
+          const Text(
+            'No Active Business',
+            style: TextStyle(fontWeight: FontWeight.w800, fontSize: 16),
+          ),
+          const SizedBox(height: 6),
+          const Text(
+            'Set up a business workspace to view detailed sales, expenses, and inventory performance charts.',
+            style: TextStyle(color: AppTheme.lightTextSecondary, fontSize: 12),
+            textAlign: TextAlign.center,
+          ),
         ],
       ),
-    ).animate().fadeIn();
+    );
   }
 }
