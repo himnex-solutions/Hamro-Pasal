@@ -66,21 +66,25 @@ END;
 $$;
 
 -- Allow admins to read/write ALL user_profiles
+DROP POLICY IF EXISTS "admin_user_profiles_all" ON user_profiles;
 CREATE POLICY "admin_user_profiles_all" ON user_profiles
   USING (is_admin_user())
   WITH CHECK (is_admin_user());
 
 -- Allow admins to read/write ALL businesses
+DROP POLICY IF EXISTS "admin_businesses_all" ON businesses;
 CREATE POLICY "admin_businesses_all" ON businesses
   USING (is_admin_user())
   WITH CHECK (is_admin_user());
 
 -- Allow admins to read/write ALL subscriptions
+DROP POLICY IF EXISTS "admin_subscriptions_all" ON subscriptions;
 CREATE POLICY "admin_subscriptions_all" ON subscriptions
   USING (is_admin_user())
   WITH CHECK (is_admin_user());
 
 -- Allow admins to read ALL payments
+DROP POLICY IF EXISTS "admin_payments_all" ON payments;
 CREATE POLICY "admin_payments_all" ON payments
   USING (is_admin_user());
 
@@ -96,8 +100,11 @@ CREATE TABLE IF NOT EXISTS business_sessions (
 
 ALTER TABLE business_sessions ENABLE ROW LEVEL SECURITY;
 
+DROP POLICY IF EXISTS "own_sessions" ON business_sessions;
 CREATE POLICY "own_sessions" ON business_sessions
   USING (user_has_business_access(business_id));
+
+DROP POLICY IF EXISTS "admin_sessions_all" ON business_sessions;
 CREATE POLICY "admin_sessions_all" ON business_sessions
   USING (is_admin_user());
 

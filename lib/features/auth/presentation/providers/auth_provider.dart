@@ -3,6 +3,8 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:uuid/uuid.dart';
 import 'package:hamro_pasal/core/constants/app_constants.dart';
+import 'package:hamro_pasal/core/services/notification_service.dart';
+
 
 // ── Auth Status ───────────────────────────────────────────────
 enum AuthStatus {
@@ -53,7 +55,7 @@ class AuthNotifier extends StateNotifier<AuthState> {
   // ── Initialization ────────────────────────────────────────
   Future<void> _init() async {
     bool initialEventHandled = false;
-    DateTime? _initialSessionTime; // tracks when initialSession fired
+    DateTime? initialSessionTime; // tracks when initialSession fired
 
     _supabase.auth.onAuthStateChange.listen((data) async {
       final event = data.event;
@@ -62,7 +64,7 @@ class AuthNotifier extends StateNotifier<AuthState> {
       // ── First event on cold start ─────────────────────────
       if (event == AuthChangeEvent.initialSession) {
         initialEventHandled = true;
-        _initialSessionTime = DateTime.now();
+        initialSessionTime = DateTime.now();
         if (session != null) {
           try {
             final deviceId = await _getOrCreateDeviceId();
@@ -85,8 +87,8 @@ class AuthNotifier extends StateNotifier<AuthState> {
       // microtask tick as initialSession), so signedOut slipped through.
       // A 5-second time window reliably covers the entire refresh cycle.
       if (event == AuthChangeEvent.signedOut) {
-        final msSinceInit = _initialSessionTime != null
-            ? DateTime.now().difference(_initialSessionTime!).inMilliseconds
+        final msSinceInit = initialSessionTime != null
+            ? DateTime.now().difference(initialSessionTime!).inMilliseconds
             : 0;
         if (msSinceInit < 5000) return; // still in refresh window — suppress
 
@@ -601,4 +603,17 @@ class AuthNotifier extends StateNotifier<AuthState> {
   bool get needsBusinessSetup => state.status == AuthStatus.needsBusinessSetup;
   bool get needsOtpVerification =>
       state.status == AuthStatus.needsOtpVerification;
+
+  @override
+  set state(AuthState value) {
+    super.state = value;
+    if (value.status == AuthStatus.authenticated) {
+      _onAuthenticated();
+    }
+  }
+
+  void _onAuthenticated() {
+    NotificationService.registerFcmToken();
+  }
 }
+

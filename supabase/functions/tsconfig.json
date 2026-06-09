@@ -1,0 +1,21 @@
+{
+  "compilerOptions": {
+    "allowJs": true,
+    "esModuleInterop": true,
+    "experimentalDecorators": true,
+    "inlineSourceMap": true,
+    "isolatedModules": true,
+    "baseUrl": ".",
+    "lib": ["dom", "esnext"],
+    "module": "esnext",
+    "moduleResolution": "node",
+    "strict": true,
+    "target": "esnext",
+    "paths": {
+      "https://deno.land/*": ["*"],
+      "https://esm.sh/*": ["*"],
+      "npm:*": ["*"]
+    }
+  },
+  "include": ["**/*.ts", "**/*.d.ts"]
+}
