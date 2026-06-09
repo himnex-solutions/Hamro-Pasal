@@ -254,8 +254,12 @@ CREATE TRIGGER trg_queue_welcome_email
   AFTER INSERT ON public.user_profiles
   FOR EACH ROW EXECUTE FUNCTION public.queue_welcome_email();
 
--- ─── 11. SUBSCRIPTION REQUEST TRIGGER (SUBMITTED) ──────────────
-CREATE OR REPLACE FUNCTION public.handle_subscription_request_inserted()
+-- ─── 11. PAYMENT REQUEST NOTIFICATION TRIGGER (SUBMITTED) ──────────────
+-- NOTE: Flutter app inserts into payment_requests directly (not subscription_requests).
+-- The sync trigger then copies to subscription_requests at depth=1.
+-- So we attach notifications HERE on payment_requests (fires at depth=0, exactly once).
+
+CREATE OR REPLACE FUNCTION public.handle_payment_request_inserted()
 RETURNS TRIGGER AS $$
 DECLARE
   v_user_email TEXT;
@@ -265,26 +269,23 @@ DECLARE
 BEGIN
   -- Get user info
   SELECT email, full_name INTO v_user_email, v_user_name
-  FROM public.user_profiles
-  WHERE id = NEW.user_id;
+  FROM public.user_profiles WHERE id = NEW.user_id;
 
-  v_plan_name := UPPER(SUBSTRING(NEW.plan_name FROM 1 FOR 1)) || SUBSTRING(NEW.plan_name FROM 2);
+  -- plan_code is already stored in payment_requests (e.g. 'gold', 'diamond')
+  v_plan_name := INITCAP(NEW.plan_code);
 
-  -- 1. Create dashboard notification for User
-  INSERT INTO public.notifications (user_id, title, message, type)
-  VALUES (
+  -- 1. User dashboard notification
+  INSERT INTO public.notifications (user_id, title, message, type) VALUES (
     NEW.user_id,
     'Subscription Request Received ⏳',
     'Your subscription request has been received and is pending verification.',
     'info'
   );
 
-  -- 2. Queue Email Confirmation for User
+  -- 2. User confirmation email
   IF v_user_email IS NOT NULL AND v_user_email <> '' THEN
-    INSERT INTO public.email_logs (user_id, email, subject, body, status)
-    VALUES (
-      NEW.user_id,
-      v_user_email,
+    INSERT INTO public.email_logs (user_id, email, subject, body, status) VALUES (
+      NEW.user_id, v_user_email,
       'Subscription Request Received',
       json_build_object(
         'template', 'subscription_submitted',
@@ -295,36 +296,46 @@ BEGIN
     );
   END IF;
 
-  -- 3. Queue Email to Admin
-  FOR v_admin_email IN 
-    SELECT email FROM public.user_profiles 
+  -- 3. Email to every admin (one per admin account)
+  FOR v_admin_email IN
+    SELECT email FROM public.user_profiles
     WHERE is_admin = TRUE AND email IS NOT NULL AND email <> ''
   LOOP
-    INSERT INTO public.email_logs (user_id, email, subject, body, status)
-    VALUES (
-      NEW.user_id,
-      v_admin_email,
+    INSERT INTO public.email_logs (user_id, email, subject, body, status) VALUES (
+      NEW.user_id, v_admin_email,
       'New Subscription Request - ' || COALESCE(v_user_name, 'User'),
       json_build_object(
         'template', 'admin_subscription_submitted',
         'user_name', COALESCE(v_user_name, 'User'),
         'user_email', COALESCE(v_user_email, 'N/A'),
         'plan_name', v_plan_name,
-        'screenshot_url', NEW.payment_screenshot_url,
+        'screenshot_url', NEW.screenshot_url,
         'created_at', NEW.created_at
       )::text,
       'pending'
     );
   END LOOP;
 
+  -- 4. Dashboard notification for every admin
+  INSERT INTO public.notifications (user_id, title, message, type)
+  SELECT id,
+    'New Subscription Request ⏳',
+    COALESCE(v_user_name, 'A user') || ' requested upgrade to ' || v_plan_name || '.',
+    'info'
+  FROM public.user_profiles WHERE is_admin = TRUE;
+
   RETURN NEW;
 END;
 $$ LANGUAGE plpgsql SECURITY DEFINER;
 
+-- Remove old trigger on subscription_requests (no longer needed for notifications)
 DROP TRIGGER IF EXISTS trg_subscription_request_inserted ON public.subscription_requests;
-CREATE TRIGGER trg_subscription_request_inserted
-  AFTER INSERT ON public.subscription_requests
-  FOR EACH ROW EXECUTE FUNCTION public.handle_subscription_request_inserted();
+
+-- Attach to payment_requests — fires exactly ONCE when Flutter submits a payment
+DROP TRIGGER IF EXISTS trg_payment_request_inserted ON public.payment_requests;
+CREATE TRIGGER trg_payment_request_inserted
+  AFTER INSERT ON public.payment_requests
+  FOR EACH ROW EXECUTE FUNCTION public.handle_payment_request_inserted();
 
 -- ─── 12. SUBSCRIPTION APPROVAL / REJECTION TRIGGER ──────────────
 CREATE OR REPLACE FUNCTION public.handle_subscription_request_updated()

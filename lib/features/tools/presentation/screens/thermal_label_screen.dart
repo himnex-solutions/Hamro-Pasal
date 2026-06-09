@@ -15,6 +15,7 @@ import 'package:barcode_widget/barcode_widget.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:hamro_pasal/features/inventory/presentation/screens/inventory_screen.dart';
 import 'package:hamro_pasal/features/inventory/data/models/product_model.dart';
+import 'package:hamro_pasal/features/invoices/data/services/invoice_settings_service.dart';
 
 class ThermalLabelScreen extends ConsumerStatefulWidget {
   const ThermalLabelScreen({super.key});
@@ -63,12 +64,32 @@ class _ThermalLabelScreenState extends ConsumerState<ThermalLabelScreen> {
     {'name': 'Clarified Butter 1L', 'qty': '1', 'price': '750'},
   ];
 
+  // Receipt customization controls (shifted from Thermal Receipt settings)
+  late TextEditingController _receiptTitleCtrl;
+  late TextEditingController _receiptPrefixCtrl;
+  late TextEditingController _receiptPanCtrl;
+  bool _showReceiptTax = true;
+  bool _showReceiptDiscount = true;
+  bool _showReceiptAddress = true;
+  bool _showReceiptPAN = true;
+  bool _showReceiptPhone = true;
+
   bool _printing = false;
   String _lastProductName = 'Organic Green Tea';
 
   @override
   void initState() {
     super.initState();
+    final invoiceSettings = ref.read(invoiceSettingsProvider);
+    _receiptTitleCtrl = TextEditingController(text: invoiceSettings.title);
+    _receiptPrefixCtrl = TextEditingController(text: invoiceSettings.prefix);
+    _receiptPanCtrl = TextEditingController(text: '601245678');
+    _showReceiptTax = invoiceSettings.showTax;
+    _showReceiptDiscount = invoiceSettings.showDiscount;
+    _showReceiptAddress = invoiceSettings.showAddress;
+    _showReceiptPAN = invoiceSettings.showPAN;
+    _showReceiptPhone = invoiceSettings.showPhone;
+
     _loadSavedSettings();
   }
 
@@ -105,6 +126,15 @@ class _ThermalLabelScreenState extends ConsumerState<ThermalLabelScreen> {
         _receiptTaxCtrl.text = prefs.getString('thermal_rec_tax') ?? '143';
         _receiptTotalCtrl.text = prefs.getString('thermal_rec_tot') ?? '1243';
         _receiptFooterCtrl.text = prefs.getString('thermal_rec_foot') ?? 'Follow us on Instagram!';
+
+        _receiptTitleCtrl.text = prefs.getString('thermal_rec_title') ?? _receiptTitleCtrl.text;
+        _receiptPrefixCtrl.text = prefs.getString('thermal_rec_prefix') ?? _receiptPrefixCtrl.text;
+        _receiptPanCtrl.text = prefs.getString('thermal_rec_pan') ?? _receiptPanCtrl.text;
+        _showReceiptTax = prefs.getBool('thermal_rec_show_tax') ?? _showReceiptTax;
+        _showReceiptDiscount = prefs.getBool('thermal_rec_show_disc') ?? _showReceiptDiscount;
+        _showReceiptAddress = prefs.getBool('thermal_rec_show_addr') ?? _showReceiptAddress;
+        _showReceiptPAN = prefs.getBool('thermal_rec_show_pan') ?? _showReceiptPAN;
+        _showReceiptPhone = prefs.getBool('thermal_rec_show_phone') ?? _showReceiptPhone;
       });
     } catch (e) {
       debugPrint('Failed to load thermal settings: $e');
@@ -142,6 +172,29 @@ class _ThermalLabelScreenState extends ConsumerState<ThermalLabelScreen> {
       await prefs.setString('thermal_rec_tax', _receiptTaxCtrl.text);
       await prefs.setString('thermal_rec_tot', _receiptTotalCtrl.text);
       await prefs.setString('thermal_rec_foot', _receiptFooterCtrl.text);
+
+      await prefs.setString('thermal_rec_title', _receiptTitleCtrl.text);
+      await prefs.setString('thermal_rec_prefix', _receiptPrefixCtrl.text);
+      await prefs.setString('thermal_rec_pan', _receiptPanCtrl.text);
+      await prefs.setBool('thermal_rec_show_tax', _showReceiptTax);
+      await prefs.setBool('thermal_rec_show_disc', _showReceiptDiscount);
+      await prefs.setBool('thermal_rec_show_addr', _showReceiptAddress);
+      await prefs.setBool('thermal_rec_show_pan', _showReceiptPAN);
+      await prefs.setBool('thermal_rec_show_phone', _showReceiptPhone);
+
+      // Shift/Save to global invoice custom settings
+      final settings = ref.read(invoiceSettingsProvider);
+      final updated = settings.copyWith(
+        title: _receiptTitleCtrl.text.trim(),
+        prefix: _receiptPrefixCtrl.text.trim().toUpperCase(),
+        footerNote: _receiptFooterCtrl.text.trim(),
+        showTax: _showReceiptTax,
+        showDiscount: _showReceiptDiscount,
+        showAddress: _showReceiptAddress,
+        showPhone: _showReceiptPhone,
+        showPAN: _showReceiptPAN,
+      );
+      await ref.read(invoiceSettingsProvider.notifier).updateSettings(updated);
     } catch (e) {
       debugPrint('Failed to save thermal settings: $e');
     }
@@ -234,6 +287,9 @@ class _ThermalLabelScreenState extends ConsumerState<ThermalLabelScreen> {
     _receiptTaxCtrl.dispose();
     _receiptTotalCtrl.dispose();
     _receiptFooterCtrl.dispose();
+    _receiptTitleCtrl.dispose();
+    _receiptPrefixCtrl.dispose();
+    _receiptPanCtrl.dispose();
     super.dispose();
   }
 
@@ -353,6 +409,14 @@ class _ThermalLabelScreenState extends ConsumerState<ThermalLabelScreen> {
             shopName: _shopNameCtrl.text,
             address: _shipFromAddrCtrl.text,
             phone: _shipFromPhoneCtrl.text,
+            pan: _receiptPanCtrl.text,
+            title: _receiptTitleCtrl.text,
+            prefix: _receiptPrefixCtrl.text,
+            showAddress: _showReceiptAddress,
+            showPhone: _showReceiptPhone,
+            showPAN: _showReceiptPAN,
+            showTax: _showReceiptTax,
+            showDiscount: _showReceiptDiscount,
             items: _receiptItems,
             subtotal: _receiptSubtotalCtrl.text,
             discount: _receiptDiscountCtrl.text,
@@ -413,6 +477,270 @@ class _ThermalLabelScreenState extends ConsumerState<ThermalLabelScreen> {
   }
 
   // ── Layout & UI Rendering ─────────────────────────────────────────
+  IconData _getLabelTypeIcon(LabelType type) {
+    switch (type) {
+      case LabelType.productLabel:
+        return Icons.label_outline_rounded;
+      case LabelType.barcodeSticker:
+        return Icons.qr_code_scanner_rounded;
+      case LabelType.qrLabel:
+        return Icons.qr_code_rounded;
+      case LabelType.shippingLabel:
+        return Icons.local_shipping_outlined;
+      case LabelType.receipt:
+        return Icons.receipt_long_outlined;
+    }
+  }
+
+  Widget _buildBanner() {
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: const Color(0xFF10B981).withValues(alpha: 0.1),
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: const Color(0xFF10B981).withValues(alpha: 0.25)),
+      ),
+      child: Row(
+        children: [
+          const Icon(Icons.print_rounded, color: Color(0xFF10B981), size: 30),
+          const SizedBox(width: 14),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const Text(
+                  'Thermal Label Hub Customizer',
+                  style: TextStyle(fontWeight: FontWeight.bold, fontSize: 15),
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  'Design, preview, and print barcodes, stickers, shipping labels, and mini receipts.',
+                  style: TextStyle(color: Colors.grey[500], fontSize: 12),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    ).animate().fadeIn().slideY(begin: -0.05, end: 0);
+  }
+
+  Widget _buildPrinterSizingCard(bool isDark) {
+    return _CardSection(
+      title: 'Printer Sizing & Brand',
+      icon: Icons.settings_input_hdmi_rounded,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Text('Printer Brand Support', style: TextStyle(fontSize: 13, fontWeight: FontWeight.bold)),
+          const SizedBox(height: 8),
+          Wrap(
+            spacing: 8,
+            runSpacing: 8,
+            children: PrinterBrand.values.map((brand) {
+              final active = _activeBrand == brand;
+              return ChoiceChip(
+                label: Text(brand.name),
+                selected: active,
+                onSelected: (val) {
+                  if (val) {
+                    setState(() {
+                      _activeBrand = brand;
+                      _presetIndex = 0; // reset to first preset of this brand
+                    });
+                  }
+                },
+              );
+            }).toList(),
+          ),
+          const SizedBox(height: 20),
+          const Text('Size Presets & Medium', style: TextStyle(fontSize: 13, fontWeight: FontWeight.bold)),
+          const SizedBox(height: 8),
+          Wrap(
+            spacing: 8,
+            runSpacing: 8,
+            children: List.generate(_activeBrand.presets.length, (index) {
+              final preset = _activeBrand.presets[index];
+              return ChoiceChip(
+                label: Text(preset.name),
+                selected: _presetIndex == index,
+                onSelected: (val) {
+                  if (val) {
+                    setState(() => _presetIndex = index);
+                  }
+                },
+              );
+            }),
+          ),
+          if (_activeBrand.presets[_presetIndex].isCustom) ...[
+            const SizedBox(height: 16),
+            Row(
+              children: [
+                Expanded(
+                  child: _textField(
+                    controller: _customWCtrl,
+                    label: 'Width (mm)',
+                    icon: Icons.width_normal_rounded,
+                    numOnly: true,
+                  ),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: _textField(
+                    controller: _customHCtrl,
+                    label: 'Height (mm)',
+                    icon: Icons.height_rounded,
+                    numOnly: true,
+                  ),
+                ),
+              ],
+            ),
+          ],
+        ],
+      ),
+    ).animate(delay: 50.ms).fadeIn();
+  }
+
+  Widget _buildLabelTypeCard(bool isDark) {
+    return _CardSection(
+      title: 'Label Template & Mode',
+      icon: Icons.layers_rounded,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Text('Select Document Type', style: TextStyle(fontSize: 13, fontWeight: FontWeight.bold)),
+          const SizedBox(height: 8),
+          Wrap(
+            spacing: 8,
+            runSpacing: 8,
+            children: LabelType.values.map((type) {
+              final active = _activeType == type;
+              return ChoiceChip(
+                avatar: Icon(_getLabelTypeIcon(type), size: 16),
+                label: Text(type.title),
+                selected: active,
+                onSelected: (val) {
+                  if (val) {
+                    setState(() {
+                      _activeType = type;
+                    });
+                  }
+                },
+              );
+            }).toList(),
+          ),
+        ],
+      ),
+    ).animate(delay: 100.ms).fadeIn();
+  }
+
+  Widget _buildContentDetailsCard(bool isDark) {
+    return _CardSection(
+      title: 'Label Content & Metadata',
+      icon: Icons.edit_note_rounded,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          _buildContentInputs(),
+        ],
+      ),
+    ).animate(delay: 150.ms).fadeIn();
+  }
+
+  Widget _buildActionsRow(bool isDark, String plan) {
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        if (plan == 'gold')
+          Padding(
+            padding: const EdgeInsets.only(bottom: 16),
+            child: FutureBuilder<LimitCheckResult>(
+              future: DailyLimitService.instance.checkLimit('gold', 'thermal_print'),
+              builder: (context, snapshot) {
+                if (!snapshot.hasData) return const SizedBox.shrink();
+                final check = snapshot.data!;
+                return Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFFEF3C7),
+                    borderRadius: BorderRadius.circular(10),
+                    border: Border.all(color: const Color(0xFFF59E0B).withValues(alpha: 0.4)),
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      const Icon(Icons.print_rounded, size: 16, color: Color(0xFFD97706)),
+                      const SizedBox(width: 6),
+                      Text('${check.remaining} thermal prints remaining today',
+                          style: const TextStyle(color: Color(0xFFD97706), fontWeight: FontWeight.w600, fontSize: 13)),
+                    ],
+                  ),
+                );
+              },
+            ),
+          ),
+        SizedBox(
+          width: double.infinity,
+          child: FilledButton.icon(
+            onPressed: _printing ? null : _triggerPrint,
+            style: FilledButton.styleFrom(
+              padding: const EdgeInsets.symmetric(vertical: 16),
+              backgroundColor: AppTheme.primaryColor,
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+            ),
+            icon: _printing
+                ? const SizedBox(width: 18, height: 18, child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2))
+                : const Icon(Icons.print_rounded),
+            label: Text(_printing ? 'Launching Print Dialog…' : 'Print Label / Sticker',
+                style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w700)),
+          ),
+        ),
+        const SizedBox(height: 12),
+        Text(
+          plan == 'diamond'
+              ? '💎 Unlimited printing on Diamond subscription'
+              : plan == 'gold'
+                  ? '🥇 Gold plan limits: 10 daily prints'
+                  : '🔒 Upgrade to print on your thermal printer',
+          style: TextStyle(
+            fontSize: 12,
+            color: isDark ? AppTheme.darkTextSecondary : AppTheme.lightTextSecondary,
+          ),
+        ),
+      ],
+    ).animate().fadeIn().slideY(begin: 0.05, end: 0);
+  }
+
+  Widget _buildPreviewContent(bool isDark) {
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        const Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(Icons.visibility, size: 18, color: Colors.blueAccent),
+            SizedBox(width: 8),
+            Text('Live Preview', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
+          ],
+        ),
+        const SizedBox(height: 16),
+        Center(
+          child: Container(
+            constraints: const BoxConstraints(maxWidth: 320),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(12),
+              border: Border.all(color: isDark ? AppTheme.darkBorder : AppTheme.lightBorder, width: 1.5),
+              boxShadow: AppTheme.cardShadow(Colors.black, opacity: 0.08),
+            ),
+            padding: const EdgeInsets.all(16),
+            child: _buildStickerPreviewLayout(),
+          ),
+        ).animate().fadeIn(delay: 80.ms),
+      ],
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
@@ -459,157 +787,68 @@ class _ThermalLabelScreenState extends ConsumerState<ThermalLabelScreen> {
       body: LayoutBuilder(
         builder: (context, constraints) {
           final wide = constraints.maxWidth > 950;
-          return SingleChildScrollView(
-            padding: const EdgeInsets.all(24),
-            child: wide
-                ? Row(
-                    crossAxisAlignment: CrossAxisAlignment.start,
+          if (wide) {
+            return Row(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                Expanded(
+                  flex: 6,
+                  child: ListView(
+                    padding: const EdgeInsets.all(20),
                     children: [
-                      Expanded(flex: 5, child: _buildSettingsColumn(isDark)),
-                      const SizedBox(width: 24),
-                      Expanded(flex: 4, child: _buildPreviewColumn(isDark, plan)),
-                    ],
-                  )
-                : Column(
-                    children: [
-                      _buildSettingsColumn(isDark),
+                      _buildBanner(),
+                      const SizedBox(height: 16),
+                      _buildPrinterSizingCard(isDark),
+                      const SizedBox(height: 16),
+                      _buildLabelTypeCard(isDark),
+                      const SizedBox(height: 16),
+                      _buildContentDetailsCard(isDark),
                       const SizedBox(height: 24),
-                      _buildPreviewColumn(isDark, plan),
+                      _buildActionsRow(isDark, plan),
+                      const SizedBox(height: 40),
                     ],
                   ),
-          );
+                ),
+                Expanded(
+                  flex: 4,
+                  child: Container(
+                    color: isDark ? const Color(0xFF1E293B) : Colors.grey[200],
+                    padding: const EdgeInsets.all(24),
+                    child: Center(
+                      child: SingleChildScrollView(
+                        child: _buildPreviewContent(isDark),
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            );
+          } else {
+            return SingleChildScrollView(
+              padding: const EdgeInsets.all(20),
+              child: Column(
+                children: [
+                  _buildBanner(),
+                  const SizedBox(height: 16),
+                  _buildPrinterSizingCard(isDark),
+                  const SizedBox(height: 16),
+                  _buildLabelTypeCard(isDark),
+                  const SizedBox(height: 16),
+                  _buildContentDetailsCard(isDark),
+                  const SizedBox(height: 24),
+                  _buildPreviewContent(isDark),
+                  const SizedBox(height: 24),
+                  _buildActionsRow(isDark, plan),
+                  const SizedBox(height: 40),
+                ],
+              ),
+            );
+          }
         },
       ),
     );
   }
 
-  // Settings Column
-  Widget _buildSettingsColumn(bool isDark) {
-    return Card(
-      elevation: 0,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(16),
-        side: BorderSide(color: isDark ? AppTheme.darkBorder : AppTheme.lightBorder),
-      ),
-      child: Padding(
-        padding: const EdgeInsets.all(20),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            const Text(
-              'Printer & Label Settings',
-              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-            ),
-            const SizedBox(height: 16),
-
-            // Printer Brand Choice
-            const Text('1. Printer Brand Support', style: TextStyle(fontWeight: FontWeight.bold)),
-            const SizedBox(height: 8),
-            Wrap(
-              spacing: 8,
-              runSpacing: 8,
-              children: PrinterBrand.values.map((brand) {
-                final active = _activeBrand == brand;
-                return ChoiceChip(
-                  label: Text(brand.name),
-                  selected: active,
-                  onSelected: (val) {
-                    if (val) {
-                      setState(() {
-                        _activeBrand = brand;
-                        _presetIndex = 0; // reset to first preset of this brand
-                      });
-                    }
-                  },
-                );
-              }).toList(),
-            ),
-            const SizedBox(height: 20),
-
-            // Label Type Choice
-            const Text('2. Label/Document Type', style: TextStyle(fontWeight: FontWeight.bold)),
-            const SizedBox(height: 8),
-            Wrap(
-              spacing: 8,
-              runSpacing: 8,
-              children: LabelType.values.map((type) {
-                final active = _activeType == type;
-                return ChoiceChip(
-                  avatar: Text(type.icon),
-                  label: Text(type.title),
-                  selected: active,
-                  onSelected: (val) {
-                    if (val) {
-                      setState(() {
-                        _activeType = type;
-                      });
-                    }
-                  },
-                );
-              }).toList(),
-            ),
-            const SizedBox(height: 20),
-
-            // Size Presets based on Brand
-            const Text('3. Size Presets & Medium', style: TextStyle(fontWeight: FontWeight.bold)),
-            const SizedBox(height: 8),
-            Wrap(
-              spacing: 8,
-              runSpacing: 8,
-              children: List.generate(_activeBrand.presets.length, (index) {
-                final preset = _activeBrand.presets[index];
-                return ChoiceChip(
-                  label: Text(preset.name),
-                  selected: _presetIndex == index,
-                  onSelected: (val) {
-                    if (val) {
-                      setState(() => _presetIndex = index);
-                    }
-                  },
-                );
-              }),
-            ),
-
-            if (_activeBrand.presets[_presetIndex].isCustom) ...[
-              const SizedBox(height: 12),
-              Row(
-                children: [
-                  Expanded(
-                    child: _textField(
-                      controller: _customWCtrl,
-                      label: 'Width (mm)',
-                      icon: Icons.width_normal_rounded,
-                      numOnly: true,
-                    ),
-                  ),
-                  const SizedBox(width: 12),
-                  Expanded(
-                    child: _textField(
-                      controller: _customHCtrl,
-                      label: 'Height (mm)',
-                      icon: Icons.height_rounded,
-                      numOnly: true,
-                    ),
-                  ),
-                ],
-              ),
-            ],
-
-            const SizedBox(height: 24),
-            const Divider(),
-            const SizedBox(height: 16),
-
-            // Form Inputs based on active label type
-            const Text('4. Content Details', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
-            const SizedBox(height: 12),
-            _buildContentInputs(),
-          ],
-        ),
-      ),
-    ).animate().fadeIn().slideY(begin: 0.05, end: 0);
-  }
-
-  // Context-aware inputs builder
   Widget _buildContentInputs() {
     switch (_activeType) {
       case LabelType.productLabel:
@@ -741,6 +980,47 @@ class _ThermalLabelScreenState extends ConsumerState<ThermalLabelScreen> {
             ),
             const SizedBox(height: 12),
             _textField(controller: _receiptFooterCtrl, label: 'Receipt Footer Note', icon: Icons.chat_bubble_outline),
+            
+            const Divider(height: 32),
+            const Text('Receipt Layout Customization', style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: AppTheme.primaryColor)),
+            const SizedBox(height: 12),
+            _textField(controller: _receiptTitleCtrl, label: 'Receipt Title (e.g. BILL INVOICE)', icon: Icons.title_rounded),
+            const SizedBox(height: 10),
+            _textField(controller: _receiptPrefixCtrl, label: 'Invoice Prefix (e.g. INV)', icon: Icons.vpn_key_rounded),
+            const SizedBox(height: 10),
+            _textField(controller: _receiptPanCtrl, label: 'Business PAN/VAT', icon: Icons.badge_outlined, numOnly: true),
+            const SizedBox(height: 16),
+            const Text('Visibility Toggles', style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold)),
+            SwitchListTile.adaptive(
+              title: const Text('Show Business Address', style: TextStyle(fontSize: 13)),
+              value: _showReceiptAddress,
+              onChanged: (v) => setState(() => _showReceiptAddress = v),
+              contentPadding: EdgeInsets.zero,
+            ),
+            SwitchListTile.adaptive(
+              title: const Text('Show Business Phone', style: TextStyle(fontSize: 13)),
+              value: _showReceiptPhone,
+              onChanged: (v) => setState(() => _showReceiptPhone = v),
+              contentPadding: EdgeInsets.zero,
+            ),
+            SwitchListTile.adaptive(
+              title: const Text('Show Business PAN/VAT', style: TextStyle(fontSize: 13)),
+              value: _showReceiptPAN,
+              onChanged: (v) => setState(() => _showReceiptPAN = v),
+              contentPadding: EdgeInsets.zero,
+            ),
+            SwitchListTile.adaptive(
+              title: const Text('Show Tax Section', style: TextStyle(fontSize: 13)),
+              value: _showReceiptTax,
+              onChanged: (v) => setState(() => _showReceiptTax = v),
+              contentPadding: EdgeInsets.zero,
+            ),
+            SwitchListTile.adaptive(
+              title: const Text('Show Discount Row', style: TextStyle(fontSize: 13)),
+              value: _showReceiptDiscount,
+              onChanged: (v) => setState(() => _showReceiptDiscount = v),
+              contentPadding: EdgeInsets.zero,
+            ),
           ],
         );
     }
@@ -855,99 +1135,6 @@ class _ThermalLabelScreenState extends ConsumerState<ThermalLabelScreen> {
     _receiptTotalCtrl.text = tot.toStringAsFixed(0);
   }
 
-  // Preview Column
-  Widget _buildPreviewColumn(bool isDark, String plan) {
-    return Column(
-      children: [
-        const Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(Icons.visibility, size: 18, color: Colors.blueAccent),
-            SizedBox(width: 8),
-            Text('Live Preview', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
-          ],
-        ),
-        const SizedBox(height: 16),
-
-        // Live preview sticker card
-        Center(
-          child: Container(
-            constraints: const BoxConstraints(maxWidth: 320),
-            decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.circular(12),
-              border: Border.all(color: isDark ? AppTheme.darkBorder : AppTheme.lightBorder, width: 1.5),
-              boxShadow: AppTheme.cardShadow(Colors.black, opacity: 0.08),
-            ),
-            padding: const EdgeInsets.all(16),
-            child: _buildStickerPreviewLayout(),
-          ),
-        ).animate().fadeIn(delay: 80.ms),
-
-        const SizedBox(height: 24),
-
-        // Plan/Limits indicator
-        if (plan == 'gold')
-          FutureBuilder<LimitCheckResult>(
-            future: DailyLimitService.instance.checkLimit('gold', 'thermal_print'),
-            builder: (context, snapshot) {
-              if (!snapshot.hasData) return const SizedBox.shrink();
-              final check = snapshot.data!;
-              return Container(
-                padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
-                decoration: BoxDecoration(
-                  color: const Color(0xFFFEF3C7),
-                  borderRadius: BorderRadius.circular(10),
-                  border: Border.all(color: const Color(0xFFF59E0B).withValues(alpha: 0.4)),
-                ),
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    const Icon(Icons.print_rounded, size: 16, color: Color(0xFFD97706)),
-                    const SizedBox(width: 6),
-                    Text('${check.remaining} thermal prints remaining today',
-                        style: const TextStyle(color: Color(0xFFD97706), fontWeight: FontWeight.w600, fontSize: 13)),
-                  ],
-                ),
-              );
-            },
-          ),
-
-        const SizedBox(height: 16),
-
-        SizedBox(
-          width: double.infinity,
-          child: FilledButton.icon(
-            onPressed: _printing ? null : _triggerPrint,
-            style: FilledButton.styleFrom(
-              padding: const EdgeInsets.symmetric(vertical: 16),
-              backgroundColor: AppTheme.primaryColor,
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
-            ),
-            icon: _printing
-                ? const SizedBox(width: 18, height: 18, child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2))
-                : const Icon(Icons.print_rounded),
-            label: Text(_printing ? 'Launching Print Dialog…' : 'Print Label / Sticker',
-                style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w700)),
-          ),
-        ),
-
-        const SizedBox(height: 12),
-        Text(
-          plan == 'diamond'
-              ? '💎 Unlimited printing on Diamond subscription'
-              : plan == 'gold'
-                  ? '🥇 Gold plan limits: 10 daily prints'
-                  : '🔒 Upgrade to print on your thermal printer',
-          style: TextStyle(
-            fontSize: 12,
-            color: isDark ? AppTheme.darkTextSecondary : AppTheme.lightTextSecondary,
-          ),
-        ),
-      ],
-    ).animate().fadeIn().slideY(begin: 0.05, end: 0);
-  }
-
   Widget _buildStickerPreviewLayout() {
     switch (_activeType) {
       case LabelType.productLabel:
@@ -1036,11 +1223,20 @@ class _ThermalLabelScreenState extends ConsumerState<ThermalLabelScreen> {
         return Column(
           children: [
             Text(_shopNameCtrl.text, style: const TextStyle(color: Colors.black, fontWeight: FontWeight.w800, fontSize: 14), textAlign: TextAlign.center),
-            Text(_shipFromAddrCtrl.text, style: const TextStyle(color: Colors.black54, fontSize: 10), textAlign: TextAlign.center),
-            Text('Ph: ${_shipFromPhoneCtrl.text}', style: const TextStyle(color: Colors.black54, fontSize: 10), textAlign: TextAlign.center),
+            if (_showReceiptAddress && _shipFromAddrCtrl.text.isNotEmpty)
+              Text(_shipFromAddrCtrl.text, style: const TextStyle(color: Colors.black54, fontSize: 10), textAlign: TextAlign.center),
+            if (_showReceiptPhone && _shipFromPhoneCtrl.text.isNotEmpty)
+              Text('Tel: ${_shipFromPhoneCtrl.text}', style: const TextStyle(color: Colors.black54, fontSize: 10), textAlign: TextAlign.center),
+            if (_showReceiptPAN && _receiptPanCtrl.text.isNotEmpty)
+              Text('PAN: ${_receiptPanCtrl.text}', style: const TextStyle(color: Colors.black54, fontSize: 10), textAlign: TextAlign.center),
+            const Divider(color: Colors.black38),
+            Text(
+              '${_receiptTitleCtrl.text.isEmpty ? "TAX INVOICE" : _receiptTitleCtrl.text.toUpperCase()} : ${_receiptPrefixCtrl.text.isEmpty ? "INV" : _receiptPrefixCtrl.text.toUpperCase()}-0001',
+              style: const TextStyle(color: Colors.black, fontWeight: FontWeight.bold, fontSize: 10),
+              textAlign: TextAlign.center,
+            ),
             const Divider(color: Colors.black38),
             const SizedBox(height: 4),
-            // Items Preview
             ..._receiptItems.map((it) => Padding(
                   padding: const EdgeInsets.symmetric(vertical: 2),
                   child: Row(
@@ -1059,20 +1255,22 @@ class _ThermalLabelScreenState extends ConsumerState<ThermalLabelScreen> {
                 Text('Rs.${_receiptSubtotalCtrl.text}', style: const TextStyle(color: Colors.black54, fontSize: 10)),
               ],
             ),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                const Text('Discount', style: TextStyle(color: Colors.black54, fontSize: 10)),
-                Text('-Rs.${_receiptDiscountCtrl.text}', style: const TextStyle(color: Colors.black54, fontSize: 10)),
-              ],
-            ),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                const Text('Tax (13%)', style: TextStyle(color: Colors.black54, fontSize: 10)),
-                Text('Rs.${_receiptTaxCtrl.text}', style: const TextStyle(color: Colors.black54, fontSize: 10)),
-              ],
-            ),
+            if (_showReceiptDiscount)
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  const Text('Discount', style: TextStyle(color: Colors.black54, fontSize: 10)),
+                  Text('-Rs.${_receiptDiscountCtrl.text}', style: const TextStyle(color: Colors.black54, fontSize: 10)),
+                ],
+              ),
+            if (_showReceiptTax)
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  const Text('Tax (13%)', style: TextStyle(color: Colors.black54, fontSize: 10)),
+                  Text('Rs.${_receiptTaxCtrl.text}', style: const TextStyle(color: Colors.black54, fontSize: 10)),
+                ],
+              ),
             const Divider(color: Colors.black, thickness: 1.5),
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -1082,7 +1280,8 @@ class _ThermalLabelScreenState extends ConsumerState<ThermalLabelScreen> {
               ],
             ),
             const SizedBox(height: 8),
-            Text(_receiptFooterCtrl.text, style: TextStyle(color: Colors.black.withValues(alpha: 0.48), fontSize: 8), textAlign: TextAlign.center),
+            if (_receiptFooterCtrl.text.isNotEmpty)
+              Text(_receiptFooterCtrl.text, style: TextStyle(color: Colors.black.withValues(alpha: 0.48), fontSize: 8), textAlign: TextAlign.center),
             const Text('--- Thank you for shopping ---', style: TextStyle(color: Colors.black54, fontSize: 9)),
           ],
         );
@@ -1253,6 +1452,51 @@ class _InventorySearchSheetState extends State<_InventorySearchSheet> {
                     },
                   ),
           ),
+        ],
+      ),
+    );
+  }
+}
+
+class _CardSection extends StatelessWidget {
+  final String title;
+  final IconData icon;
+  final Widget child;
+
+  const _CardSection({
+    required this.title,
+    required this.icon,
+    required this.child,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    return Container(
+      padding: const EdgeInsets.all(18),
+      decoration: BoxDecoration(
+        color: Theme.of(context).cardTheme.color,
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(
+          color: isDark ? AppTheme.darkBorder : AppTheme.lightBorder,
+          width: 1.5,
+        ),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Icon(icon, color: const Color(0xFF10B981), size: 20),
+              const SizedBox(width: 10),
+              Text(
+                title,
+                style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 15),
+              ),
+            ],
+          ),
+          const Divider(height: 24),
+          child,
         ],
       ),
     );
