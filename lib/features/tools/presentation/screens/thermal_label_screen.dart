@@ -63,6 +63,7 @@ class _ThermalLabelScreenState extends ConsumerState<ThermalLabelScreen> {
     {'name': 'Brown Bread Large', 'qty': '1', 'price': '150'},
     {'name': 'Clarified Butter 1L', 'qty': '1', 'price': '750'},
   ];
+  final List<Map<String, TextEditingController>> _receiptItemCtrls = [];
 
   // Receipt customization controls (shifted from Thermal Receipt settings)
   late TextEditingController _receiptTitleCtrl;
@@ -90,7 +91,52 @@ class _ThermalLabelScreenState extends ConsumerState<ThermalLabelScreen> {
     _showReceiptPAN = invoiceSettings.showPAN;
     _showReceiptPhone = invoiceSettings.showPhone;
 
-    _loadSavedSettings();
+    for (var item in _receiptItems) {
+      _receiptItemCtrls.add({
+        'name': TextEditingController(text: item['name']),
+        'qty': TextEditingController(text: item['qty']),
+        'price': TextEditingController(text: item['price']),
+      });
+    }
+
+    _loadSavedSettings().then((_) {
+      if (_activeType == LabelType.receipt) {
+        _fetchBusinessProfile();
+      }
+    });
+  }
+
+  Future<void> _fetchBusinessProfile() async {
+    try {
+      final supabase = Supabase.instance.client;
+      final userId = supabase.auth.currentUser?.id;
+      if (userId == null) return;
+
+      final memberRow = await supabase
+          .from('business_members')
+          .select('business_id')
+          .eq('user_id', userId)
+          .limit(1)
+          .maybeSingle();
+
+      final businessId = memberRow?['business_id'] as String?;
+      if (businessId != null) {
+        final biz = await supabase
+            .from('businesses')
+            .select('name, phone, address')
+            .eq('id', businessId)
+            .maybeSingle();
+        if (biz != null) {
+          setState(() {
+            _shopNameCtrl.text = biz['name'] as String? ?? '';
+            _shipFromAddrCtrl.text = biz['address'] as String? ?? '';
+            _shipFromPhoneCtrl.text = biz['phone'] as String? ?? '';
+          });
+        }
+      }
+    } catch (e) {
+      debugPrint('Error fetching business profile: $e');
+    }
   }
 
   Future<void> _loadSavedSettings() async {
