@@ -201,6 +201,7 @@ class LabelPdfBuilder {
     required String pan,
     required String title,
     required String prefix,
+    required String receiptNumber,
     required bool showAddress,
     required bool showPhone,
     required bool showPAN,
@@ -231,7 +232,7 @@ class LabelPdfBuilder {
         if (showPAN && pan.isNotEmpty) pw.Text('PAN: $pan', style: const pw.TextStyle(fontSize: 8), textAlign: pw.TextAlign.center),
         pw.SizedBox(height: 4),
         pw.Divider(thickness: 0.5),
-        pw.Text('${title.isEmpty ? "TAX INVOICE" : title.toUpperCase()} : ${prefix.isEmpty ? "INV" : prefix.toUpperCase()}-0001', style: pw.TextStyle(fontWeight: pw.FontWeight.bold, fontSize: 8)),
+        pw.Text('${title.isEmpty ? "TAX INVOICE" : title.toUpperCase()} : ${receiptNumber.isEmpty ? "${prefix.isEmpty ? "INV" : prefix.toUpperCase()}-0001" : receiptNumber}', style: pw.TextStyle(fontWeight: pw.FontWeight.bold, fontSize: 8)),
         pw.Text(dateStr, style: const pw.TextStyle(fontSize: 8)),
         pw.Divider(thickness: 0.5),
         pw.SizedBox(height: 2),
@@ -323,4 +324,204 @@ class LabelPdfBuilder {
       pw.Text(value, style: const pw.TextStyle(fontSize: 8)),
     ],
   );
+
+  static Future<Uint8List> salesStatement({
+    required String shopName,
+    required String address,
+    required String phone,
+    required String pan,
+    required String periodStr,
+    required List<Map<String, dynamic>> receipts,
+  }) async {
+    final doc = pw.Document();
+    
+    // Calculate stats
+    int totalCount = receipts.length;
+    double cashTotal = 0;
+    double bankTotal = 0;
+    double esewaTotal = 0;
+    double grandTotal = 0;
+
+    for (var r in receipts) {
+      final t = (r['total'] as num?)?.toDouble() ?? 0.0;
+      grandTotal += t;
+      final pm = (r['payment_method'] as String? ?? 'Cash').toLowerCase();
+      if (pm.contains('cash')) {
+        cashTotal += t;
+      } else if (pm.contains('bank') || pm.contains('qr')) {
+        bankTotal += t;
+      } else if (pm.contains('esewa')) {
+        esewaTotal += t;
+      }
+    }
+
+    doc.addPage(
+      pw.MultiPage(
+        pageFormat: PdfPageFormat.a4,
+        margin: const pw.EdgeInsets.all(36),
+        build: (ctx) => [
+          // Header
+          pw.Header(
+            level: 0,
+            child: pw.Column(
+              crossAxisAlignment: pw.CrossAxisAlignment.start,
+              children: [
+                pw.Row(
+                  mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
+                  children: [
+                    pw.Text(shopName.isEmpty ? 'SMART SAOJI' : shopName.toUpperCase(), 
+                      style: pw.TextStyle(fontSize: 18, fontWeight: pw.FontWeight.bold, color: PdfColors.teal)),
+                    pw.Text('SALES STATEMENT', style: pw.TextStyle(fontSize: 14, fontWeight: pw.FontWeight.bold, color: PdfColors.grey700)),
+                  ],
+                ),
+                pw.SizedBox(height: 4),
+                if (address.isNotEmpty) pw.Text(address, style: const pw.TextStyle(fontSize: 8)),
+                pw.Row(
+                  mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
+                  children: [
+                    pw.Text('Tel: ${phone.isEmpty ? 'N/A' : phone} | PAN: ${pan.isEmpty ? 'N/A' : pan}', style: const pw.TextStyle(fontSize: 8)),
+                    pw.Text('Period: $periodStr', style: pw.TextStyle(fontSize: 9, fontWeight: pw.FontWeight.bold)),
+                  ],
+                ),
+                pw.Divider(thickness: 1.5, color: PdfColors.teal),
+                pw.SizedBox(height: 10),
+              ],
+            ),
+          ),
+
+          // Stats Cards
+          pw.Row(
+            mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
+            children: [
+              _statementStatCard('Total Prints', '$totalCount', PdfColors.blueGrey),
+              _statementStatCard('Cash Total', 'Rs. ${cashTotal.toStringAsFixed(2)}', PdfColors.green),
+              _statementStatCard('Bank QR Total', 'Rs. ${bankTotal.toStringAsFixed(2)}', PdfColors.orange),
+              _statementStatCard('Esewa Total', 'Rs. ${esewaTotal.toStringAsFixed(2)}', PdfColors.purple),
+            ],
+          ),
+          pw.SizedBox(height: 15),
+          pw.Align(
+            alignment: pw.Alignment.centerRight,
+            child: pw.Container(
+              padding: const pw.EdgeInsets.all(8),
+              decoration: const pw.BoxDecoration(
+                color: PdfColors.teal50,
+                borderRadius: pw.BorderRadius.all(pw.Radius.circular(6)),
+              ),
+              child: pw.Text('GRAND TOTAL SALES: Rs. ${grandTotal.toStringAsFixed(2)}', 
+                style: pw.TextStyle(fontSize: 11, fontWeight: pw.FontWeight.bold, color: PdfColors.teal900)),
+            ),
+          ),
+          pw.SizedBox(height: 15),
+
+          // Receipts Table
+          pw.Text('Transaction Details', style: pw.TextStyle(fontSize: 11, fontWeight: pw.FontWeight.bold)),
+          pw.SizedBox(height: 8),
+          pw.Table(
+            columnWidths: const {
+              0: pw.FlexColumnWidth(2.5), // Date
+              1: pw.FlexColumnWidth(3.0), // Receipt No
+              2: pw.FlexColumnWidth(2.2), // Payment Method
+              3: pw.FlexColumnWidth(4.3), // Items Sold
+              4: pw.FlexColumnWidth(2.5), // Total Amount
+            },
+            children: [
+              // Header
+              pw.TableRow(
+                decoration: const pw.BoxDecoration(color: PdfColors.teal),
+                children: [
+                  _tableHeaderCell('Date'),
+                  _tableHeaderCell('Receipt Number'),
+                  _tableHeaderCell('Paid Via'),
+                  _tableHeaderCell('Items Sold'),
+                  _tableHeaderCell('Total (Rs.)', alignRight: true),
+                ],
+              ),
+              // Rows
+              ...receipts.map((r) {
+                final dateStr = r['created_at'] != null 
+                  ? DateTime.parse(r['created_at'] as String).toLocal().toString().substring(0, 16)
+                  : 'N/A';
+                final receiptNo = r['receipt_number'] as String? ?? 'N/A';
+                final pm = r['payment_method'] as String? ?? 'Cash';
+                final tot = ((r['total'] as num?)?.toDouble() ?? 0.0).toStringAsFixed(2);
+                
+                // Get list of items preview
+                String itemsPreview = '';
+                try {
+                  final list = r['items'] as List<dynamic>? ?? [];
+                  itemsPreview = list.map((i) => "${i['name']} (${i['qty']})").join(', ');
+                  if (itemsPreview.length > 30) {
+                    itemsPreview = '${itemsPreview.substring(0, 28)}...';
+                  }
+                } catch (_) {
+                  itemsPreview = 'Items';
+                }
+
+                return pw.TableRow(
+                  decoration: const pw.BoxDecoration(
+                    border: pw.Border(bottom: pw.BorderSide(color: PdfColors.grey300, width: 0.5)),
+                  ),
+                  children: [
+                    _tableCell(dateStr),
+                    _tableCell(receiptNo),
+                    _tableCell(pm),
+                    _tableCell(itemsPreview),
+                    _tableCell(tot, alignRight: true),
+                  ],
+                );
+              }),
+            ],
+          ),
+        ],
+        footer: (ctx) => pw.Container(
+          alignment: pw.Alignment.centerRight,
+          margin: const pw.EdgeInsets.only(top: 20),
+          child: pw.Text('Page ${ctx.pageNumber} of ${ctx.pagesCount}', style: const pw.TextStyle(fontSize: 8, color: PdfColors.grey500)),
+        ),
+      ),
+    );
+    return doc.save();
+  }
+
+  static pw.Widget _statementStatCard(String title, String value, PdfColor color) {
+    return pw.Container(
+      width: 115,
+      padding: const pw.EdgeInsets.all(8),
+      decoration: pw.BoxDecoration(
+        border: pw.Border.all(color: color, width: 1),
+        borderRadius: const pw.BorderRadius.all(pw.Radius.circular(6)),
+      ),
+      child: pw.Column(
+        crossAxisAlignment: pw.CrossAxisAlignment.start,
+        children: [
+          pw.Text(title, style: const pw.TextStyle(fontSize: 8, color: PdfColors.grey600)),
+          pw.SizedBox(height: 4),
+          pw.Text(value, style: pw.TextStyle(fontSize: 10, fontWeight: pw.FontWeight.bold, color: color)),
+        ],
+      ),
+    );
+  }
+
+  static pw.Widget _tableHeaderCell(String text, {bool alignRight = false}) {
+    return pw.Padding(
+      padding: const pw.EdgeInsets.all(5),
+      child: pw.Text(
+        text,
+        style: pw.TextStyle(fontWeight: pw.FontWeight.bold, color: PdfColors.white, fontSize: 8),
+        textAlign: alignRight ? pw.TextAlign.right : pw.TextAlign.left,
+      ),
+    );
+  }
+
+  static pw.Widget _tableCell(String text, {bool alignRight = false}) {
+    return pw.Padding(
+      padding: const pw.EdgeInsets.all(5),
+      child: pw.Text(
+        text,
+        style: const pw.TextStyle(fontSize: 8),
+        textAlign: alignRight ? pw.TextAlign.right : pw.TextAlign.left,
+      ),
+    );
+  }
 }

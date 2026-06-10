@@ -9,7 +9,9 @@ import 'package:smart_saoji/core/widgets/app_button.dart';
 import 'package:smart_saoji/core/widgets/app_snackbar.dart';
 import 'package:smart_saoji/core/widgets/app_text_field.dart';
 import 'package:smart_saoji/core/widgets/plan_limit_dialog.dart';
+import 'package:smart_saoji/features/parties/data/models/party_model.dart';
 import 'package:smart_saoji/features/parties/presentation/screens/parties_screen.dart';
+import 'package:smart_saoji/features/parties/presentation/screens/party_detail_screen.dart';
 import 'package:smart_saoji/features/subscription/data/services/subscription_manager.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
@@ -17,7 +19,9 @@ import 'package:uuid/uuid.dart';
 
 
 class AddPartyScreen extends ConsumerStatefulWidget {
-  const AddPartyScreen({super.key});
+  /// If non-null the screen runs in edit mode and pre-fills all fields.
+  final Party? existingParty;
+  const AddPartyScreen({super.key, this.existingParty});
 
   @override
   ConsumerState<AddPartyScreen> createState() => _AddPartyScreenState();
@@ -32,6 +36,21 @@ class _AddPartyScreenState extends ConsumerState<AddPartyScreen> {
   final _notesCtrl = TextEditingController();
   String _type = AppConstants.partyCustomer;
   bool _isLoading = false;
+
+  @override
+  void initState() {
+    super.initState();
+    final p = widget.existingParty;
+    if (p != null) {
+      _nameCtrl.text = p.name;
+      _phoneCtrl.text = p.phone ?? '';
+      _emailCtrl.text = p.email ?? '';
+      _addressCtrl.text = p.address ?? '';
+      _openingBalCtrl.text = p.openingBalance.toStringAsFixed(0);
+      _notesCtrl.text = p.notes ?? '';
+      _type = p.type;
+    }
+  }
 
   @override
   void dispose() {
@@ -50,57 +69,153 @@ class _AddPartyScreenState extends ConsumerState<AddPartyScreen> {
       return;
     }
     setState(() => _isLoading = true);
+    final navigator = Navigator.of(context);
+    final messenger = ScaffoldMessenger.of(context);
     try {
-      final prefs = await SharedPreferences.getInstance();
-      final businessId =
-          prefs.getString(AppConstants.kSelectedBusinessId) ?? '';
+      final isEdit = widget.existingParty != null;
 
-      // ── Subscription limit check ──────────────────────────
-      final planCode = ref.read(subscriptionManagerProvider).planCode;
-      final limitResult = await DailyLimitService.instance
-          .checkLimit(planCode, 'parties');
-      if (!limitResult.allowed) {
+      if (isEdit) {
+        // ── UPDATE existing party via RPC ──────────────────
+        await Supabase.instance.client.rpc('update_party', params: {
+          'p_party_id': widget.existingParty!.id,
+          'p_name': _nameCtrl.text.trim(),
+          'p_phone': _phoneCtrl.text.trim().isEmpty
+              ? null
+              : _phoneCtrl.text.trim(),
+          'p_email': _emailCtrl.text.trim().isEmpty
+              ? null
+              : _emailCtrl.text.trim(),
+          'p_address': _addressCtrl.text.trim().isEmpty
+              ? null
+              : _addressCtrl.text.trim(),
+          'p_type': _type,
+          'p_notes': _notesCtrl.text.trim().isEmpty
+              ? null
+              : _notesCtrl.text.trim(),
+        });
+
         if (mounted) {
-          await PlanLimitDialog.showDailyLimitReached(
-            context,
-            planCode: planCode,
-            action: 'parties',
-            limit: limitResult.limit!,
-            used: limitResult.used,
-          );
+          ref.invalidate(partiesProvider);
+          ref.invalidate(partyDetailProvider(widget.existingParty!.id));
+          messenger
+            ..hideCurrentSnackBar()
+            ..showSnackBar(
+              SnackBar(
+                content: const Row(
+                  children: [
+                    Icon(Icons.check_circle_outline, color: Colors.white, size: 20),
+                    SizedBox(width: 10),
+                    Expanded(
+                      child: Text('Party updated!',
+                          style: TextStyle(color: Colors.white, fontSize: 14)),
+                    ),
+                  ],
+                ),
+                backgroundColor: AppTheme.successColor,
+                behavior: SnackBarBehavior.floating,
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                margin: const EdgeInsets.all(12),
+              ),
+            );
+          navigator.pop();
         }
-        return;
-      }
-      // ─────────────────────────────────────────────────────
+      } else {
+        // ── INSERT new party ───────────────────────────────
+        final prefs = await SharedPreferences.getInstance();
+        final businessId =
+            prefs.getString(AppConstants.kSelectedBusinessId) ?? '';
 
-      final opening = double.tryParse(_openingBalCtrl.text) ?? 0;
-      final now = DateTime.now().toIso8601String();
-      await Supabase.instance.client.from('parties').insert({
-        'id': const Uuid().v4(),
-        'business_id': businessId,
-        'name': _nameCtrl.text.trim(),
-        'phone': _phoneCtrl.text.trim().isEmpty ? null : _phoneCtrl.text.trim(),
-        'email': _emailCtrl.text.trim().isEmpty ? null : _emailCtrl.text.trim(),
-        'address':
-            _addressCtrl.text.trim().isEmpty ? null : _addressCtrl.text.trim(),
-        'type': _type,
-        'opening_balance': opening,
-        'current_balance': opening,
-        'notes': _notesCtrl.text.trim().isEmpty ? null : _notesCtrl.text.trim(),
-        'created_at': now,
-        'updated_at': now,
-      });
+        final planCode = ref.read(subscriptionManagerProvider).planCode;
+        final limitResult = await DailyLimitService.instance
+            .checkLimit(planCode, 'parties');
+        if (!limitResult.allowed) {
+          if (mounted) {
+            await PlanLimitDialog.showDailyLimitReached(
+              context,
+              planCode: planCode,
+              action: 'parties',
+              limit: limitResult.limit!,
+              used: limitResult.used,
+            );
+          }
+          return;
+        }
 
-      // Increment daily counter on success
-      await DailyLimitService.instance.increment(planCode, 'parties');
+        final opening = double.tryParse(_openingBalCtrl.text) ?? 0;
+        final now = DateTime.now().toIso8601String();
+        await Supabase.instance.client.from('parties').insert({
+          'id': const Uuid().v4(),
+          'business_id': businessId,
+          'name': _nameCtrl.text.trim(),
+          'phone': _phoneCtrl.text.trim().isEmpty
+              ? null
+              : _phoneCtrl.text.trim(),
+          'email': _emailCtrl.text.trim().isEmpty
+              ? null
+              : _emailCtrl.text.trim(),
+          'address': _addressCtrl.text.trim().isEmpty
+              ? null
+              : _addressCtrl.text.trim(),
+          'type': _type,
+          'opening_balance': opening,
+          'current_balance': opening,
+          'notes': _notesCtrl.text.trim().isEmpty
+              ? null
+              : _notesCtrl.text.trim(),
+          'created_at': now,
+          'updated_at': now,
+        });
 
-      if (mounted) {
-        ref.invalidate(partiesProvider);
-        AppSnackbar.show(context, 'Party added successfully!', isSuccess: true);
-        context.pop();
+        await DailyLimitService.instance.increment(planCode, 'parties');
+
+        if (mounted) {
+          ref.invalidate(partiesProvider);
+          messenger
+            ..hideCurrentSnackBar()
+            ..showSnackBar(
+              SnackBar(
+                content: const Row(
+                  children: [
+                    Icon(Icons.check_circle_outline, color: Colors.white, size: 20),
+                    SizedBox(width: 10),
+                    Expanded(
+                      child: Text('Party added successfully!',
+                          style: TextStyle(color: Colors.white, fontSize: 14)),
+                    ),
+                  ],
+                ),
+                backgroundColor: AppTheme.successColor,
+                behavior: SnackBarBehavior.floating,
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                margin: const EdgeInsets.all(12),
+              ),
+            );
+          navigator.pop();
+        }
       }
     } catch (e) {
-      if (mounted) AppSnackbar.show(context, e.toString(), isError: true);
+      if (mounted) {
+        messenger
+          ..hideCurrentSnackBar()
+          ..showSnackBar(
+            SnackBar(
+              content: Row(
+                children: [
+                  const Icon(Icons.error_outline, color: Colors.white, size: 20),
+                  const SizedBox(width: 10),
+                  Expanded(
+                    child: Text(e.toString(),
+                        style: const TextStyle(color: Colors.white, fontSize: 14)),
+                  ),
+                ],
+              ),
+              backgroundColor: AppTheme.errorColor,
+              behavior: SnackBarBehavior.floating,
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+              margin: const EdgeInsets.all(12),
+            ),
+          );
+      }
     } finally {
       if (mounted) setState(() => _isLoading = false);
     }
@@ -110,8 +225,9 @@ class _AddPartyScreenState extends ConsumerState<AddPartyScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final isEdit = widget.existingParty != null;
     return Scaffold(
-      appBar: AppBar(title: const Text('Add Party')),
+      appBar: AppBar(title: Text(isEdit ? 'Edit Party' : 'Add Party')),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(16),
         child: Column(
@@ -190,10 +306,10 @@ class _AddPartyScreenState extends ConsumerState<AddPartyScreen> {
                 maxLines: 3),
             const SizedBox(height: 32),
             AppButton(
-                label: 'Add Party',
+                label: isEdit ? 'Save Changes' : 'Add Party',
                 onPressed: _save,
                 isLoading: _isLoading,
-                icon: Icons.person_add_rounded),
+                icon: isEdit ? Icons.save_rounded : Icons.person_add_rounded),
             const SizedBox(height: 16),
           ],
         ),

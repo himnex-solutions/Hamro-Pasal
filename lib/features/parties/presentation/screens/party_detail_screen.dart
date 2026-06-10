@@ -2,10 +2,17 @@ import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
+import 'package:pdf/pdf.dart';
+import 'package:pdf/widgets.dart' as pw;
+import 'package:printing/printing.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'package:uuid/uuid.dart';
 import 'package:url_launcher/url_launcher.dart';
 import 'package:smart_saoji/core/constants/app_constants.dart';
 import 'package:smart_saoji/core/theme/app_theme.dart';
+import 'package:smart_saoji/core/widgets/app_snackbar.dart';
 import 'package:smart_saoji/features/parties/data/models/party_model.dart';
+import 'package:smart_saoji/features/parties/presentation/screens/add_party_screen.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 final partyDetailProvider =
@@ -89,9 +96,17 @@ class PartyDetailScreen extends ConsumerWidget {
                     tooltip: 'Send WhatsApp reminder',
                   ),
                 IconButton(
-                  onPressed: () {},
+                  onPressed: () async {
+                    await Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (_) => AddPartyScreen(existingParty: party),
+                      ),
+                    );
+                    ref.invalidate(partyDetailProvider(partyId));
+                  },
                   icon: const Icon(Icons.edit_outlined, color: Colors.white),
-                  tooltip: 'Edit',
+                  tooltip: 'Edit Party',
                 ),
               ],
             ),
@@ -101,14 +116,12 @@ class PartyDetailScreen extends ConsumerWidget {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    // Balance card
                     _BalanceCard(party: party)
                         .animate()
                         .fadeIn()
                         .slideY(begin: 0.1, end: 0),
                     const SizedBox(height: 16),
 
-                    // Info cards
                     if (party.address != null || party.email != null)
                       Card(
                         child: Padding(
@@ -128,12 +141,20 @@ class PartyDetailScreen extends ConsumerWidget {
 
                     const SizedBox(height: 20),
 
-                    // Action buttons
                     Row(
                       children: [
                         Expanded(
                           child: OutlinedButton.icon(
-                            onPressed: () {},
+                            onPressed: () => showModalBottomSheet(
+                              context: context,
+                              isScrollControlled: true,
+                              shape: const RoundedRectangleBorder(
+                                borderRadius: BorderRadius.vertical(
+                                    top: Radius.circular(20)),
+                              ),
+                              builder: (_) =>
+                                  _AddEntrySheet(partyId: partyId, ref: ref),
+                            ),
                             icon: const Icon(Icons.add),
                             label: const Text('Add Entry'),
                           ),
@@ -141,7 +162,10 @@ class PartyDetailScreen extends ConsumerWidget {
                         const SizedBox(width: 12),
                         Expanded(
                           child: OutlinedButton.icon(
-                            onPressed: () {},
+                            onPressed: ledgerAsync.hasValue
+                                ? () => _exportPdf(
+                                    context, party, ledgerAsync.value!)
+                                : null,
                             icon: const Icon(Icons.picture_as_pdf_outlined),
                             label: const Text('Export PDF'),
                           ),
@@ -150,7 +174,6 @@ class PartyDetailScreen extends ConsumerWidget {
                     ).animate(delay: 100.ms).fadeIn(),
 
                     const SizedBox(height: 24),
-
                     Text('Ledger History',
                             style: Theme.of(context).textTheme.titleLarge)
                         .animate(delay: 150.ms)
@@ -181,6 +204,10 @@ class PartyDetailScreen extends ConsumerWidget {
                               Text('No ledger entries yet',
                                   style:
                                       Theme.of(context).textTheme.titleMedium),
+                              const SizedBox(height: 8),
+                              Text('Tap "Add Entry" above to record a transaction.',
+                                  style: Theme.of(context).textTheme.bodySmall,
+                                  textAlign: TextAlign.center),
                             ],
                           ),
                         ),
@@ -200,8 +227,9 @@ class PartyDetailScreen extends ConsumerWidget {
                               height: 40,
                               decoration: BoxDecoration(
                                 color: isDebit
-                                    ? AppTheme.errorColor.withValues(alpha: 0.1)
-                                    : AppTheme.successColor
+                                    ? AppTheme.successColor
+                                        .withValues(alpha: 0.1)
+                                    : AppTheme.errorColor
                                         .withValues(alpha: 0.1),
                                 borderRadius: BorderRadius.circular(10),
                               ),
@@ -210,8 +238,8 @@ class PartyDetailScreen extends ConsumerWidget {
                                     ? Icons.arrow_upward
                                     : Icons.arrow_downward,
                                 color: isDebit
-                                    ? AppTheme.errorColor
-                                    : AppTheme.successColor,
+                                    ? AppTheme.successColor
+                                    : AppTheme.errorColor,
                                 size: 20,
                               ),
                             ),
@@ -240,6 +268,95 @@ class PartyDetailScreen extends ConsumerWidget {
     );
   }
 
+  Future<void> _exportPdf(BuildContext context, Party party,
+      List<Map<String, dynamic>> entries) async {
+    try {
+      final pdf = pw.Document();
+      final fmt = NumberFormat('#,##,##0.00');
+      final now = DateFormat('dd MMM yyyy').format(DateTime.now());
+
+      pdf.addPage(
+        pw.MultiPage(
+          pageFormat: PdfPageFormat.a4,
+          margin: const pw.EdgeInsets.all(32),
+          build: (ctx) => [
+            pw.Text(party.name,
+                style: pw.TextStyle(
+                    fontSize: 22, fontWeight: pw.FontWeight.bold)),
+            pw.SizedBox(height: 4),
+            pw.Text(
+                '${party.type.toUpperCase()}${party.phone != null ? ' | ${party.phone}' : ''}${party.email != null ? ' | ${party.email}' : ''}'),
+            pw.SizedBox(height: 4),
+            pw.Text('Statement generated: $now'),
+            pw.Divider(),
+            pw.SizedBox(height: 8),
+            pw.Table(
+              border: pw.TableBorder.all(
+                  color: PdfColors.grey300, width: 0.5),
+              columnWidths: {
+                0: const pw.FlexColumnWidth(1.5),
+                1: const pw.FlexColumnWidth(3),
+                2: const pw.FlexColumnWidth(1),
+                3: const pw.FlexColumnWidth(2),
+              },
+              children: [
+                pw.TableRow(
+                  decoration:
+                      const pw.BoxDecoration(color: PdfColors.grey200),
+                  children: [
+                    _pdfCell('Date', bold: true),
+                    _pdfCell('Description', bold: true),
+                    _pdfCell('Type', bold: true),
+                    _pdfCell('Amount', bold: true),
+                  ],
+                ),
+                ...entries.map((e) {
+                  final date =
+                      DateTime.parse(e['entry_date'] as String);
+                  final amount = (e['amount'] as num).toDouble();
+                  final isDebit = e['entry_type'] == 'debit';
+                  return pw.TableRow(children: [
+                    _pdfCell(DateFormat('dd MMM yyyy').format(date)),
+                    _pdfCell(e['description'] as String? ??
+                        (isDebit ? 'Debit' : 'Credit')),
+                    _pdfCell(isDebit ? 'Dr' : 'Cr'),
+                    _pdfCell('Rs. ${fmt.format(amount)}'),
+                  ]);
+                }),
+              ],
+            ),
+            pw.SizedBox(height: 16),
+            pw.Divider(),
+            pw.Align(
+              alignment: pw.Alignment.centerRight,
+              child: pw.Text(
+                'Current Balance: Rs. ${fmt.format(party.currentBalance.abs())} '
+                '(${party.currentBalance >= 0 ? 'To Receive' : 'To Pay'})',
+                style: pw.TextStyle(
+                    fontWeight: pw.FontWeight.bold, fontSize: 13),
+              ),
+            ),
+          ],
+        ),
+      );
+
+      await Printing.layoutPdf(onLayout: (_) async => pdf.save());
+    } catch (e) {
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text('Export failed: $e'),
+                backgroundColor: Colors.red));
+      }
+    }
+  }
+
+  pw.Widget _pdfCell(String text, {bool bold = false}) => pw.Padding(
+        padding: const pw.EdgeInsets.all(6),
+        child: pw.Text(text,
+            style: pw.TextStyle(
+                fontWeight: bold ? pw.FontWeight.bold : null, fontSize: 10)),
+      );
+
   void _sendWhatsApp(String phone, double balance) async {
     final cleanPhone = phone.replaceAll(RegExp(r'[^0-9]'), '');
     final npPhone = cleanPhone.startsWith('0')
@@ -254,6 +371,308 @@ class PartyDetailScreen extends ConsumerWidget {
   }
 }
 
+// ── Add Entry Bottom Sheet ─────────────────────────────────────────
+class _AddEntrySheet extends StatefulWidget {
+  final String partyId;
+  final WidgetRef ref;
+  const _AddEntrySheet({required this.partyId, required this.ref});
+
+  @override
+  State<_AddEntrySheet> createState() => _AddEntrySheetState();
+}
+
+class _AddEntrySheetState extends State<_AddEntrySheet> {
+  final _amountCtrl = TextEditingController();
+  final _descCtrl = TextEditingController();
+  String _entryType = 'debit';
+  DateTime _selectedDate = DateTime.now();
+  bool _isLoading = false;
+
+  @override
+  void dispose() {
+    _amountCtrl.dispose();
+    _descCtrl.dispose();
+    super.dispose();
+  }
+
+  Future<void> _save() async {
+    final amount = double.tryParse(_amountCtrl.text.trim()) ?? 0;
+    if (amount <= 0) {
+      AppSnackbar.show(context, 'Please enter a valid amount', isError: true);
+      return;
+    }
+    setState(() => _isLoading = true);
+    final navigator = Navigator.of(context);
+    final messenger = ScaffoldMessenger.of(context);
+    try {
+      final supabase = Supabase.instance.client;
+      final prefs = await SharedPreferences.getInstance();
+      final businessId = prefs.getString(AppConstants.kSelectedBusinessId);
+      if (businessId == null) {
+        throw 'No active business selected';
+      }
+
+      // Fetch party current_balance
+      final partyRow = await supabase
+          .from('parties')
+          .select('current_balance')
+          .eq('id', widget.partyId)
+          .single();
+      final currentBal = (partyRow['current_balance'] as num).toDouble();
+      final delta = _entryType == 'debit' ? amount : -amount;
+      final balanceAfter = currentBal + delta;
+
+      // Insert ledger entry
+      await supabase.from('ledger_entries').insert({
+        'id': const Uuid().v4(),
+        'business_id': businessId,
+        'party_id': widget.partyId,
+        'amount': amount,
+        'entry_type': _entryType,
+        'balance_after': balanceAfter,
+        'description': _descCtrl.text.trim().isEmpty
+            ? null
+            : _descCtrl.text.trim(),
+        'entry_date': _selectedDate.toIso8601String(),
+      });
+
+      // Update party current_balance
+      await supabase.from('parties').update({
+        'current_balance': balanceAfter,
+        'updated_at': DateTime.now().toIso8601String(),
+      }).eq('id', widget.partyId);
+
+      // Refresh providers
+      widget.ref.invalidate(partyLedgerProvider(widget.partyId));
+      widget.ref.invalidate(partyDetailProvider(widget.partyId));
+
+      if (mounted) {
+        messenger
+          ..hideCurrentSnackBar()
+          ..showSnackBar(
+            SnackBar(
+              content: const Row(
+                children: [
+                  Icon(Icons.check_circle_outline, color: Colors.white, size: 20),
+                  SizedBox(width: 10),
+                  Expanded(
+                    child: Text('Entry added!',
+                        style: TextStyle(color: Colors.white, fontSize: 14)),
+                  ),
+                ],
+              ),
+              backgroundColor: AppTheme.successColor,
+              behavior: SnackBarBehavior.floating,
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+              margin: const EdgeInsets.all(12),
+            ),
+          );
+        navigator.pop();
+      }
+    } catch (e) {
+      if (mounted) {
+        messenger
+          ..hideCurrentSnackBar()
+          ..showSnackBar(
+            SnackBar(
+              content: Row(
+                children: [
+                  const Icon(Icons.error_outline, color: Colors.white, size: 20),
+                  const SizedBox(width: 10),
+                  Expanded(
+                    child: Text(e.toString(),
+                        style: const TextStyle(color: Colors.white, fontSize: 14)),
+                  ),
+                ],
+              ),
+              backgroundColor: AppTheme.errorColor,
+              behavior: SnackBarBehavior.floating,
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+              margin: const EdgeInsets.all(12),
+            ),
+          );
+      }
+    } finally {
+      if (mounted) setState(() => _isLoading = false);
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: EdgeInsets.only(
+        left: 20,
+        right: 20,
+        top: 20,
+        bottom: MediaQuery.of(context).viewInsets.bottom + 24,
+      ),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text('Add Ledger Entry',
+                  style: Theme.of(context).textTheme.titleLarge),
+              IconButton(
+                  onPressed: () => Navigator.pop(context),
+                  icon: const Icon(Icons.close)),
+            ],
+          ),
+          const SizedBox(height: 12),
+
+          // Entry type
+          Row(
+            children: [
+              Expanded(
+                child: _EntryTypeBtn(
+                  label: 'They Owe You (Dr)',
+                  isSelected: _entryType == 'debit',
+                  color: AppTheme.successColor,
+                  onTap: () => setState(() => _entryType = 'debit'),
+                ),
+              ),
+              const SizedBox(width: 10),
+              Expanded(
+                child: _EntryTypeBtn(
+                  label: 'You Owe Them (Cr)',
+                  isSelected: _entryType == 'credit',
+                  color: AppTheme.errorColor,
+                  onTap: () => setState(() => _entryType = 'credit'),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 14),
+
+          TextField(
+            controller: _amountCtrl,
+            autofocus: true,
+            keyboardType:
+                const TextInputType.numberWithOptions(decimal: true),
+            decoration: const InputDecoration(
+              labelText: 'Amount (Rs.) *',
+              prefixIcon:
+                  Icon(Icons.account_balance_wallet_outlined),
+              border: OutlineInputBorder(),
+            ),
+          ),
+          const SizedBox(height: 12),
+
+          TextField(
+            controller: _descCtrl,
+            decoration: const InputDecoration(
+              labelText: 'Description (optional)',
+              prefixIcon: Icon(Icons.notes_outlined),
+              border: OutlineInputBorder(),
+            ),
+          ),
+          const SizedBox(height: 12),
+
+          // Date picker
+          InkWell(
+            onTap: () async {
+              final picked = await showDatePicker(
+                context: context,
+                initialDate: _selectedDate,
+                firstDate: DateTime(2020),
+                lastDate: DateTime.now(),
+              );
+              if (picked != null) {
+                setState(() => _selectedDate = picked);
+              }
+            },
+            borderRadius: BorderRadius.circular(8),
+            child: Container(
+              padding: const EdgeInsets.symmetric(
+                  horizontal: 14, vertical: 14),
+              decoration: BoxDecoration(
+                border: Border.all(color: Colors.grey.shade400),
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: Row(
+                children: [
+                  const Icon(Icons.calendar_today_outlined,
+                      size: 18, color: Colors.grey),
+                  const SizedBox(width: 10),
+                  Text(DateFormat('dd MMM yyyy')
+                      .format(_selectedDate)),
+                ],
+              ),
+            ),
+          ),
+          const SizedBox(height: 20),
+
+          SizedBox(
+            width: double.infinity,
+            child: ElevatedButton(
+              onPressed: _isLoading ? null : _save,
+              style: ElevatedButton.styleFrom(
+                backgroundColor: AppTheme.primaryColor,
+                foregroundColor: Colors.white,
+                padding:
+                    const EdgeInsets.symmetric(vertical: 14),
+                shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12)),
+              ),
+              child: _isLoading
+                  ? const SizedBox(
+                      height: 20,
+                      width: 20,
+                      child: CircularProgressIndicator(
+                          strokeWidth: 2,
+                          color: Colors.white))
+                  : const Text('Save Entry',
+                      style: TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.w600)),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _EntryTypeBtn extends StatelessWidget {
+  final String label;
+  final bool isSelected;
+  final Color color;
+  final VoidCallback onTap;
+  const _EntryTypeBtn(
+      {required this.label,
+      required this.isSelected,
+      required this.color,
+      required this.onTap});
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: onTap,
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 200),
+        padding: const EdgeInsets.symmetric(vertical: 10),
+        decoration: BoxDecoration(
+          color:
+              isSelected ? color.withValues(alpha: 0.15) : Colors.transparent,
+          borderRadius: BorderRadius.circular(10),
+          border: Border.all(
+              color: isSelected ? color : Colors.grey.shade300, width: 1.5),
+        ),
+        child: Center(
+          child: Text(label,
+              style: TextStyle(
+                  color: isSelected ? color : Colors.grey,
+                  fontWeight: isSelected ? FontWeight.w600 : FontWeight.normal,
+                  fontSize: 12)),
+        ),
+      ),
+    );
+  }
+}
+
+// ── Existing helper widgets ─────────────────────────────────────────
 class _BalanceCard extends StatelessWidget {
   final Party party;
   const _BalanceCard({required this.party});
@@ -279,7 +698,10 @@ class _BalanceCard extends StatelessWidget {
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
         gradient: LinearGradient(
-          colors: [color.withValues(alpha: 0.1), color.withValues(alpha: 0.05)],
+          colors: [
+            color.withValues(alpha: 0.1),
+            color.withValues(alpha: 0.05)
+          ],
         ),
         borderRadius: BorderRadius.circular(16),
         border: Border.all(color: color.withValues(alpha: 0.3)),
@@ -297,18 +719,22 @@ class _BalanceCard extends StatelessWidget {
                   style: Theme.of(context)
                       .textTheme
                       .headlineMedium
-                      ?.copyWith(color: color, fontWeight: FontWeight.w800)),
+                      ?.copyWith(
+                          color: color, fontWeight: FontWeight.w800)),
             ],
           ),
           Container(
-            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+            padding:
+                const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
             decoration: BoxDecoration(
               color: color.withValues(alpha: 0.15),
               borderRadius: BorderRadius.circular(10),
             ),
             child: Text(label,
                 style: TextStyle(
-                    color: color, fontWeight: FontWeight.w700, fontSize: 14)),
+                    color: color,
+                    fontWeight: FontWeight.w700,
+                    fontSize: 14)),
           ),
         ],
       ),
@@ -331,8 +757,8 @@ class _InfoRow extends StatelessWidget {
           const SizedBox(width: 10),
           Text('$label: ', style: Theme.of(context).textTheme.bodySmall),
           Expanded(
-              child:
-                  Text(value, style: Theme.of(context).textTheme.bodyMedium)),
+              child: Text(value,
+                  style: Theme.of(context).textTheme.bodyMedium)),
         ],
       ),
     );

@@ -18,6 +18,7 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:smart_saoji/features/inventory/presentation/screens/inventory_screen.dart';
 import 'package:smart_saoji/features/inventory/data/models/product_model.dart';
 import 'package:smart_saoji/features/invoices/data/services/invoice_settings_service.dart';
+import 'package:intl/intl.dart';
 
 class ThermalLabelScreen extends ConsumerStatefulWidget {
   const ThermalLabelScreen({super.key});
@@ -26,7 +27,7 @@ class ThermalLabelScreen extends ConsumerStatefulWidget {
   ConsumerState<ThermalLabelScreen> createState() => _ThermalLabelScreenState();
 }
 
-class _ThermalLabelScreenState extends ConsumerState<ThermalLabelScreen> {
+class _ThermalLabelScreenState extends ConsumerState<ThermalLabelScreen> with SingleTickerProviderStateMixin {
   LabelType _activeType = LabelType.productLabel;
   PrinterBrand _activeBrand = PrinterBrand.generic;
   int _presetIndex = 1; // default to medium/first preset
@@ -81,13 +82,25 @@ class _ThermalLabelScreenState extends ConsumerState<ThermalLabelScreen> {
   bool _showReceiptAddress = true;
   bool _showReceiptPAN = true;
   bool _showReceiptPhone = true;
+  String _receiptPaymentMethod = 'Cash';
 
   bool _printing = false;
   String _lastProductName = 'Organic Green Tea';
 
+  // History tab variables
+  List<Map<String, dynamic>> _receiptHistory = [];
+  bool _isLoadingHistory = false;
+  String _historySearchQuery = '';
+  String _historyFilterMethod = 'All'; // All, Cash, Bank QR, Esewa
+  String _historyFilterRange = 'Today'; // Today, This Week, This Month, Custom
+  DateTimeRange? _historyCustomRange;
+
+  late TabController _tabController;
+
   @override
   void initState() {
     super.initState();
+    _tabController = TabController(length: 2, vsync: this);
     final invoiceSettings = ref.read(invoiceSettingsProvider);
     _receiptTitleCtrl = TextEditingController(text: invoiceSettings.title);
     _receiptPrefixCtrl = TextEditingController(text: invoiceSettings.prefix);
@@ -102,6 +115,7 @@ class _ThermalLabelScreenState extends ConsumerState<ThermalLabelScreen> {
     _fetchInventoryProducts();
 
     _loadSavedSettings();
+    _fetchHistory();
   }
 
   Future<void> _fetchBusinessProfile() async {
@@ -214,6 +228,7 @@ class _ThermalLabelScreenState extends ConsumerState<ThermalLabelScreen> {
         _showReceiptAddress = prefs.getBool('thermal_rec_show_addr') ?? _showReceiptAddress;
         _showReceiptPAN = prefs.getBool('thermal_rec_show_pan') ?? _showReceiptPAN;
         _showReceiptPhone = prefs.getBool('thermal_rec_show_phone') ?? _showReceiptPhone;
+        _receiptPaymentMethod = prefs.getString('thermal_rec_payment_method') ?? 'Cash';
       });
     } catch (e) {
       debugPrint('Failed to load thermal settings: $e');
@@ -259,6 +274,7 @@ class _ThermalLabelScreenState extends ConsumerState<ThermalLabelScreen> {
       await prefs.setBool('thermal_rec_show_addr', _showReceiptAddress);
       await prefs.setBool('thermal_rec_show_pan', _showReceiptPAN);
       await prefs.setBool('thermal_rec_show_phone', _showReceiptPhone);
+      await prefs.setString('thermal_rec_payment_method', _receiptPaymentMethod);
 
       // Shift/Save to global invoice custom settings
       final settings = ref.read(invoiceSettingsProvider);
@@ -344,6 +360,7 @@ class _ThermalLabelScreenState extends ConsumerState<ThermalLabelScreen> {
 
   @override
   void dispose() {
+    _tabController.dispose();
     _customWCtrl.dispose();
     _customHCtrl.dispose();
     _productNameCtrl.dispose();
@@ -438,6 +455,11 @@ class _ThermalLabelScreenState extends ConsumerState<ThermalLabelScreen> {
       final w = _labelWidth;
       final h = _labelHeight;
 
+      String receiptNo = '';
+      if (_activeType == LabelType.receipt) {
+        receiptNo = _generateReceiptNumber();
+      }
+
       switch (_activeType) {
         case LabelType.productLabel:
           pdfBytes = await LabelPdfBuilder.productLabel(
@@ -495,6 +517,7 @@ class _ThermalLabelScreenState extends ConsumerState<ThermalLabelScreen> {
             pan: _businessPAN,
             title: _receiptTitleCtrl.text,
             prefix: _receiptPrefixCtrl.text,
+            receiptNumber: receiptNo,
             showAddress: _showReceiptAddress,
             showPhone: _showReceiptPhone,
             showPAN: _showReceiptPAN,
@@ -505,7 +528,7 @@ class _ThermalLabelScreenState extends ConsumerState<ThermalLabelScreen> {
             discount: _receiptDiscountAmtCtrl.text,
             tax: _receiptTaxCtrl.text,
             total: _receiptTotalCtrl.text,
-            paymentMethod: 'Cash',
+            paymentMethod: _receiptPaymentMethod,
             footer: _receiptFooterCtrl.text,
             wMm: w,
             hMm: h,
@@ -513,8 +536,23 @@ class _ThermalLabelScreenState extends ConsumerState<ThermalLabelScreen> {
           break;
       }
 
-      await Printing.layoutPdf(onLayout: (_) async => pdfBytes);
+      final printed = await Printing.layoutPdf(onLayout: (_) async => pdfBytes);
       await _saveSettings();
+
+      if (printed && _activeType == LabelType.receipt) {
+        await _saveReceiptToDatabase(
+          receiptNumber: receiptNo,
+          title: _receiptTitleCtrl.text.isEmpty ? 'TAX INVOICE' : _receiptTitleCtrl.text,
+          subtotal: double.tryParse(_receiptSubtotalCtrl.text) ?? 0.0,
+          discount: double.tryParse(_receiptDiscountAmtCtrl.text) ?? 0.0,
+          tax: double.tryParse(_receiptTaxCtrl.text) ?? 0.0,
+          total: double.tryParse(_receiptTotalCtrl.text) ?? 0.0,
+          paymentMethod: _receiptPaymentMethod,
+          footer: _receiptFooterCtrl.text,
+          items: _receiptItems,
+        );
+        _fetchHistory();
+      }
 
       final plan = ref.read(subscriptionManagerProvider).planCode;
       if (plan == 'gold') {
@@ -854,6 +892,13 @@ class _ThermalLabelScreenState extends ConsumerState<ThermalLabelScreen> {
             Text('Thermal Label Hub'),
           ],
         ),
+        bottom: TabBar(
+          controller: _tabController,
+          tabs: const [
+            Tab(text: 'Designer', icon: Icon(Icons.design_services_rounded, size: 20)),
+            Tab(text: 'Print History & Statements', icon: Icon(Icons.history_rounded, size: 20)),
+          ],
+        ),
         actions: [
           Container(
             margin: const EdgeInsets.only(right: 16),
@@ -871,17 +916,53 @@ class _ThermalLabelScreenState extends ConsumerState<ThermalLabelScreen> {
           ),
         ],
       ),
-      body: LayoutBuilder(
-        builder: (context, constraints) {
-          final wide = constraints.maxWidth > 950;
-          if (wide) {
-            return Row(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
-                Expanded(
-                  flex: 6,
-                  child: ListView(
-                    padding: const EdgeInsets.all(20),
+      body: TabBarView(
+        controller: _tabController,
+        children: [
+          // Tab 1: Designer View
+          LayoutBuilder(
+            builder: (context, constraints) {
+              final wide = constraints.maxWidth > 950;
+              if (wide) {
+                return Row(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    Expanded(
+                      flex: 6,
+                      child: ListView(
+                        padding: const EdgeInsets.all(20),
+                        children: [
+                          _buildBanner(),
+                          const SizedBox(height: 16),
+                          _buildPrinterSizingCard(isDark),
+                          const SizedBox(height: 16),
+                          _buildLabelTypeCard(isDark),
+                          const SizedBox(height: 16),
+                          _buildContentDetailsCard(isDark),
+                          const SizedBox(height: 24),
+                          _buildActionsRow(isDark, plan),
+                          const SizedBox(height: 40),
+                        ],
+                      ),
+                    ),
+                    Expanded(
+                      flex: 4,
+                      child: Container(
+                        color: isDark ? const Color(0xFF1E293B) : Colors.grey[200],
+                        padding: const EdgeInsets.all(24),
+                        child: Center(
+                          child: SingleChildScrollView(
+                            child: _buildPreviewContent(isDark),
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
+                );
+              } else {
+                return SingleChildScrollView(
+                  padding: const EdgeInsets.all(20),
+                  child: Column(
                     children: [
                       _buildBanner(),
                       const SizedBox(height: 16),
@@ -891,47 +972,19 @@ class _ThermalLabelScreenState extends ConsumerState<ThermalLabelScreen> {
                       const SizedBox(height: 16),
                       _buildContentDetailsCard(isDark),
                       const SizedBox(height: 24),
+                      _buildPreviewContent(isDark),
+                      const SizedBox(height: 24),
                       _buildActionsRow(isDark, plan),
                       const SizedBox(height: 40),
                     ],
                   ),
-                ),
-                Expanded(
-                  flex: 4,
-                  child: Container(
-                    color: isDark ? const Color(0xFF1E293B) : Colors.grey[200],
-                    padding: const EdgeInsets.all(24),
-                    child: Center(
-                      child: SingleChildScrollView(
-                        child: _buildPreviewContent(isDark),
-                      ),
-                    ),
-                  ),
-                ),
-              ],
-            );
-          } else {
-            return SingleChildScrollView(
-              padding: const EdgeInsets.all(20),
-              child: Column(
-                children: [
-                  _buildBanner(),
-                  const SizedBox(height: 16),
-                  _buildPrinterSizingCard(isDark),
-                  const SizedBox(height: 16),
-                  _buildLabelTypeCard(isDark),
-                  const SizedBox(height: 16),
-                  _buildContentDetailsCard(isDark),
-                  const SizedBox(height: 24),
-                  _buildPreviewContent(isDark),
-                  const SizedBox(height: 24),
-                  _buildActionsRow(isDark, plan),
-                  const SizedBox(height: 40),
-                ],
-              ),
-            );
-          }
-        },
+                );
+              }
+            },
+          ),
+          // Tab 2: Print History & Statements View
+          _buildPrintHistoryTab(isDark),
+        ],
       ),
     );
   }
@@ -1180,6 +1233,40 @@ class _ThermalLabelScreenState extends ConsumerState<ThermalLabelScreen> {
               ),
             ),
 
+            const SizedBox(height: 16),
+            const Text('Payment Method', style: TextStyle(fontSize: 13, fontWeight: FontWeight.bold)),
+            const SizedBox(height: 8),
+            Row(
+              children: [
+                Expanded(
+                  child: SegmentedButton<String>(
+                    segments: const [
+                      ButtonSegment<String>(
+                        value: 'Cash',
+                        label: Text('Cash'),
+                        icon: Icon(Icons.money_rounded, size: 16),
+                      ),
+                      ButtonSegment<String>(
+                        value: 'Bank QR',
+                        label: Text('Bank QR'),
+                        icon: Icon(Icons.qr_code_scanner_rounded, size: 16),
+                      ),
+                      ButtonSegment<String>(
+                        value: 'Esewa',
+                        label: Text('Esewa'),
+                        icon: Icon(Icons.account_balance_wallet_rounded, size: 16),
+                      ),
+                    ],
+                    selected: {_receiptPaymentMethod},
+                    onSelectionChanged: (Set<String> selected) {
+                      setState(() {
+                        _receiptPaymentMethod = selected.first;
+                      });
+                    },
+                  ),
+                ),
+              ],
+            ),
             const SizedBox(height: 16),
             _textField(controller: _receiptFooterCtrl, label: 'Receipt Footer Note', icon: Icons.chat_bubble_outline),
 
@@ -1712,6 +1799,16 @@ class _ThermalLabelScreenState extends ConsumerState<ThermalLabelScreen> {
                 Text('Rs.${_receiptTotalCtrl.text}', style: const TextStyle(color: Colors.black, fontWeight: FontWeight.bold, fontSize: 12)),
               ],
             ),
+            if (_receiptPaymentMethod.isNotEmpty) ...[
+              const SizedBox(height: 4),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  const Text('Paid by', style: TextStyle(color: Colors.black54, fontSize: 8)),
+                  Text(_receiptPaymentMethod, style: const TextStyle(color: Colors.black87, fontWeight: FontWeight.bold, fontSize: 8)),
+                ],
+              ),
+            ],
             const SizedBox(height: 8),
             const Text('--- Thank You For Your Visit ! ---', style: TextStyle(color: Colors.black54, fontSize: 9)),
           ],
@@ -1797,7 +1894,753 @@ class _ThermalLabelScreenState extends ConsumerState<ThermalLabelScreen> {
       ),
     ).animate().fadeIn().scale(begin: const Offset(0.95, 0.95), end: const Offset(1, 1));
   }
+
+  // ── History & Statements Helper Methods ───────────────────────────
+  String _generateReceiptNumber() {
+    final prefix = _receiptPrefixCtrl.text.trim().isEmpty ? 'INV' : _receiptPrefixCtrl.text.trim().toUpperCase();
+    final dateStr = DateFormat('yyyyMMdd').format(DateTime.now());
+    final rand = (DateTime.now().millisecondsSinceEpoch % 1000).toString().padLeft(3, '0');
+    return '$prefix-$dateStr-$rand';
+  }
+
+  Future<void> _saveReceiptToDatabase({
+    required String receiptNumber,
+    required String title,
+    required double subtotal,
+    required double discount,
+    required double tax,
+    required double total,
+    required String paymentMethod,
+    required String footer,
+    required List<Map<String, String>> items,
+  }) async {
+    try {
+      final supabase = Supabase.instance.client;
+      final prefs = await SharedPreferences.getInstance();
+      final businessId = prefs.getString(AppConstants.kSelectedBusinessId);
+      if (businessId == null) return;
+
+      await supabase.from('thermal_receipts').insert({
+        'business_id': businessId,
+        'receipt_number': receiptNumber,
+        'title': title,
+        'subtotal': subtotal,
+        'discount': discount,
+        'tax': tax,
+        'total': total,
+        'payment_method': paymentMethod,
+        'footer': footer,
+        'items': items,
+      });
+      debugPrint('Receipt saved successfully to database');
+    } catch (e) {
+      debugPrint('Failed to save receipt: $e');
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Could not save print record to database: ${e.toString().contains("42P01") ? "Please run the database migration first!" : e.toString()}'),
+            backgroundColor: Colors.orange,
+            duration: const Duration(seconds: 4),
+          ),
+        );
+      }
+    }
+  }
+
+  Future<void> _fetchHistory() async {
+    setState(() => _isLoadingHistory = true);
+    try {
+      final supabase = Supabase.instance.client;
+      final prefs = await SharedPreferences.getInstance();
+      final businessId = prefs.getString(AppConstants.kSelectedBusinessId);
+      if (businessId == null) {
+        setState(() => _isLoadingHistory = false);
+        return;
+      }
+
+      final response = await supabase
+          .from('thermal_receipts')
+          .select('*')
+          .eq('business_id', businessId)
+          .order('created_at', ascending: false);
+          
+      if (mounted) {
+        setState(() {
+          _receiptHistory = List<Map<String, dynamic>>.from(response as List);
+        });
+      }
+    } catch (e) {
+      debugPrint('Error fetching print history: $e');
+    } finally {
+      if (mounted) {
+        setState(() => _isLoadingHistory = false);
+      }
+    }
+  }
+
+  List<Map<String, dynamic>> get _filteredReceiptHistory {
+    return _receiptHistory.where((r) {
+      // 1. Search Query
+      final receiptNo = (r['receipt_number'] as String? ?? '').toLowerCase();
+      final title = (r['title'] as String? ?? '').toLowerCase();
+      
+      String itemsStr = '';
+      try {
+        final list = r['items'] as List<dynamic>? ?? [];
+        itemsStr = list.map((i) => i['name'] as String? ?? '').join(' ').toLowerCase();
+      } catch (_) {}
+
+      final matchesSearch = receiptNo.contains(_historySearchQuery.toLowerCase()) ||
+          title.contains(_historySearchQuery.toLowerCase()) ||
+          itemsStr.contains(_historySearchQuery.toLowerCase());
+      if (!matchesSearch) return false;
+
+      // 2. Payment Method
+      if (_historyFilterMethod != 'All') {
+        final pm = (r['payment_method'] as String? ?? 'Cash').toLowerCase();
+        final target = _historyFilterMethod.toLowerCase();
+        if (target == 'bank qr') {
+          if (!pm.contains('bank') && !pm.contains('qr')) return false;
+        } else {
+          if (!pm.contains(target)) return false;
+        }
+      }
+
+      // 3. Date Range
+      if (r['created_at'] == null) return false;
+      final createdAt = DateTime.parse(r['created_at'] as String).toLocal();
+      final now = DateTime.now();
+
+      switch (_historyFilterRange) {
+        case 'Today':
+          final startOfToday = DateTime(now.year, now.month, now.day);
+          return createdAt.isAfter(startOfToday);
+        case 'This Week':
+          final startOfWeek = now.subtract(Duration(days: now.weekday - 1));
+          final startOfWeekDay = DateTime(startOfWeek.year, startOfWeek.month, startOfWeek.day);
+          return createdAt.isAfter(startOfWeekDay);
+        case 'This Month':
+          final startOfMonth = DateTime(now.year, now.month, 1);
+          return createdAt.isAfter(startOfMonth);
+        case 'Custom':
+          if (_historyCustomRange == null) return true;
+          final start = DateTime(_historyCustomRange!.start.year, _historyCustomRange!.start.month, _historyCustomRange!.start.day);
+          final end = DateTime(_historyCustomRange!.end.year, _historyCustomRange!.end.month, _historyCustomRange!.end.day, 23, 59, 59);
+          return createdAt.isAfter(start) && createdAt.isBefore(end);
+        default:
+          return true;
+      }
+    }).toList();
+  }
+
+  Map<String, double> get _historyStats {
+    double totalSales = 0;
+    double cashSales = 0;
+    double qrSales = 0;
+    double esewaSales = 0;
+
+    for (var r in _filteredReceiptHistory) {
+      final t = (r['total'] as num?)?.toDouble() ?? 0.0;
+      totalSales += t;
+      final pm = (r['payment_method'] as String? ?? 'Cash').toLowerCase();
+      if (pm.contains('cash')) {
+        cashSales += t;
+      } else if (pm.contains('bank') || pm.contains('qr')) {
+        qrSales += t;
+      } else if (pm.contains('esewa')) {
+        esewaSales += t;
+      }
+    }
+
+    return {
+      'count': _filteredReceiptHistory.length.toDouble(),
+      'total': totalSales,
+      'cash': cashSales,
+      'qr': qrSales,
+      'esewa': esewaSales,
+    };
+  }
+
+  Future<void> _exportStatementPdf() async {
+    try {
+      String period = _historyFilterRange;
+      if (period == 'Custom' && _historyCustomRange != null) {
+        final startStr = DateFormat('dd MMM').format(_historyCustomRange!.start);
+        final endStr = DateFormat('dd MMM yyyy').format(_historyCustomRange!.end);
+        period = '$startStr - $endStr';
+      }
+
+      final pdfBytes = await LabelPdfBuilder.salesStatement(
+        shopName: _businessName,
+        address: _businessAddress,
+        phone: _businessPhone,
+        pan: _businessPAN,
+        periodStr: period,
+        receipts: _filteredReceiptHistory,
+      );
+
+      await Printing.layoutPdf(onLayout: (_) async => pdfBytes);
+    } catch (e) {
+      debugPrint('Error exporting statement: $e');
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('Failed to export statement: $e'), backgroundColor: Colors.red),
+        );
+      }
+    }
+  }
+
+  Future<void> _reprintReceipt(Map<String, dynamic> r) async {
+    try {
+      final list = r['items'] as List<dynamic>? ?? [];
+      final List<Map<String, String>> itemsList = list.map((item) {
+        return {
+          'name': item['name']?.toString() ?? '',
+          'qty': item['qty']?.toString() ?? '1',
+          'price': item['price']?.toString() ?? '0',
+        };
+      }).toList();
+
+      final pdfBytes = await LabelPdfBuilder.receipt(
+        shopName: _businessName,
+        address: _businessAddress,
+        phone: _businessPhone,
+        pan: _businessPAN,
+        title: r['title']?.toString() ?? 'TAX INVOICE',
+        prefix: '',
+        receiptNumber: r['receipt_number']?.toString() ?? 'INV-0001',
+        showAddress: _showReceiptAddress,
+        showPhone: _showReceiptPhone,
+        showPAN: _showReceiptPAN,
+        showTax: _showReceiptTax,
+        showDiscount: _showReceiptDiscount,
+        items: itemsList,
+        subtotal: (r['subtotal'] as num?)?.toDouble().toString() ?? '0',
+        discount: (r['discount'] as num?)?.toDouble().toString() ?? '0',
+        tax: (r['tax'] as num?)?.toDouble().toString() ?? '0',
+        total: (r['total'] as num?)?.toDouble().toString() ?? '0',
+        paymentMethod: r['payment_method']?.toString() ?? 'Cash',
+        footer: r['footer']?.toString() ?? '',
+        wMm: 80.0,
+        hMm: 150.0,
+      );
+
+      await Printing.layoutPdf(onLayout: (_) async => pdfBytes);
+    } catch (e) {
+      debugPrint('Error reprinting receipt: $e');
+    }
+  }
+
+  Widget _buildPrintHistoryTab(bool isDark) {
+    final stats = _historyStats;
+    final filtered = _filteredReceiptHistory;
+    final fmt = NumberFormat('#,##,##0.00');
+
+    return Column(
+      children: [
+        // 1. Stats Bar
+        Container(
+          padding: const EdgeInsets.all(16),
+          color: isDark ? const Color(0xFF1E293B) : Colors.white,
+          child: SingleChildScrollView(
+            scrollDirection: Axis.horizontal,
+            child: Row(
+              children: [
+                _buildHistoryStatCard(
+                  title: 'Total Receipts',
+                  value: '${stats['count']!.toInt()}',
+                  icon: Icons.receipt_long_rounded,
+                  color: Colors.blue,
+                  isDark: isDark,
+                ),
+                const SizedBox(width: 12),
+                _buildHistoryStatCard(
+                  title: 'Total Sales',
+                  value: 'Rs. ${fmt.format(stats['total'])}',
+                  icon: Icons.trending_up_rounded,
+                  color: AppTheme.primaryColor,
+                  isDark: isDark,
+                ),
+                const SizedBox(width: 12),
+                _buildHistoryStatCard(
+                  title: 'Cash Sales',
+                  value: 'Rs. ${fmt.format(stats['cash'])}',
+                  icon: Icons.money_rounded,
+                  color: Colors.green,
+                  isDark: isDark,
+                ),
+                const SizedBox(width: 12),
+                _buildHistoryStatCard(
+                  title: 'Bank QR Sales',
+                  value: 'Rs. ${fmt.format(stats['qr'])}',
+                  icon: Icons.qr_code_scanner_rounded,
+                  color: Colors.orange,
+                  isDark: isDark,
+                ),
+                const SizedBox(width: 12),
+                _buildHistoryStatCard(
+                  title: 'Esewa Sales',
+                  value: 'Rs. ${fmt.format(stats['esewa'])}',
+                  icon: Icons.account_balance_wallet_rounded,
+                  color: Colors.purple,
+                  isDark: isDark,
+                ),
+              ],
+            ),
+          ),
+        ),
+        const Divider(height: 1),
+
+        // 2. Search & Filter Bar
+        Padding(
+          padding: const EdgeInsets.all(16),
+          child: Row(
+            children: [
+              Expanded(
+                flex: 4,
+                child: TextField(
+                  decoration: InputDecoration(
+                    hintText: 'Search by Receipt No or items...',
+                    prefixIcon: const Icon(Icons.search_rounded),
+                    contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                    border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                  ),
+                  onChanged: (val) {
+                    setState(() {
+                      _historySearchQuery = val;
+                    });
+                  },
+                ),
+              ),
+              const SizedBox(width: 12),
+              // Payment Method filter
+              DropdownButton<String>(
+                value: _historyFilterMethod,
+                underline: const SizedBox(),
+                borderRadius: BorderRadius.circular(12),
+                items: ['All', 'Cash', 'Bank QR', 'Esewa'].map((val) {
+                  return DropdownMenuItem<String>(
+                    value: val,
+                    child: Text(val),
+                  );
+                }).toList(),
+                onChanged: (val) {
+                  if (val != null) {
+                    setState(() {
+                      _historyFilterMethod = val;
+                    });
+                  }
+                },
+              ),
+              const SizedBox(width: 12),
+              // Date filter
+              DropdownButton<String>(
+                value: _historyFilterRange,
+                underline: const SizedBox(),
+                borderRadius: BorderRadius.circular(12),
+                items: ['Today', 'This Week', 'This Month', 'Custom'].map((val) {
+                  return DropdownMenuItem<String>(
+                    value: val,
+                    child: Text(val == 'Custom' && _historyCustomRange != null
+                        ? '${DateFormat('dd MMM').format(_historyCustomRange!.start)} - ${DateFormat('dd MMM').format(_historyCustomRange!.end)}'
+                        : val),
+                  );
+                }).toList(),
+                onChanged: (val) async {
+                  if (val == 'Custom') {
+                    final picked = await showDateRangePicker(
+                      context: context,
+                      firstDate: DateTime(2020),
+                      lastDate: DateTime(2030),
+                    );
+                    if (picked != null) {
+                      setState(() {
+                        _historyFilterRange = 'Custom';
+                        _historyCustomRange = picked;
+                      });
+                    }
+                  } else if (val != null) {
+                    setState(() {
+                      _historyFilterRange = val;
+                      _historyCustomRange = null;
+                    });
+                  }
+                },
+              ),
+              const SizedBox(width: 16),
+              // Download Statement Button
+              ElevatedButton.icon(
+                onPressed: filtered.isEmpty ? null : _exportStatementPdf,
+                icon: const Icon(Icons.file_download_rounded, size: 18),
+                label: const Text('Export Statement'),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.teal,
+                  foregroundColor: Colors.white,
+                  padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                ),
+              ),
+            ],
+          ),
+        ),
+
+        // 3. History List
+        Expanded(
+          child: _isLoadingHistory
+              ? const Center(child: CircularProgressIndicator())
+              : RefreshIndicator(
+                  onRefresh: _fetchHistory,
+                  child: filtered.isEmpty
+                      ? ListView(
+                          children: [
+                            SizedBox(height: MediaQuery.of(context).size.height * 0.15),
+                            Center(
+                              child: Column(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  Icon(Icons.receipt_long_outlined, size: 72, color: Colors.grey[400]),
+                                  const SizedBox(height: 16),
+                                  Text(
+                                    'No Receipts Found',
+                                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.grey[600]),
+                                  ),
+                                  const SizedBox(height: 8),
+                                  Text(
+                                    'Try changing your filters or print a receipt in the Designer.',
+                                    style: TextStyle(fontSize: 13, color: Colors.grey[500]),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ],
+                        )
+                      : ListView.builder(
+                          padding: const EdgeInsets.symmetric(horizontal: 16),
+                          itemCount: filtered.length,
+                          itemBuilder: (context, index) {
+                            final r = filtered[index];
+                            final totalAmt = (r['total'] as num?)?.toDouble() ?? 0.0;
+                            final date = r['created_at'] != null
+                                ? DateTime.parse(r['created_at'] as String).toLocal()
+                                : DateTime.now();
+                            final dateStr = DateFormat('dd MMM yyyy, hh:mm a').format(date);
+                            final payment = r['payment_method'] as String? ?? 'Cash';
+                            final receiptNo = r['receipt_number'] as String? ?? 'REC-0001';
+
+                            int itemsCount = 0;
+                            String itemsPreview = '';
+                            try {
+                              final list = r['items'] as List<dynamic>? ?? [];
+                              itemsCount = list.length;
+                              itemsPreview = list.map((i) => '${i['name']} (${i['qty']})').join(', ');
+                              if (itemsPreview.length > 50) {
+                                itemsPreview = '${itemsPreview.substring(0, 47)}...';
+                              }
+                            } catch (_) {}
+
+                            return Card(
+                              margin: const EdgeInsets.only(bottom: 12),
+                              elevation: 1,
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(16),
+                                side: BorderSide(
+                                  color: isDark ? Colors.grey[800]! : Colors.grey[200]!,
+                                  width: 1,
+                                ),
+                              ),
+                              child: InkWell(
+                                borderRadius: BorderRadius.circular(16),
+                                onTap: () => _showReceiptDetailsSheet(r),
+                                child: Padding(
+                                  padding: const EdgeInsets.all(16),
+                                  child: Row(
+                                    children: [
+                                      Container(
+                                        padding: const EdgeInsets.all(12),
+                                        decoration: BoxDecoration(
+                                          color: (payment.toLowerCase().contains('cash')
+                                                  ? Colors.green
+                                                  : payment.toLowerCase().contains('esewa')
+                                                      ? Colors.purple
+                                                      : Colors.orange)
+                                              .withValues(alpha: 0.1),
+                                          shape: BoxShape.circle,
+                                        ),
+                                        child: Icon(
+                                          payment.toLowerCase().contains('cash')
+                                              ? Icons.money_rounded
+                                              : payment.toLowerCase().contains('esewa')
+                                                  ? Icons.account_balance_wallet_rounded
+                                                  : Icons.qr_code_scanner_rounded,
+                                          color: payment.toLowerCase().contains('cash')
+                                              ? Colors.green
+                                              : payment.toLowerCase().contains('esewa')
+                                                  ? Colors.purple
+                                                  : Colors.orange,
+                                          size: 24,
+                                        ),
+                                      ),
+                                      const SizedBox(width: 16),
+                                      Expanded(
+                                        child: Column(
+                                          crossAxisAlignment: CrossAxisAlignment.start,
+                                          children: [
+                                            Row(
+                                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                              children: [
+                                                Text(
+                                                  receiptNo,
+                                                  style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
+                                                ),
+                                                Text(
+                                                  'Rs. ${fmt.format(totalAmt)}',
+                                                  style: const TextStyle(
+                                                    fontWeight: FontWeight.bold,
+                                                    fontSize: 15,
+                                                    color: AppTheme.primaryColor,
+                                                  ),
+                                                ),
+                                              ],
+                                            ),
+                                            const SizedBox(height: 4),
+                                            Text(
+                                              dateStr,
+                                              style: TextStyle(fontSize: 11, color: Colors.grey[500]),
+                                            ),
+                                            const SizedBox(height: 6),
+                                            Text(
+                                              itemsCount == 0 ? 'No items' : '$itemsCount item(s): $itemsPreview',
+                                              style: TextStyle(
+                                                fontSize: 12,
+                                                color: isDark ? Colors.grey[400] : Colors.grey[700],
+                                              ),
+                                            ),
+                                          ],
+                                        ),
+                                      ),
+                                      const SizedBox(width: 12),
+                                      IconButton(
+                                        icon: const Icon(Icons.print_rounded, color: AppTheme.primaryColor),
+                                        onPressed: () => _reprintReceipt(r),
+                                        tooltip: 'Reprint Receipt',
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              ),
+                            );
+                          },
+                        ),
+                ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildHistoryStatCard({
+    required String title,
+    required String value,
+    required IconData icon,
+    required Color color,
+    required bool isDark,
+  }) {
+    return Container(
+      width: 160,
+      padding: const EdgeInsets.all(14),
+      decoration: BoxDecoration(
+        color: isDark ? const Color(0xFF1E293B) : Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: isDark ? Colors.grey[800]! : Colors.grey[200]!),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Icon(icon, color: color, size: 20),
+              Container(
+                width: 6,
+                height: 6,
+                decoration: BoxDecoration(color: color, shape: BoxShape.circle),
+              ),
+            ],
+          ),
+          const SizedBox(height: 12),
+          Text(
+            value,
+            style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 15),
+            overflow: TextOverflow.ellipsis,
+          ),
+          const SizedBox(height: 4),
+          Text(
+            title,
+            style: TextStyle(fontSize: 11, color: Colors.grey[500], fontWeight: FontWeight.w500),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _showReceiptDetailsSheet(Map<String, dynamic> r) {
+    final fmt = NumberFormat('#,##,##0.00');
+    final date = r['created_at'] != null
+        ? DateTime.parse(r['created_at'] as String).toLocal()
+        : DateTime.now();
+    final dateStr = DateFormat('dd MMM yyyy, hh:mm a').format(date);
+    final payment = r['payment_method'] as String? ?? 'Cash';
+    final items = r['items'] as List<dynamic>? ?? [];
+
+    showModalBottomSheet(
+      context: context,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+      ),
+      builder: (context) {
+        return Container(
+          padding: const EdgeInsets.all(24),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        r['receipt_number'] ?? 'INV-0001',
+                        style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
+                      ),
+                      const SizedBox(height: 4),
+                      Text(
+                        dateStr,
+                        style: TextStyle(fontSize: 12, color: Colors.grey[500]),
+                      ),
+                    ],
+                  ),
+                  IconButton(
+                    icon: const Icon(Icons.close_rounded),
+                    onPressed: () => Navigator.pop(context),
+                  ),
+                ],
+              ),
+              const Divider(height: 32),
+
+              const Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Expanded(flex: 3, child: Text('Item', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12))),
+                  Expanded(child: Text('Qty', textAlign: TextAlign.center, style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12))),
+                  Expanded(child: Text('Price', textAlign: TextAlign.right, style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12))),
+                  Expanded(child: Text('Total', textAlign: TextAlign.right, style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12))),
+                ],
+              ),
+              const SizedBox(height: 8),
+
+              Flexible(
+                child: ListView.builder(
+                  shrinkWrap: true,
+                  itemCount: items.length,
+                  itemBuilder: (context, idx) {
+                    final item = items[idx];
+                    final name = item['name']?.toString() ?? '';
+                    final qty = double.tryParse(item['qty']?.toString() ?? '1') ?? 1.0;
+                    final price = double.tryParse(item['price']?.toString() ?? '0') ?? 0.0;
+                    final itemTotal = qty * price;
+
+                    return Padding(
+                      padding: const EdgeInsets.symmetric(vertical: 6),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Expanded(flex: 3, child: Text(name, style: const TextStyle(fontSize: 13))),
+                          Expanded(child: Text('${qty.toInt()}', textAlign: TextAlign.center, style: const TextStyle(fontSize: 13))),
+                          Expanded(child: Text(price.toStringAsFixed(0), textAlign: TextAlign.right, style: const TextStyle(fontSize: 13))),
+                          Expanded(child: Text(itemTotal.toStringAsFixed(0), textAlign: TextAlign.right, style: const TextStyle(fontSize: 13))),
+                        ],
+                      ),
+                    );
+                  },
+                ),
+              ),
+              const Divider(height: 32),
+
+              _sheetTotalRow('Subtotal', 'Rs. ${fmt.format(r['subtotal'] ?? 0.0)}'),
+              if ((r['discount'] as num? ?? 0) > 0)
+                _sheetTotalRow('Discount', '-Rs. ${fmt.format(r['discount'] ?? 0.0)}', color: Colors.green),
+              if ((r['tax'] as num? ?? 0) > 0)
+                _sheetTotalRow('Tax', 'Rs. ${fmt.format(r['tax'] ?? 0.0)}'),
+              const SizedBox(height: 8),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  const Text('TOTAL', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+                  Text(
+                    'Rs. ${fmt.format(r['total'] ?? 0.0)}',
+                    style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 18, color: AppTheme.primaryColor),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 12),
+              _sheetTotalRow('Paid via', payment, isBold: true),
+              const SizedBox(height: 24),
+
+              Row(
+                children: [
+                  Expanded(
+                    child: OutlinedButton.icon(
+                      onPressed: () => Navigator.pop(context),
+                      icon: const Icon(Icons.close_rounded),
+                      label: const Text('Close'),
+                      style: OutlinedButton.styleFrom(
+                        padding: const EdgeInsets.symmetric(vertical: 14),
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: ElevatedButton.icon(
+                      onPressed: () {
+                        Navigator.pop(context);
+                        _reprintReceipt(r);
+                      },
+                      icon: const Icon(Icons.print_rounded),
+                      label: const Text('Reprint'),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: AppTheme.primaryColor,
+                        foregroundColor: Colors.white,
+                        padding: const EdgeInsets.symmetric(vertical: 14),
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _sheetTotalRow(String label, String value, {Color? color, bool isBold = false}) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 4),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Text(label, style: TextStyle(fontSize: 13, color: Colors.grey[600], fontWeight: isBold ? FontWeight.bold : null)),
+          Text(value, style: TextStyle(fontSize: 13, color: color ?? Colors.grey[800], fontWeight: isBold ? FontWeight.bold : null)),
+        ],
+      ),
+    );
+  }
 }
+
+// ── Original Mobile Blocked View ─────────────────────────────────
 
 class _InventorySearchSheet extends StatefulWidget {
   final List<Product> products;

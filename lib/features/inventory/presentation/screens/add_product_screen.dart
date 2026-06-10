@@ -11,6 +11,7 @@ import 'package:smart_saoji/core/widgets/app_snackbar.dart';
 import 'package:smart_saoji/core/widgets/app_text_field.dart';
 import 'package:smart_saoji/features/inventory/data/models/product_model.dart';
 import 'package:smart_saoji/features/inventory/presentation/screens/inventory_screen.dart';
+import 'package:smart_saoji/features/inventory/presentation/screens/product_detail_screen.dart';
 import 'package:smart_saoji/core/services/daily_limit_service.dart';
 import 'package:smart_saoji/core/widgets/plan_limit_dialog.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -23,7 +24,8 @@ import 'package:smart_saoji/core/widgets/barcode_scanner_modal.dart';
 import 'package:smart_saoji/features/subscription/data/services/subscription_manager.dart';
 
 class AddProductScreen extends ConsumerStatefulWidget {
-  const AddProductScreen({super.key});
+  final Product? existingProduct;
+  const AddProductScreen({super.key, this.existingProduct});
 
   @override
   ConsumerState<AddProductScreen> createState() => _AddProductScreenState();
@@ -41,6 +43,22 @@ class _AddProductScreenState extends ConsumerState<AddProductScreen> {
   bool _isLoading = false;
   File? _imageFile;
   Uint8List? _imageBytes; // used on web instead of File
+
+  @override
+  void initState() {
+    super.initState();
+    final p = widget.existingProduct;
+    if (p != null) {
+      _nameCtrl.text = p.name;
+      _skuCtrl.text = p.sku ?? '';
+      _barcodeCtrl.text = p.barcode ?? '';
+      _costCtrl.text = p.costPrice.toStringAsFixed(0);
+      _sellCtrl.text = p.sellingPrice.toStringAsFixed(0);
+      _stockCtrl.text = p.stockQuantity.toStringAsFixed(0);
+      _minStockCtrl.text = p.minStockAlert.toStringAsFixed(0);
+      _selectedUnit = p.unit;
+    }
+  }
 
   @override
   void dispose() {
@@ -130,62 +148,114 @@ class _AddProductScreenState extends ConsumerState<AddProductScreen> {
       return;
     }
     setState(() => _isLoading = true);
+    final navigator = Navigator.of(context);
+    final messenger = ScaffoldMessenger.of(context);
     try {
-      final prefs = await SharedPreferences.getInstance();
-      final businessId =
-          prefs.getString(AppConstants.kSelectedBusinessId) ?? '';
+      final isEdit = widget.existingProduct != null;
 
-      // ── Subscription limit check ──────────────────────────
-      final planCode = ref.read(subscriptionManagerProvider).planCode;
-      final limitResult = await DailyLimitService.instance
-          .checkLimit(planCode, 'products');
-      if (!limitResult.allowed) {
-        if (mounted) {
-          await PlanLimitDialog.showDailyLimitReached(
-            context,
-            planCode: planCode,
-            action: 'products',
-            limit: limitResult.limit!,
-            used: limitResult.used,
-          );
+      if (isEdit) {
+        // ── UPDATE existing product via RPC ─────────────────
+        String? imageUrl;
+        if (_imageFile != null || _imageBytes != null) {
+          imageUrl = await _uploadImage(widget.existingProduct!.id);
         }
-        return;
-      }
-      // ─────────────────────────────────────────────────────
 
-      final productId = const Uuid().v4();
-      final imageUrl = await _uploadImage(productId);
-      final now = DateTime.now().toIso8601String();
+        await Supabase.instance.client.rpc('update_product', params: {
+          'p_product_id': widget.existingProduct!.id,
+          'p_name': _nameCtrl.text.trim(),
+          'p_sku': _skuCtrl.text.trim().isEmpty ? null : _skuCtrl.text.trim(),
+          'p_barcode': _barcodeCtrl.text.trim().isEmpty ? null : _barcodeCtrl.text.trim(),
+          'p_unit': _selectedUnit,
+          'p_cost_price': double.tryParse(_costCtrl.text) ?? 0,
+          'p_selling_price': double.tryParse(_sellCtrl.text) ?? 0,
+          'p_stock_quantity': double.tryParse(_stockCtrl.text) ?? 0,
+          'p_min_stock_alert': double.tryParse(_minStockCtrl.text) ?? 5,
+          'p_image_url': imageUrl,
+        });
 
-      await Supabase.instance.client.from('products').insert({
-        'id': productId,
-        'business_id': businessId,
-        'name': _nameCtrl.text.trim(),
-        'sku': _skuCtrl.text.trim().isEmpty ? null : _skuCtrl.text.trim(),
-        'barcode':
-            _barcodeCtrl.text.trim().isEmpty ? null : _barcodeCtrl.text.trim(),
-        'unit': _selectedUnit,
-        'cost_price': double.tryParse(_costCtrl.text) ?? 0,
-        'selling_price': double.tryParse(_sellCtrl.text) ?? 0,
-        'stock_quantity': double.tryParse(_stockCtrl.text) ?? 0,
-        'min_stock_alert': double.tryParse(_minStockCtrl.text) ?? 5,
-        'image_url': imageUrl,
-        'is_active': true,
-        'created_at': now,
-        'updated_at': now,
-      });
+        if (mounted) {
+          ref.invalidate(inventoryProvider);
+          ref.invalidate(productDetailProvider(widget.existingProduct!.id));
+          messenger
+            ..hideCurrentSnackBar()
+            ..showSnackBar(SnackBar(
+                content: const Text('Product updated!', style: TextStyle(color: Colors.white)),
+                backgroundColor: AppTheme.successColor,
+                behavior: SnackBarBehavior.floating,
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                margin: const EdgeInsets.all(12)));
+          navigator.pop();
+        }
+      } else {
+        // ── INSERT new product ──────────────────────────────
+        final prefs = await SharedPreferences.getInstance();
+        final businessId =
+            prefs.getString(AppConstants.kSelectedBusinessId) ?? '';
 
-      // Increment daily counter on success
-      await DailyLimitService.instance.increment(planCode, 'products');
+        final planCode = ref.read(subscriptionManagerProvider).planCode;
+        final limitResult = await DailyLimitService.instance
+            .checkLimit(planCode, 'products');
+        if (!limitResult.allowed) {
+          if (mounted) {
+            await PlanLimitDialog.showDailyLimitReached(
+              context,
+              planCode: planCode,
+              action: 'products',
+              limit: limitResult.limit!,
+              used: limitResult.used,
+            );
+          }
+          return;
+        }
 
-      if (mounted) {
-        ref.invalidate(inventoryProvider);
-        AppSnackbar.show(context, 'Product added successfully!',
-            isSuccess: true);
-        context.pop();
+        final productId = const Uuid().v4();
+        final imageUrl = await _uploadImage(productId);
+        final now = DateTime.now().toIso8601String();
+
+        await Supabase.instance.client.from('products').insert({
+          'id': productId,
+          'business_id': businessId,
+          'name': _nameCtrl.text.trim(),
+          'sku': _skuCtrl.text.trim().isEmpty ? null : _skuCtrl.text.trim(),
+          'barcode':
+              _barcodeCtrl.text.trim().isEmpty ? null : _barcodeCtrl.text.trim(),
+          'unit': _selectedUnit,
+          'cost_price': double.tryParse(_costCtrl.text) ?? 0,
+          'selling_price': double.tryParse(_sellCtrl.text) ?? 0,
+          'stock_quantity': double.tryParse(_stockCtrl.text) ?? 0,
+          'min_stock_alert': double.tryParse(_minStockCtrl.text) ?? 5,
+          'image_url': imageUrl,
+          'is_active': true,
+          'created_at': now,
+          'updated_at': now,
+        });
+
+        await DailyLimitService.instance.increment(planCode, 'products');
+
+        if (mounted) {
+          ref.invalidate(inventoryProvider);
+          messenger
+            ..hideCurrentSnackBar()
+            ..showSnackBar(SnackBar(
+                content: const Text('Product added successfully!', style: TextStyle(color: Colors.white)),
+                backgroundColor: AppTheme.successColor,
+                behavior: SnackBarBehavior.floating,
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                margin: const EdgeInsets.all(12)));
+          navigator.pop();
+        }
       }
     } catch (e) {
-      if (mounted) AppSnackbar.show(context, e.toString(), isError: true);
+      if (mounted) {
+        messenger
+          ..hideCurrentSnackBar()
+          ..showSnackBar(SnackBar(
+              content: Text(e.toString(), style: const TextStyle(color: Colors.white)),
+              backgroundColor: AppTheme.errorColor,
+              behavior: SnackBarBehavior.floating,
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+              margin: const EdgeInsets.all(12)));
+      }
     } finally {
       if (mounted) setState(() => _isLoading = false);
     }
@@ -194,7 +264,7 @@ class _AddProductScreenState extends ConsumerState<AddProductScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Add Product')),
+      appBar: AppBar(title: Text(widget.existingProduct != null ? 'Edit Product' : 'Add Product')),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(16),
         child: Column(
@@ -342,10 +412,10 @@ class _AddProductScreenState extends ConsumerState<AddProductScreen> {
             const SizedBox(height: 32),
 
             AppButton(
-              label: 'Add Product',
+              label: widget.existingProduct != null ? 'Save Changes' : 'Add Product',
               onPressed: _save,
               isLoading: _isLoading,
-              icon: Icons.add_box_rounded,
+              icon: widget.existingProduct != null ? Icons.save_rounded : Icons.add_box_rounded,
             ).animate(delay: 250.ms).fadeIn(),
             const SizedBox(height: 16),
           ],

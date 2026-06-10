@@ -18,6 +18,7 @@ import 'package:smart_saoji/features/dashboard/presentation/screens/dashboard_sc
 import 'package:smart_saoji/features/parties/presentation/screens/parties_screen.dart';
 import 'package:smart_saoji/features/parties/presentation/screens/add_party_screen.dart';
 import 'package:smart_saoji/features/parties/presentation/screens/party_detail_screen.dart';
+import 'package:smart_saoji/features/parties/data/models/party_model.dart';
 import 'package:smart_saoji/features/inventory/presentation/screens/inventory_screen.dart';
 import 'package:smart_saoji/features/inventory/presentation/screens/add_product_screen.dart';
 import 'package:smart_saoji/features/inventory/presentation/screens/product_detail_screen.dart';
@@ -223,6 +224,13 @@ final appRouterProvider = Provider<GoRouter>((ref) {
                 path: ':id',
                 builder: (_, state) => PartyDetailScreen(
                     partyId: state.pathParameters['id']!),
+                routes: [
+                  GoRoute(
+                    path: 'edit',
+                    builder: (_, state) => AddPartyScreen(
+                        existingParty: state.extra as Party?),
+                  ),
+                ],
               ),
             ],
           ),
