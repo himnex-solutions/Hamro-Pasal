@@ -2,7 +2,7 @@ import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_animate/flutter_animate.dart';
-import 'package:hamro_pasal/core/theme/app_theme.dart';
+import 'package:smart_saoji/core/theme/app_theme.dart';
 import 'package:intl/intl.dart';
 
 class EmiCalculatorScreen extends StatefulWidget {

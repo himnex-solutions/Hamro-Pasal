@@ -5,10 +5,10 @@ import 'package:flutter_animate/flutter_animate.dart';
 import 'package:go_router/go_router.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:smooth_page_indicator/smooth_page_indicator.dart';
-import 'package:hamro_pasal/core/constants/app_constants.dart';
-import 'package:hamro_pasal/core/router/app_router.dart';
-import 'package:hamro_pasal/core/theme/app_theme.dart';
-import 'package:hamro_pasal/core/widgets/poly_mesh_background.dart';
+import 'package:smart_saoji/core/constants/app_constants.dart';
+import 'package:smart_saoji/core/router/app_router.dart';
+import 'package:smart_saoji/core/theme/app_theme.dart';
+import 'package:smart_saoji/core/widgets/poly_mesh_background.dart';
 
 class OnboardingScreen extends StatefulWidget {
   const OnboardingScreen({super.key});
@@ -141,7 +141,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                           ),
                           const SizedBox(width: 12),
                           const Text(
-                            'Hamro Pasal',
+                            'Smart Saoji',
                             style: TextStyle(
                               color: AppTheme.primaryColor,
                               fontSize: 18,

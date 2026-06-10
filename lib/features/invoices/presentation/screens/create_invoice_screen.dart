@@ -6,16 +6,16 @@ import 'package:intl/intl.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:uuid/uuid.dart';
-import 'package:hamro_pasal/core/constants/app_constants.dart';
-import 'package:hamro_pasal/core/l10n/app_strings.dart';
-import 'package:hamro_pasal/core/theme/app_theme.dart';
-import 'package:hamro_pasal/core/widgets/app_button.dart';
-import 'package:hamro_pasal/core/widgets/app_snackbar.dart';
-import 'package:hamro_pasal/features/invoices/presentation/screens/invoices_screen.dart';
-import 'package:hamro_pasal/features/invoices/data/services/invoice_settings_service.dart';
-import 'package:hamro_pasal/core/router/app_router.dart';
-import 'package:hamro_pasal/features/subscription/data/services/subscription_manager.dart';
-import 'package:hamro_pasal/core/widgets/barcode_scanner_modal.dart';
+import 'package:smart_saoji/core/constants/app_constants.dart';
+import 'package:smart_saoji/core/l10n/app_strings.dart';
+import 'package:smart_saoji/core/theme/app_theme.dart';
+import 'package:smart_saoji/core/widgets/app_button.dart';
+import 'package:smart_saoji/core/widgets/app_snackbar.dart';
+import 'package:smart_saoji/features/invoices/presentation/screens/invoices_screen.dart';
+import 'package:smart_saoji/features/invoices/data/services/invoice_settings_service.dart';
+import 'package:smart_saoji/core/router/app_router.dart';
+import 'package:smart_saoji/features/subscription/data/services/subscription_manager.dart';
+import 'package:smart_saoji/core/widgets/barcode_scanner_modal.dart';
 
 
 // ── Line Item Model ────────────────────────────────────────────

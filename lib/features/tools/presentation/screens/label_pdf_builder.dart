@@ -1,5 +1,5 @@
 import 'dart:typed_data';
-import 'package:hamro_pasal/features/tools/presentation/screens/label_print_models.dart';
+import 'package:smart_saoji/features/tools/presentation/screens/label_print_models.dart';
 import 'package:pdf/pdf.dart';
 import 'package:pdf/widgets.dart' as pw;
 import 'package:qr_flutter/qr_flutter.dart';
@@ -112,7 +112,7 @@ class LabelPdfBuilder {
   }) async {
     final doc = pw.Document();
     final fmt = _fmt(wMm, hMm);
-    final bytes = await _qrBytes(qrData.isEmpty ? 'https://hamropasal.app' : qrData);
+    final bytes = await _qrBytes(qrData.isEmpty ? 'https://smartsaoji.app' : qrData);
 
     doc.addPage(pw.Page(
       pageFormat: fmt,
@@ -235,14 +235,65 @@ class LabelPdfBuilder {
         pw.Text(dateStr, style: const pw.TextStyle(fontSize: 8)),
         pw.Divider(thickness: 0.5),
         pw.SizedBox(height: 2),
-        // Items
-        ...items.map((item) => pw.Row(
-          mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
+        // Items Table
+        pw.Table(
+          columnWidths: const {
+            0: pw.FlexColumnWidth(4.5), // Name
+            1: pw.FlexColumnWidth(1.5), // Qty
+            2: pw.FlexColumnWidth(2.0), // Rate
+            3: pw.FlexColumnWidth(2.0), // Total
+          },
           children: [
-            pw.Expanded(child: pw.Text('${item['qty'] ?? '1'}x ${item['name'] ?? ''}', style: const pw.TextStyle(fontSize: 9))),
-            pw.Text('Rs.${item['price'] ?? '0'}', style: const pw.TextStyle(fontSize: 9)),
+            pw.TableRow(
+              decoration: const pw.BoxDecoration(
+                border: pw.Border(bottom: pw.BorderSide(width: 0.5, style: pw.BorderStyle.dashed)),
+              ),
+              children: [
+                pw.Padding(
+                  padding: const pw.EdgeInsets.only(bottom: 2),
+                  child: pw.Text('Item', style: pw.TextStyle(fontSize: 8, fontWeight: pw.FontWeight.bold)),
+                ),
+                pw.Padding(
+                  padding: const pw.EdgeInsets.only(bottom: 2),
+                  child: pw.Text('Qty', style: pw.TextStyle(fontSize: 8, fontWeight: pw.FontWeight.bold), textAlign: pw.TextAlign.right),
+                ),
+                pw.Padding(
+                  padding: const pw.EdgeInsets.only(bottom: 2),
+                  child: pw.Text('Rate', style: pw.TextStyle(fontSize: 8, fontWeight: pw.FontWeight.bold), textAlign: pw.TextAlign.right),
+                ),
+                pw.Padding(
+                  padding: const pw.EdgeInsets.only(bottom: 2),
+                  child: pw.Text('Amount', style: pw.TextStyle(fontSize: 8, fontWeight: pw.FontWeight.bold), textAlign: pw.TextAlign.right),
+                ),
+              ],
+            ),
+            ...items.map((item) {
+              final qty = double.tryParse(item['qty'] ?? '1') ?? 1;
+              final rate = double.tryParse(item['price'] ?? '0') ?? 0;
+              final totalAmt = qty * rate;
+              return pw.TableRow(
+                children: [
+                  pw.Padding(
+                    padding: const pw.EdgeInsets.symmetric(vertical: 2),
+                    child: pw.Text(item['name'] ?? '', style: const pw.TextStyle(fontSize: 8)),
+                  ),
+                  pw.Padding(
+                    padding: const pw.EdgeInsets.symmetric(vertical: 2),
+                    child: pw.Text(qty.toStringAsFixed(0), style: const pw.TextStyle(fontSize: 8), textAlign: pw.TextAlign.right),
+                  ),
+                  pw.Padding(
+                    padding: const pw.EdgeInsets.symmetric(vertical: 2),
+                    child: pw.Text(rate.toStringAsFixed(2), style: const pw.TextStyle(fontSize: 8), textAlign: pw.TextAlign.right),
+                  ),
+                  pw.Padding(
+                    padding: const pw.EdgeInsets.symmetric(vertical: 2),
+                    child: pw.Text(totalAmt.toStringAsFixed(2), style: const pw.TextStyle(fontSize: 8), textAlign: pw.TextAlign.right),
+                  ),
+                ],
+              );
+            }),
           ],
-        )),
+        ),
         pw.SizedBox(height: 2),
         pw.Divider(thickness: 0.5),
         if (subtotal.isNotEmpty) _receiptRow('Subtotal', 'Rs.$subtotal'),
@@ -259,7 +310,7 @@ class LabelPdfBuilder {
         if (paymentMethod.isNotEmpty) ...[pw.SizedBox(height: 2), pw.Text('Paid by: $paymentMethod', style: const pw.TextStyle(fontSize: 8))],
         pw.Divider(thickness: 0.5),
         if (footer.isNotEmpty) pw.Text(footer, style: const pw.TextStyle(fontSize: 8), textAlign: pw.TextAlign.center),
-        pw.Text('Thank you!', style: pw.TextStyle(fontSize: 9, fontWeight: pw.FontWeight.bold), textAlign: pw.TextAlign.center),
+        pw.Text('Thank You For Your Visit !', style: pw.TextStyle(fontSize: 9, fontWeight: pw.FontWeight.bold), textAlign: pw.TextAlign.center),
       ]),
     ));
     return doc.save();

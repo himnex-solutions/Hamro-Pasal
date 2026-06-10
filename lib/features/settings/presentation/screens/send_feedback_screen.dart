@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
-import 'package:hamro_pasal/core/theme/app_theme.dart';
-import 'package:hamro_pasal/core/widgets/app_snackbar.dart';
+import 'package:smart_saoji/core/theme/app_theme.dart';
+import 'package:smart_saoji/core/widgets/app_snackbar.dart';
 
 class SendFeedbackScreen extends StatefulWidget {
   const SendFeedbackScreen({super.key});
@@ -116,7 +116,7 @@ class _SendFeedbackScreenState extends State<SendFeedbackScreen> {
                   ),
                   const SizedBox(height: 8),
                   Text(
-                    'Your feedback helps us improve Hamro Pasal for everyone.',
+                    'Your feedback helps us improve Smart Saoji for everyone.',
                     style: TextStyle(
                       fontSize: 14,
                       color: Colors.white.withValues(alpha: 0.85),
@@ -135,7 +135,7 @@ class _SendFeedbackScreenState extends State<SendFeedbackScreen> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     // Star rating
-                    Text('How would you rate Hamro Pasal?',
+                    Text('How would you rate Smart Saoji?',
                         style: Theme.of(context)
                             .textTheme
                             .titleSmall

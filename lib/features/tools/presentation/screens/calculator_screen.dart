@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:hamro_pasal/core/theme/app_theme.dart';
+import 'package:smart_saoji/core/theme/app_theme.dart';
 
 class CalculatorScreen extends StatefulWidget {
   const CalculatorScreen({super.key});

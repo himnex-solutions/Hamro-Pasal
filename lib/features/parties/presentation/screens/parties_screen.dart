@@ -3,12 +3,12 @@ import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
-import 'package:hamro_pasal/core/constants/app_constants.dart';
-import 'package:hamro_pasal/core/l10n/app_strings.dart';
-import 'package:hamro_pasal/core/router/app_router.dart';
-import 'package:hamro_pasal/core/theme/app_theme.dart';
+import 'package:smart_saoji/core/constants/app_constants.dart';
+import 'package:smart_saoji/core/l10n/app_strings.dart';
+import 'package:smart_saoji/core/router/app_router.dart';
+import 'package:smart_saoji/core/theme/app_theme.dart';
 
-import 'package:hamro_pasal/features/parties/data/models/party_model.dart';
+import 'package:smart_saoji/features/parties/data/models/party_model.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 

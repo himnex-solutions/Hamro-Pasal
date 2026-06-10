@@ -5,11 +5,11 @@ import 'package:intl/intl.dart';
 import 'package:pdf/pdf.dart';
 import 'package:pdf/widgets.dart' as pw;
 import 'package:printing/printing.dart';
-import 'package:hamro_pasal/core/theme/app_theme.dart';
-import 'package:hamro_pasal/core/widgets/app_button.dart';
-import 'package:hamro_pasal/core/widgets/app_snackbar.dart';
-import 'package:hamro_pasal/core/widgets/app_text_field.dart';
-import 'package:hamro_pasal/features/invoices/data/services/invoice_settings_service.dart';
+import 'package:smart_saoji/core/theme/app_theme.dart';
+import 'package:smart_saoji/core/widgets/app_button.dart';
+import 'package:smart_saoji/core/widgets/app_snackbar.dart';
+import 'package:smart_saoji/core/widgets/app_text_field.dart';
+import 'package:smart_saoji/features/invoices/data/services/invoice_settings_service.dart';
 
 class ThermalPrintingSettingsScreen extends ConsumerStatefulWidget {
   const ThermalPrintingSettingsScreen({super.key});
@@ -99,7 +99,7 @@ class _ThermalPrintingSettingsScreenState
               crossAxisAlignment: pw.CrossAxisAlignment.center,
               children: [
                 pw.Text(
-                  'HAMRO PASAL TEST',
+                  'SMART SAOJI TEST',
                   style: pw.TextStyle(fontWeight: pw.FontWeight.bold, fontSize: 13),
                 ),
                 pw.Text('Receipt Printing Service', style: const pw.TextStyle(fontSize: 8)),
@@ -197,7 +197,7 @@ class _ThermalPrintingSettingsScreenState
                 pw.Text(_footerCtrl.text.isEmpty ? 'Thank you!' : _footerCtrl.text,
                     style: const pw.TextStyle(fontSize: 8), textAlign: pw.TextAlign.center),
                 pw.SizedBox(height: 6),
-                pw.Text('Powered by Hamro Pasal', style: pw.TextStyle(fontSize: 6, fontStyle: pw.FontStyle.italic)),
+                pw.Text('Powered by Smart Saoji', style: pw.TextStyle(fontSize: 6, fontStyle: pw.FontStyle.italic)),
               ],
             );
           },
@@ -548,7 +548,7 @@ class _SimulatedReceipt extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.center,
               children: [
                 const Text(
-                  'HAMRO PASAL STORE',
+                  'SMART SAOJI STORE',
                   style: TextStyle(
                     fontFamily: 'Courier',
                     fontWeight: FontWeight.bold,
@@ -649,7 +649,7 @@ class _SimulatedReceipt extends StatelessWidget {
                 ),
                 const SizedBox(height: 4),
                 const Text(
-                  'Powered by Hamro Pasal',
+                  'Powered by Smart Saoji',
                   style: TextStyle(fontFamily: 'Courier', fontSize: 7, color: Colors.black38, fontStyle: FontStyle.italic),
                   textAlign: TextAlign.center,
                 ),

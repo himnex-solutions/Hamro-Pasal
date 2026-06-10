@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
-import 'package:hamro_pasal/core/router/app_router.dart';
+import 'package:smart_saoji/core/router/app_router.dart';
 
 /// Simple placeholder for the unused /home route
 /// (Shell routes start at /home/dashboard)

@@ -2,10 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:hamro_pasal/core/router/app_router.dart';
-import 'package:hamro_pasal/core/theme/app_theme.dart';
-import 'package:hamro_pasal/core/widgets/poly_mesh_background.dart';
-import 'package:hamro_pasal/features/admin/presentation/providers/admin_auth_provider.dart';
+import 'package:smart_saoji/core/router/app_router.dart';
+import 'package:smart_saoji/core/theme/app_theme.dart';
+import 'package:smart_saoji/core/widgets/poly_mesh_background.dart';
+import 'package:smart_saoji/features/admin/presentation/providers/admin_auth_provider.dart';
 
 class AdminLoginScreen extends ConsumerStatefulWidget {
   const AdminLoginScreen({super.key});
@@ -108,7 +108,7 @@ class _AdminLoginScreenState extends ConsumerState<AdminLoginScreen> {
                   ).animate(delay: 200.ms).fadeIn().slideY(begin: 0.3),
                   const SizedBox(height: 6),
                   Text(
-                    'Hamro Pasal — Restricted Access',
+                    'Smart Saoji — Restricted Access',
                     style: TextStyle(
                       color: Colors.white.withValues(alpha: 0.5),
                       fontSize: 13,

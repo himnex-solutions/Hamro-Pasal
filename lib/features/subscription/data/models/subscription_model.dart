@@ -1,4 +1,4 @@
-import 'package:hamro_pasal/core/constants/app_constants.dart';
+import 'package:smart_saoji/core/constants/app_constants.dart';
 
 class Subscription {
   final String id;

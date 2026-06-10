@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
-import 'package:hamro_pasal/core/constants/app_constants.dart';
-import 'package:hamro_pasal/core/theme/app_theme.dart';
-import 'package:hamro_pasal/features/inventory/data/models/product_model.dart';
+import 'package:smart_saoji/core/constants/app_constants.dart';
+import 'package:smart_saoji/core/theme/app_theme.dart';
+import 'package:smart_saoji/features/inventory/data/models/product_model.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 final productDetailProvider =

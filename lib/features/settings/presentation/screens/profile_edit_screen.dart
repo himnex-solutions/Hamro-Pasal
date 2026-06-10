@@ -2,10 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
-import 'package:hamro_pasal/core/theme/app_theme.dart';
-import 'package:hamro_pasal/core/widgets/app_button.dart';
-import 'package:hamro_pasal/core/widgets/app_snackbar.dart';
-import 'package:hamro_pasal/core/widgets/app_text_field.dart';
+import 'package:smart_saoji/core/theme/app_theme.dart';
+import 'package:smart_saoji/core/widgets/app_button.dart';
+import 'package:smart_saoji/core/widgets/app_snackbar.dart';
+import 'package:smart_saoji/core/widgets/app_text_field.dart';
 
 class ProfileEditScreen extends ConsumerStatefulWidget {
   const ProfileEditScreen({super.key});

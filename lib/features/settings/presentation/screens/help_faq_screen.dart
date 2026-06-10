@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
-import 'package:hamro_pasal/core/theme/app_theme.dart';
+import 'package:smart_saoji/core/theme/app_theme.dart';
 
 class HelpFaqScreen extends StatefulWidget {
   const HelpFaqScreen({super.key});
@@ -14,8 +14,8 @@ class _HelpFaqScreenState extends State<HelpFaqScreen> {
 
   static const _faqs = [
     (
-      q: 'What is Hamro Pasal?',
-      a: 'Hamro Pasal is an all-in-one business management and POS application designed for Nepali businesses. It helps you manage inventory, track transactions, handle parties, generate reports, and more — all from one app.',
+      q: 'What is Smart Saoji?',
+      a: 'Smart Saoji is an all-in-one business management and POS application designed for Nepali businesses. It helps you manage inventory, track transactions, handle parties, generate reports, and more — all from one app.',
     ),
     (
       q: 'How do I set up my business?',
@@ -23,7 +23,7 @@ class _HelpFaqScreenState extends State<HelpFaqScreen> {
     ),
     (
       q: 'Is my data saved offline?',
-      a: 'Yes! Hamro Pasal supports offline mode. Your data is saved locally and synced with the cloud automatically when you have an internet connection.',
+      a: 'Yes! Smart Saoji supports offline mode. Your data is saved locally and synced with the cloud automatically when you have an internet connection.',
     ),
     (
       q: 'What is the free trial period?',
@@ -46,7 +46,7 @@ class _HelpFaqScreenState extends State<HelpFaqScreen> {
       a: 'Go to Settings → Preferences → Language. You can switch between English and Nepali (नेपाली) at any time.',
     ),
     (
-      q: 'Can I use Hamro Pasal on multiple devices?',
+      q: 'Can I use Smart Saoji on multiple devices?',
       a: 'Yes. Your data is tied to your account and synced via the cloud. Simply sign in on any device to access your business data.',
     ),
     (
@@ -103,7 +103,7 @@ class _HelpFaqScreenState extends State<HelpFaqScreen> {
                   ),
                   const SizedBox(height: 8),
                   Text(
-                    'Find answers to the most common questions about Hamro Pasal.',
+                    'Find answers to the most common questions about Smart Saoji.',
                     style: TextStyle(
                       fontSize: 14,
                       color: Colors.white.withValues(alpha: 0.85),

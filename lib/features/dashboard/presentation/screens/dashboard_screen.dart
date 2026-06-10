@@ -5,16 +5,16 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_staggered_animations/flutter_staggered_animations.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
-import 'package:hamro_pasal/core/constants/app_constants.dart';
-import 'package:hamro_pasal/core/l10n/app_strings.dart';
-import 'package:hamro_pasal/core/providers/profile_mode_provider.dart';
-import 'package:hamro_pasal/core/router/app_router.dart';
-import 'package:hamro_pasal/core/theme/app_theme.dart';
-import 'package:hamro_pasal/core/widgets/poly_mesh_background.dart';
-import 'package:hamro_pasal/features/dashboard/presentation/providers/dashboard_provider.dart';
-import 'package:hamro_pasal/features/dashboard/presentation/screens/personal_dashboard_screen.dart';
+import 'package:smart_saoji/core/constants/app_constants.dart';
+import 'package:smart_saoji/core/l10n/app_strings.dart';
+import 'package:smart_saoji/core/providers/profile_mode_provider.dart';
+import 'package:smart_saoji/core/router/app_router.dart';
+import 'package:smart_saoji/core/theme/app_theme.dart';
+import 'package:smart_saoji/core/widgets/poly_mesh_background.dart';
+import 'package:smart_saoji/features/dashboard/presentation/providers/dashboard_provider.dart';
+import 'package:smart_saoji/features/dashboard/presentation/screens/personal_dashboard_screen.dart';
 import 'package:loading_animation_widget/loading_animation_widget.dart';
-import 'package:hamro_pasal/core/services/notification_service.dart';
+import 'package:smart_saoji/core/services/notification_service.dart';
 
 class DashboardScreen extends ConsumerWidget {
   const DashboardScreen({super.key});

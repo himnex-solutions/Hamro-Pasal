@@ -258,7 +258,7 @@ class AppStrings {
   String get backupSubtitle => _s('Export all your business data', 'सबै व्यापार डाटा निर्यात');
   String get support => _s('Support', 'सहयोग');
   String get helpFaq => _s('Help & FAQ', 'मद्दत र FAQ');
-  String get helpSubtitle => _s('Get help with Hamro Pasal', 'Hamro Pasal सँग मद्दत लिनुहोस्');
+  String get helpSubtitle => _s('Get help with Smart Saoji', 'Smart Saoji सँग मद्दत लिनुहोस्');
   String get sendFeedback => _s('Send Feedback', 'प्रतिक्रिया पठाउनुहोस्');
   String get feedbackSubtitle => _s('Help us improve the app', 'एपलाई सुधार गर्न मद्दत');
   String get privacyPolicy => _s('Privacy Policy', 'गोपनीयता नीति');
@@ -270,7 +270,7 @@ class AppStrings {
   String get currentlyBusiness => _s('Currently: Business View', 'अहिले: व्यापार दृश्य');
   String get switchedToPersonal => _s('Switched to Personal Mode', 'व्यक्तिगत मोडमा स्विच भयो');
   String get switchedToBusiness => _s('Switched to Business Mode', 'व्यापार मोडमा स्विच भयो');
-  String get madeWithLove => _s('Hamro Pasal v1.0.0\nMade with love for Nepal',
+  String get madeWithLove => _s('Smart Saoji v1.0.0\nMade with love for Nepal',
       'हाम्रो पसल v1.0.0\nनेपालको लागि माया सँग बनाइएको');
   String get selectLanguage => _s('Select Language', 'भाषा छनौट');
   String get languageChanged => _s('Language changed to English', 'भाषा नेपालीमा परिवर्तन भयो');

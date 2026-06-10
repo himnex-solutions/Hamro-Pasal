@@ -46,5 +46,5 @@
 
   <!-- Store sign -->
   <rect x="16" y="24" width="32" height="7" rx="1" fill="white" fill-opacity="0.9"/>
-  <text x="32" y="30" text-anchor="middle" fill="#2E7D32" font-size="5.5" font-weight="800" font-family="Arial, sans-serif" letter-spacing="0.5">HAMRO PASAL</text>
+  <text x="32" y="30" text-anchor="middle" fill="#2E7D32" font-size="5.5" font-weight="800" font-family="Arial, sans-serif" letter-spacing="0.5">SMART SAOJI</text>
 </svg>

@@ -2,7 +2,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:hamro_pasal/core/constants/app_constants.dart';
+import 'package:smart_saoji/core/constants/app_constants.dart';
 
 // Separate ThemeMode provider from app_theme.dart to avoid circular imports
 final themeModeProvider =

@@ -1,5 +1,5 @@
 -- ============================================================
--- HAMRO PASAL — Admin Panel SQL Migration
+-- SMART SAOJI — Admin Panel SQL Migration
 -- Run this in Supabase SQL Editor AFTER the main schema.sql
 -- ============================================================
 
@@ -8,7 +8,7 @@ ALTER TABLE user_profiles
   ADD COLUMN IF NOT EXISTS is_admin BOOLEAN NOT NULL DEFAULT FALSE;
 
 -- ─── 2. Create your first admin user ─────────────────────────
--- Replace 'admin@hamropasal.com' with the actual admin email
+-- Replace 'admin@smartsaoji.com' with the actual admin email
 -- Make sure this user already exists in Supabase Auth first!
 UPDATE user_profiles
   SET is_admin = TRUE

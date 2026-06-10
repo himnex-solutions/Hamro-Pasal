@@ -4,15 +4,15 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_animate/flutter_animate.dart';
-import 'package:hamro_pasal/core/l10n/app_strings.dart';
-import 'package:hamro_pasal/core/router/app_router.dart';
-import 'package:hamro_pasal/core/theme/app_theme.dart';
-import 'package:hamro_pasal/core/services/sync_service.dart';
-import 'package:hamro_pasal/features/auth/presentation/providers/auth_provider.dart';
-import 'package:hamro_pasal/features/subscription/data/services/subscription_manager.dart';
+import 'package:smart_saoji/core/l10n/app_strings.dart';
+import 'package:smart_saoji/core/router/app_router.dart';
+import 'package:smart_saoji/core/theme/app_theme.dart';
+import 'package:smart_saoji/core/services/sync_service.dart';
+import 'package:smart_saoji/features/auth/presentation/providers/auth_provider.dart';
+import 'package:smart_saoji/features/subscription/data/services/subscription_manager.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
-import 'package:hamro_pasal/core/services/app_lock_service.dart';
-import 'package:hamro_pasal/features/settings/presentation/screens/pin_lock_screen.dart';
+import 'package:smart_saoji/core/services/app_lock_service.dart';
+import 'package:smart_saoji/features/settings/presentation/screens/pin_lock_screen.dart';
 
 class MainShellScreen extends ConsumerStatefulWidget {
   final Widget child;
@@ -169,7 +169,7 @@ class _MainShellScreenState extends ConsumerState<MainShellScreen> with WidgetsB
                     ),
                     const SizedBox(height: 16),
                     Text(
-                      'Accessing Hamro Pasal on Web and Desktop platforms is exclusive to Diamond members.',
+                      'Accessing Smart Saoji on Web and Desktop platforms is exclusive to Diamond members.',
                       style: TextStyle(
                         color: Theme.of(context).brightness == Brightness.dark
                             ? Colors.white.withValues(alpha: 0.7)
@@ -568,7 +568,7 @@ class _PremiumSidebar extends ConsumerWidget {
                     ),
                     const SizedBox(width: 10),
                     Text(
-                      'Hamro Pasal',
+                      'Smart Saoji',
                       style: Theme.of(context).textTheme.titleLarge?.copyWith(
                             color: AppTheme.primaryColor,
                             fontWeight: FontWeight.w800,

@@ -1,4 +1,4 @@
-# Hamro Pasal — Setup & Development Guide
+# Smart Saoji — Setup & Development Guide
 
 ## 🚀 Prerequisites
 
@@ -13,7 +13,7 @@
 
 ```bash
 git clone <your-repo>
-cd "Hamro Pasal"
+cd "Smart Saoji"
 flutter pub get
 ```
 
@@ -121,7 +121,7 @@ flutter run -d macos
 
 In Supabase Dashboard → Authentication → Settings:
 - **Site URL**: `http://localhost:PORT` (dev) or your production URL
-- **Redirect URLs**: Add `io.supabase.hamropasal://login-callback/`
+- **Redirect URLs**: Add `io.supabase.smartsaoji://login-callback/`
 - **Google OAuth**: Enable in Authentication → Providers → Google
   - Add your Google Client ID and Secret
 

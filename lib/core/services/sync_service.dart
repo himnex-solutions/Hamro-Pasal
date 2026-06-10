@@ -2,8 +2,8 @@ import 'dart:async';
 import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
-import 'package:hamro_pasal/core/services/local_db_service.dart';
-import 'package:hamro_pasal/core/services/notification_service.dart';
+import 'package:smart_saoji/core/services/local_db_service.dart';
+import 'package:smart_saoji/core/services/notification_service.dart';
 
 // ── Connectivity Provider ─────────────────────────────────────
 enum ConnectivityStatus { online, offline }

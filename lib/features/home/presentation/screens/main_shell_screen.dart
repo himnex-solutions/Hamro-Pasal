@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:hamro_pasal/core/router/app_router.dart';
-import 'package:hamro_pasal/core/theme/app_theme.dart';
+import 'package:smart_saoji/core/router/app_router.dart';
+import 'package:smart_saoji/core/theme/app_theme.dart';
 
 class MainShellScreen extends ConsumerWidget {
   final Widget child;
@@ -205,7 +205,7 @@ class MainShellScreen extends ConsumerWidget {
                       Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Text('Hamro Pasal',
+                          Text('Smart Saoji',
                               style: Theme.of(context).textTheme.titleMedium),
                           Text('Business Suite',
                               style: Theme.of(context).textTheme.bodySmall),

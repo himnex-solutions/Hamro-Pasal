@@ -5,11 +5,11 @@ import 'package:flutter/services.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:hamro_pasal/core/router/app_router.dart';
-import 'package:hamro_pasal/core/theme/app_theme.dart';
-import 'package:hamro_pasal/core/widgets/app_button.dart';
-import 'package:hamro_pasal/core/widgets/app_snackbar.dart';
-import 'package:hamro_pasal/features/auth/presentation/providers/auth_provider.dart';
+import 'package:smart_saoji/core/router/app_router.dart';
+import 'package:smart_saoji/core/theme/app_theme.dart';
+import 'package:smart_saoji/core/widgets/app_button.dart';
+import 'package:smart_saoji/core/widgets/app_snackbar.dart';
+import 'package:smart_saoji/features/auth/presentation/providers/auth_provider.dart';
 
 class OtpVerificationScreen extends ConsumerStatefulWidget {
   final String email;

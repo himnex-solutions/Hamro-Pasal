@@ -28,7 +28,7 @@ class LocalDbService {
         'local_sync_queue',
       ];
       for (final table in tables) {
-        final file = File('${dir.path}/hamro_pasal_$table.json');
+        final file = File('${dir.path}/smart_saoji_$table.json');
         if (await file.exists()) {
           final raw = await file.readAsString();
           final List<dynamic> parsed = jsonDecode(raw) as List<dynamic>;
@@ -93,7 +93,7 @@ class LocalDbService {
     if (kIsWeb) return;
     try {
       final dir = await getApplicationDocumentsDirectory();
-      final file = File('${dir.path}/hamro_pasal_$table.json');
+      final file = File('${dir.path}/smart_saoji_$table.json');
       await file.writeAsString(jsonEncode(_store[table] ?? []));
     } catch (e) {
       debugPrint('LocalDbService persist error: $e');

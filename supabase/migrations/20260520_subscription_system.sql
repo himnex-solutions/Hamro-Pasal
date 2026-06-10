@@ -1,5 +1,5 @@
 -- ============================================================
--- HAMRO PASAL — Subscription & Membership System Migration
+-- SMART SAOJI — Subscription & Membership System Migration
 -- ============================================================
 
 -- Enable UUID extension if not already
@@ -29,8 +29,8 @@ CREATE TABLE IF NOT EXISTS public.subscription_plans (
 -- Seed plans
 INSERT INTO public.subscription_plans (plan_code, name, price, interval, features) VALUES
   ('basic', 'Basic Free Plan', 0.00, 'forever', '["1 Business Profile only", "1 Personal Finance Profile only", "Record Unlimited Business Transactions", "Add & Manage Unlimited Inventory Items", "Offline + Online Support", "Basic Reports", "Mobile app access only"]'),
-  ('gold', 'Gold Plan', 1200.00, 'yearly', '["Up to 3 Business Profiles", "Add up to 3 Staff Accounts", "Upload Bill Images", "Barcode Scanner", "View & Download Unlimited Reports", "Thermal Printer Support", "Enable App Lock", "Offline + Online Support", "Customize Invoices", "A5 Paper Printing Support", "Organize Parties into Categories", "Hide Hamro Pasal Branding", "Low Stock Alerts", "Enable Transaction Prefixes", "Premium Mobile Features"]'),
-  ('diamond', 'Diamond Plan', 2400.00, 'yearly', '["Up to 5 Business Profiles", "Add up to 5 Staff Accounts", "Upload Bill Images", "Excel Report Download", "Barcode Scanner", "View & Download Unlimited Reports", "Enable App Lock", "Thermal Printing", "Offline + Online Support", "Customize Invoices", "A5 Paper Printing Support", "Organize Parties into Categories", "Hide Hamro Pasal Branding", "Low Stock Alerts", "Enable Transaction Prefixes", "Desktop + Web Access", "Full Multi-platform Synchronization"]')
+  ('gold', 'Gold Plan', 1200.00, 'yearly', '["Up to 3 Business Profiles", "Add up to 3 Staff Accounts", "Upload Bill Images", "Barcode Scanner", "View & Download Unlimited Reports", "Thermal Printer Support", "Enable App Lock", "Offline + Online Support", "Customize Invoices", "A5 Paper Printing Support", "Organize Parties into Categories", "Hide Smart Saoji Branding", "Low Stock Alerts", "Enable Transaction Prefixes", "Premium Mobile Features"]'),
+  ('diamond', 'Diamond Plan', 2400.00, 'yearly', '["Up to 5 Business Profiles", "Add up to 5 Staff Accounts", "Upload Bill Images", "Excel Report Download", "Barcode Scanner", "View & Download Unlimited Reports", "Enable App Lock", "Thermal Printing", "Offline + Online Support", "Customize Invoices", "A5 Paper Printing Support", "Organize Parties into Categories", "Hide Smart Saoji Branding", "Low Stock Alerts", "Enable Transaction Prefixes", "Desktop + Web Access", "Full Multi-platform Synchronization"]')
 ON CONFLICT (plan_code) DO UPDATE SET
   name = EXCLUDED.name,
   price = EXCLUDED.price,

@@ -1,4 +1,4 @@
-package com.himnex.hamro_pasal
+package com.himnex.smart_saoji
 
 import io.flutter.embedding.android.FlutterActivity
 

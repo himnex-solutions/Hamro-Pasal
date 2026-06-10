@@ -2,8 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
-import 'package:hamro_pasal/core/constants/app_constants.dart';
-import 'package:hamro_pasal/core/theme/app_theme.dart';
+import 'package:smart_saoji/core/constants/app_constants.dart';
+import 'package:smart_saoji/core/theme/app_theme.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'dart:io';
@@ -13,11 +13,11 @@ import 'package:pdf/pdf.dart';
 import 'package:pdf/widgets.dart' as pw;
 import 'package:printing/printing.dart';
 import 'package:share_plus/share_plus.dart';
-import 'package:hamro_pasal/core/widgets/app_snackbar.dart';
-import 'package:hamro_pasal/features/subscription/data/services/subscription_manager.dart';
-import 'package:hamro_pasal/core/router/app_router.dart';
+import 'package:smart_saoji/core/widgets/app_snackbar.dart';
+import 'package:smart_saoji/features/subscription/data/services/subscription_manager.dart';
+import 'package:smart_saoji/core/router/app_router.dart';
 import 'package:go_router/go_router.dart';
-import 'package:hamro_pasal/core/l10n/app_strings.dart';
+import 'package:smart_saoji/core/l10n/app_strings.dart';
 
 class ReportSummary {
   final double totalSales;
@@ -153,7 +153,7 @@ class _ReportsScreenState extends ConsumerState<ReportsScreen> {
             return pw.Column(
               crossAxisAlignment: pw.CrossAxisAlignment.start,
               children: [
-                pw.Text('Hamro Pasal — Business Performance Report', style: pw.TextStyle(fontSize: 20, fontWeight: pw.FontWeight.bold)),
+                pw.Text('Smart Saoji — Business Performance Report', style: pw.TextStyle(fontSize: 20, fontWeight: pw.FontWeight.bold)),
                 pw.SizedBox(height: 8),
                 pw.Text('Generated on: ${DateFormat('yyyy-MM-dd HH:mm').format(DateTime.now())}'),
                 pw.SizedBox(height: 16),
@@ -220,7 +220,7 @@ class _ReportsScreenState extends ConsumerState<ReportsScreen> {
       final excel = xl.Excel.createExcel();
       final sheet = excel['Sheet1'];
 
-      sheet.appendRow([xl.TextCellValue('Hamro Pasal — Business Performance Report')]);
+      sheet.appendRow([xl.TextCellValue('Smart Saoji — Business Performance Report')]);
       sheet.appendRow([xl.TextCellValue('Generated on: ${DateFormat('yyyy-MM-dd HH:mm').format(DateTime.now())}')]);
       sheet.appendRow([]);
 
@@ -252,7 +252,7 @@ class _ReportsScreenState extends ConsumerState<ReportsScreen> {
 
         await Share.shareXFiles(
           [XFile(file.path)],
-          text: 'Hamro Pasal Business Report',
+          text: 'Smart Saoji Business Report',
         );
       }
     } catch (e) {

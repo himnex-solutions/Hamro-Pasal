@@ -4,11 +4,11 @@ import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:go_router/go_router.dart';
-import 'package:hamro_pasal/core/router/app_router.dart';
-import 'package:hamro_pasal/core/widgets/app_snackbar.dart';
-import 'package:hamro_pasal/features/auth/presentation/providers/auth_provider.dart';
+import 'package:smart_saoji/core/router/app_router.dart';
+import 'package:smart_saoji/core/widgets/app_snackbar.dart';
+import 'package:smart_saoji/features/auth/presentation/providers/auth_provider.dart';
 
-import 'package:hamro_pasal/core/widgets/wavy_divider.dart';
+import 'package:smart_saoji/core/widgets/wavy_divider.dart';
 
 // ── Color tokens (matching login screen exactly) ────────────
 const _gradientStart = Color(0xFF1E2ED2); // royal blue
@@ -212,7 +212,7 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
             ),
           ),
 
-          // ── Title "HamroPasal" centered in top section ──────────────────
+          // ── Title "SmartSaoji" centered in top section ──────────────────
           Positioned(
             top: 0,
             left: 0,
@@ -222,7 +222,7 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
               bottom: false,
               child: Center(
                 child: const Text(
-                  'HamroPasal',
+                  'SmartSaoji',
                   style: TextStyle(
                     fontSize: 42,
                     fontWeight: FontWeight.w800,

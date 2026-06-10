@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:hamro_pasal/core/theme/app_theme.dart';
+import 'package:smart_saoji/core/theme/app_theme.dart';
 
 class AppSnackbar {
   static void show(

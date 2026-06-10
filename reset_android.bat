@@ -1,6 +1,6 @@
 @echo off
 echo =======================================================
-echo              Hamro Pasal - Android Resetter
+echo              Smart Saoji - Android Resetter
 echo =======================================================
 echo.
 echo This script will safely recreate your Android folder and

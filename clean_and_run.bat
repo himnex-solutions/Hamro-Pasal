@@ -1,6 +1,6 @@
 @echo off
 echo =======================================================
-echo             Hamro Pasal - Quick Build & Memory Fixer
+echo             Smart Saoji - Quick Build & Memory Fixer
 echo =======================================================
 echo.
 echo This script will free up physical memory, stop zombie Java/Gradle 

@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
-import 'package:hamro_pasal/core/services/app_lock_service.dart';
-import 'package:hamro_pasal/core/theme/app_theme.dart';
-import 'package:hamro_pasal/core/widgets/app_snackbar.dart';
+import 'package:smart_saoji/core/services/app_lock_service.dart';
+import 'package:smart_saoji/core/theme/app_theme.dart';
+import 'package:smart_saoji/core/widgets/app_snackbar.dart';
 
 class PinLockScreen extends StatefulWidget {
   final bool isConfirming;

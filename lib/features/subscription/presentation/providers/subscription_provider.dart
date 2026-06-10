@@ -1,8 +1,8 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
-import 'package:hamro_pasal/core/constants/app_constants.dart';
-import 'package:hamro_pasal/features/subscription/data/models/subscription_model.dart';
+import 'package:smart_saoji/core/constants/app_constants.dart';
+import 'package:smart_saoji/features/subscription/data/models/subscription_model.dart';
 
 // ── Real-time subscription provider ──────────────────────────────────────────
 // Uses Supabase Realtime so the user's subscription status updates instantly

@@ -6,13 +6,13 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:intl/intl.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
-import 'package:hamro_pasal/core/theme/app_theme.dart';
-import 'package:hamro_pasal/core/widgets/app_button.dart';
-import 'package:hamro_pasal/core/widgets/app_snackbar.dart';
-import 'package:hamro_pasal/features/subscription/data/models/subscription_model.dart';
-import 'package:hamro_pasal/features/subscription/presentation/providers/subscription_provider.dart';
-import 'package:hamro_pasal/features/subscription/data/services/subscription_manager.dart';
-import 'package:hamro_pasal/core/l10n/app_strings.dart';
+import 'package:smart_saoji/core/theme/app_theme.dart';
+import 'package:smart_saoji/core/widgets/app_button.dart';
+import 'package:smart_saoji/core/widgets/app_snackbar.dart';
+import 'package:smart_saoji/features/subscription/data/models/subscription_model.dart';
+import 'package:smart_saoji/features/subscription/presentation/providers/subscription_provider.dart';
+import 'package:smart_saoji/features/subscription/data/services/subscription_manager.dart';
+import 'package:smart_saoji/core/l10n/app_strings.dart';
 
 // ── Providers for Payment Request Flow ─────────────────────────────
 

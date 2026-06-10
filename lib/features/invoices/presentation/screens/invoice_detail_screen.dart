@@ -7,12 +7,12 @@ import 'package:pdf/widgets.dart' as pw;
 import 'package:printing/printing.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
-import 'package:hamro_pasal/core/constants/app_constants.dart';
-import 'package:hamro_pasal/core/l10n/app_strings.dart';
-import 'package:hamro_pasal/core/theme/app_theme.dart';
-import 'package:hamro_pasal/core/widgets/app_snackbar.dart';
-import 'package:hamro_pasal/features/invoices/data/services/invoice_settings_service.dart';
-import 'package:hamro_pasal/features/subscription/data/services/subscription_manager.dart';
+import 'package:smart_saoji/core/constants/app_constants.dart';
+import 'package:smart_saoji/core/l10n/app_strings.dart';
+import 'package:smart_saoji/core/theme/app_theme.dart';
+import 'package:smart_saoji/core/widgets/app_snackbar.dart';
+import 'package:smart_saoji/features/invoices/data/services/invoice_settings_service.dart';
+import 'package:smart_saoji/features/subscription/data/services/subscription_manager.dart';
 
 class InvoiceDetailScreen extends ConsumerStatefulWidget {
   final String invoiceId;
@@ -296,7 +296,7 @@ class _InvoiceDetailScreenState extends ConsumerState<InvoiceDetailScreen> {
                     pw.SizedBox(height: 4),
                   ],
                   if (ref.read(subscriptionManagerProvider).planCode == 'basic')
-                    pw.Text('Powered by Hamro Pasal', style: pw.TextStyle(font: textFont, fontSize: 7, fontStyle: pw.FontStyle.italic), textAlign: pw.TextAlign.center),
+                    pw.Text('Powered by Smart Saoji', style: pw.TextStyle(font: textFont, fontSize: 7, fontStyle: pw.FontStyle.italic), textAlign: pw.TextAlign.center),
                 ],
               );
             }
@@ -526,7 +526,7 @@ class _InvoiceDetailScreenState extends ConsumerState<InvoiceDetailScreen> {
                 if (ref.read(subscriptionManagerProvider).planCode == 'basic') ...[
                   pw.SizedBox(height: 8),
                   pw.Center(
-                    child: pw.Text('Powered by Hamro Pasal',
+                    child: pw.Text('Powered by Smart Saoji',
                         style: pw.TextStyle(color: greyText, fontSize: 8, fontStyle: pw.FontStyle.italic)),
                   ),
                 ],

@@ -36,5 +36,5 @@ class SupabaseConstants {
   static const String rpcCheckTrialExpiry = 'check_trial_expiry';
 
   // ── OAuth ─────────────────────────────────────────────────
-  static const String googleRedirectUrl = 'io.supabase.hamropasal://login-callback/';
+  static const String googleRedirectUrl = 'io.supabase.smartsaoji://login-callback/';
 }

@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
-import 'package:hamro_pasal/core/services/daily_limit_service.dart';
+import 'package:smart_saoji/core/services/daily_limit_service.dart';
 
 /// Shows a beautiful dialog when a Gold plan user hits their daily limit
 /// or tries to access a Diamond-only feature.

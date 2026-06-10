@@ -1,5 +1,5 @@
 -- ============================================================
--- HAMRO PASAL — Complete Supabase PostgreSQL Schema
+-- SMART SAOJI — Complete Supabase PostgreSQL Schema
 -- Run this SQL in your Supabase SQL Editor
 -- ============================================================
 

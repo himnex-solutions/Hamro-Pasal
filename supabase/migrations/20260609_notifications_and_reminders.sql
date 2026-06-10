@@ -1,5 +1,5 @@
 -- ============================================================
--- HAMRO PASAL — Notifications & Reminders System Migration
+-- SMART SAOJI — Notifications & Reminders System Migration
 -- ============================================================
 
 -- Enable required extensions
@@ -221,13 +221,13 @@ RETURNS TRIGGER AS $$
 BEGIN
   IF NOT EXISTS (
     SELECT 1 FROM public.email_logs 
-    WHERE user_id = NEW.id AND subject = 'Welcome to Hamro Pasal'
+    WHERE user_id = NEW.id AND subject = 'Welcome to Smart Saoji'
   ) THEN
     -- Insert welcome notification
     INSERT INTO public.notifications (user_id, title, message, type)
     VALUES (
       NEW.id,
-      'Welcome to Hamro Pasal! 🎉',
+      'Welcome to Smart Saoji! 🎉',
       'Thank you for registering. Build your business efficiently with our suite.',
       'success'
     );
@@ -237,7 +237,7 @@ BEGIN
     VALUES (
       NEW.id,
       NEW.email,
-      'Welcome to Hamro Pasal',
+      'Welcome to Smart Saoji',
       json_build_object(
         'template', 'welcome',
         'name', COALESCE(NEW.full_name, 'Valued User')
@@ -477,7 +477,7 @@ BEGIN
     VALUES (
       v_user.user_id,
       v_user.email,
-      'Upgrade to Hamro Pasal Premium 🚀',
+      'Upgrade to Smart Saoji Premium 🚀',
       json_build_object(
         'template', 'upgrade_reminder',
         'name', COALESCE(v_user.full_name, 'Valued User')

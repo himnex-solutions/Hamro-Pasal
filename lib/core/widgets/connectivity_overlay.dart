@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_animate/flutter_animate.dart';
-import 'package:hamro_pasal/core/services/sync_service.dart';
+import 'package:smart_saoji/core/services/sync_service.dart';
 
 /// A global overlay widget that displays a beautiful, one-time top banner
 /// when the user opens the app offline.

@@ -3,20 +3,20 @@ import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/intl.dart';
-import 'package:hamro_pasal/core/constants/app_constants.dart';
-import 'package:hamro_pasal/core/l10n/app_strings.dart';
-import 'package:hamro_pasal/core/router/app_router.dart';
-import 'package:hamro_pasal/core/theme/app_theme.dart';
-import 'package:hamro_pasal/core/widgets/app_button.dart';
-import 'package:hamro_pasal/core/widgets/app_snackbar.dart';
-import 'package:hamro_pasal/core/widgets/app_text_field.dart';
-import 'package:hamro_pasal/core/services/daily_limit_service.dart';
-import 'package:hamro_pasal/core/widgets/plan_limit_dialog.dart';
-import 'package:hamro_pasal/features/subscription/data/services/subscription_manager.dart';
+import 'package:smart_saoji/core/constants/app_constants.dart';
+import 'package:smart_saoji/core/l10n/app_strings.dart';
+import 'package:smart_saoji/core/router/app_router.dart';
+import 'package:smart_saoji/core/theme/app_theme.dart';
+import 'package:smart_saoji/core/widgets/app_button.dart';
+import 'package:smart_saoji/core/widgets/app_snackbar.dart';
+import 'package:smart_saoji/core/widgets/app_text_field.dart';
+import 'package:smart_saoji/core/services/daily_limit_service.dart';
+import 'package:smart_saoji/core/widgets/plan_limit_dialog.dart';
+import 'package:smart_saoji/features/subscription/data/services/subscription_manager.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:uuid/uuid.dart';
-import 'package:hamro_pasal/features/dashboard/presentation/providers/dashboard_provider.dart';
+import 'package:smart_saoji/features/dashboard/presentation/providers/dashboard_provider.dart';
 
 IconData getCategoryIcon(String categoryName) {
   switch (categoryName.toLowerCase()) {

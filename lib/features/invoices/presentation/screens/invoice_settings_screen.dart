@@ -2,15 +2,15 @@ import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:hamro_pasal/core/theme/app_theme.dart';
-import 'package:hamro_pasal/core/widgets/app_button.dart';
-import 'package:hamro_pasal/core/widgets/app_snackbar.dart';
-import 'package:hamro_pasal/core/widgets/app_text_field.dart';
-import 'package:hamro_pasal/features/invoices/data/services/invoice_settings_service.dart';
-import 'package:hamro_pasal/features/subscription/data/services/subscription_manager.dart';
-import 'package:hamro_pasal/core/l10n/app_strings.dart';
+import 'package:smart_saoji/core/theme/app_theme.dart';
+import 'package:smart_saoji/core/widgets/app_button.dart';
+import 'package:smart_saoji/core/widgets/app_snackbar.dart';
+import 'package:smart_saoji/core/widgets/app_text_field.dart';
+import 'package:smart_saoji/features/invoices/data/services/invoice_settings_service.dart';
+import 'package:smart_saoji/features/subscription/data/services/subscription_manager.dart';
+import 'package:smart_saoji/core/l10n/app_strings.dart';
 
-import 'package:hamro_pasal/core/widgets/plan_limit_dialog.dart';
+import 'package:smart_saoji/core/widgets/plan_limit_dialog.dart';
 
 class InvoiceSettingsScreen extends ConsumerStatefulWidget {
   const InvoiceSettingsScreen({super.key});

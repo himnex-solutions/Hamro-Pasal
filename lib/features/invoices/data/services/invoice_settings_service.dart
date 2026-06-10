@@ -1,6 +1,6 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:hamro_pasal/features/invoices/data/models/invoice_settings.dart';
+import 'package:smart_saoji/features/invoices/data/models/invoice_settings.dart';
 
 final invoiceSettingsProvider =
     NotifierProvider<InvoiceSettingsNotifier, InvoiceSettings>(() {

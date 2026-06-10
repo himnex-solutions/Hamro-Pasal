@@ -118,15 +118,15 @@ function renderHtmlTemplate(data: EmailTemplateData): { html: string; text: stri
 
   const header = `
     <div style="background-color: ${darkBg}; padding: 32px; text-align: center; border-radius: 16px 16px 0 0;">
-      <h1 style="color: white; margin: 0; font-family: 'Outfit', 'Inter', sans-serif; font-size: 28px; font-weight: 800; letter-spacing: -0.5px;">Hamro Pasal</h1>
+      <h1 style="color: white; margin: 0; font-family: 'Outfit', 'Inter', sans-serif; font-size: 28px; font-weight: 800; letter-spacing: -0.5px;">Smart Saoji</h1>
       <p style="color: #6366F1; margin: 4px 0 0 0; font-family: 'Inter', sans-serif; font-size: 14px; font-weight: 600; letter-spacing: 1.5px; text-transform: uppercase;">Smart Retail Suite</p>
     </div>
   `;
 
   const footer = `
     <div style="padding: 24px; text-align: center; font-family: 'Inter', sans-serif; font-size: 12px; color: #64748B; border-top: 1px solid #E2E8F0; margin-top: 32px;">
-      <p style="margin: 0 0 8px 0;">&copy; ${new Date().getFullYear()} Hamro Pasal. All rights reserved.</p>
-      <p style="margin: 0;">Need help? Contact our support at <a href="mailto:support@hamropasal.com" style="color: ${primaryColor}; text-decoration: none; font-weight: 600;">support@hamropasal.com</a></p>
+      <p style="margin: 0 0 8px 0;">&copy; ${new Date().getFullYear()} Smart Saoji. All rights reserved.</p>
+      <p style="margin: 0;">Need help? Contact our support at <a href="mailto:support@smartsaoji.com" style="color: ${primaryColor}; text-decoration: none; font-weight: 600;">support@smartsaoji.com</a></p>
     </div>
   `;
 
@@ -147,7 +147,7 @@ function renderHtmlTemplate(data: EmailTemplateData): { html: string; text: stri
       return {
         html: buildBody(`
           <h2 style="font-size: 20px; font-weight: 700; color: #0F172A; margin-top: 0;">Welcome to the Family, ${data.name || "User"}! 🎉</h2>
-          <p>We are absolutely thrilled to have you join Hamro Pasal. Our platform is built to help you run, grow, and optimize your business operations with maximum ease.</p>
+          <p>We are absolutely thrilled to have you join Smart Saoji. Our platform is built to help you run, grow, and optimize your business operations with maximum ease.</p>
           <p>Here are a few things you can do right away:</p>
           <ul style="padding-left: 20px; margin-bottom: 24px;">
             <li style="margin-bottom: 8px;"><strong>Manage Stock:</strong> Keep track of items, categories, and barcodes.</li>
@@ -155,11 +155,11 @@ function renderHtmlTemplate(data: EmailTemplateData): { html: string; text: stri
             <li style="margin-bottom: 8px;"><strong>Generate Invoices:</strong> Create and print professional invoices instantly.</li>
           </ul>
           <div style="text-align: center; margin: 32px 0;">
-            <a href="https://hamropasal.com/dashboard" style="background-color: ${primaryColor}; color: white; padding: 14px 28px; text-decoration: none; border-radius: 12px; font-weight: 600; display: inline-block; box-shadow: 0 4px 6px -1px rgba(79, 70, 229, 0.2);">Go to Dashboard</a>
+            <a href="https://smartsaoji.com/dashboard" style="background-color: ${primaryColor}; color: white; padding: 14px 28px; text-decoration: none; border-radius: 12px; font-weight: 600; display: inline-block; box-shadow: 0 4px 6px -1px rgba(79, 70, 229, 0.2);">Go to Dashboard</a>
           </div>
           <p style="margin-bottom: 0;">If you ever have questions, don't hesitate to reach out. We are here to support your retail journey every step of the way!</p>
         `),
-        text: `Welcome to Hamro Pasal, ${data.name || "User"}!\n\nWe are thrilled to have you join us. Hamro Pasal is built to help you run, grow, and optimize your retail business. Start managing stock, recording transactions, and generating invoices today.\n\nSupport contact: support@hamropasal.com`,
+        text: `Welcome to Smart Saoji, ${data.name || "User"}!\n\nWe are thrilled to have you join us. Smart Saoji is built to help you run, grow, and optimize your retail business. Start managing stock, recording transactions, and generating invoices today.\n\nSupport contact: support@smartsaoji.com`,
       };
 
     case "subscription_submitted":
@@ -188,7 +188,7 @@ function renderHtmlTemplate(data: EmailTemplateData): { html: string; text: stri
           </table>
           <p>Please review the uploaded receipt in the admin portal to approve or reject the request.</p>
           <div style="text-align: center; margin: 32px 0;">
-            <a href="https://hamropasal.com/admin/subscriptions" style="background-color: #D97706; color: white; padding: 14px 28px; text-decoration: none; border-radius: 12px; font-weight: 600; display: inline-block;">Open Admin Panel</a>
+            <a href="https://smartsaoji.com/admin/subscriptions" style="background-color: #D97706; color: white; padding: 14px 28px; text-decoration: none; border-radius: 12px; font-weight: 600; display: inline-block;">Open Admin Panel</a>
           </div>
           <p><strong>Payment Proof Preview:</strong></p>
           <div style="text-align: center; border: 1px solid #E2E8F0; border-radius: 12px; padding: 8px; background-color: #F8FAFC;">
@@ -209,7 +209,7 @@ function renderHtmlTemplate(data: EmailTemplateData): { html: string; text: stri
             <strong>Active Plan:</strong> ${(data.plan_name || "").toUpperCase()} Plan<br/>
             <strong>Billing Cycle:</strong> Annual Membership
           </div>
-          <p style="margin-bottom: 0;">Thank you for partnering with Hamro Pasal to power your retail journey!</p>
+          <p style="margin-bottom: 0;">Thank you for partnering with Smart Saoji to power your retail journey!</p>
         `),
         text: `Congratulations! Your ${(data.plan_name || "").toUpperCase()} plan subscription has been approved and is now active. Refresh the app to start using your premium features.`,
       };
@@ -226,7 +226,7 @@ function renderHtmlTemplate(data: EmailTemplateData): { html: string; text: stri
           </blockquote>
           <p>You can resubmit your payment proof receipt anytime from the subscription screen in the app.</p>
           <div style="text-align: center; margin: 32px 0;">
-            <a href="https://hamropasal.com/subscription" style="background-color: #EF4444; color: white; padding: 14px 28px; text-decoration: none; border-radius: 12px; font-weight: 600; display: inline-block;">Resubmit Payment Proof</a>
+            <a href="https://smartsaoji.com/subscription" style="background-color: #EF4444; color: white; padding: 14px 28px; text-decoration: none; border-radius: 12px; font-weight: 600; display: inline-block;">Resubmit Payment Proof</a>
           </div>
           <p style="margin-bottom: 0;">If you believe this was an error, please reply to this email or contact support.</p>
         `),
@@ -238,7 +238,7 @@ function renderHtmlTemplate(data: EmailTemplateData): { html: string; text: stri
         html: buildBody(`
           <h2 style="font-size: 20px; font-weight: 800; color: #0F172A; margin-top: 0;">🚀 Supercharge Your Retail Business</h2>
           <p>Hi ${data.name || "User"},</p>
-          <p>Are you ready to take your shop operations to the next level? Upgrade to a premium plan today to unlock the full potential of Hamro Pasal:</p>
+          <p>Are you ready to take your shop operations to the next level? Upgrade to a premium plan today to unlock the full potential of Smart Saoji:</p>
           <table style="width: 100%; border-collapse: collapse; margin: 24px 0; font-size: 14px;">
             <tr style="border-bottom: 1px solid #F1F5F9;"><td style="padding: 10px 0; font-weight: bold; color: ${primaryColor};">✓ Barcode Scanning</td><td style="padding: 10px 0; color: #64748B;">Add/sell products in seconds using device camera.</td></tr>
             <tr style="border-bottom: 1px solid #F1F5F9;"><td style="padding: 10px 0; font-weight: bold; color: ${primaryColor};">✓ Thermal Printing</td><td style="padding: 10px 0; color: #64748B;">Connect via Bluetooth to print instant receipts.</td></tr>
@@ -246,11 +246,11 @@ function renderHtmlTemplate(data: EmailTemplateData): { html: string; text: stri
             <tr style="border-bottom: 1px solid #F1F5F9;"><td style="padding: 10px 0; font-weight: bold; color: ${primaryColor};">✓ Advanced Reports</td><td style="padding: 10px 0; color: #64748B;">Analyze profits, stock velocity, and tax ledgers.</td></tr>
           </table>
           <div style="text-align: center; margin: 32px 0;">
-            <a href="https://hamropasal.com/subscription" style="background-color: ${primaryColor}; color: white; padding: 14px 28px; text-decoration: none; border-radius: 12px; font-weight: 600; display: inline-block;">View Pricing Plans</a>
+            <a href="https://smartsaoji.com/subscription" style="background-color: ${primaryColor}; color: white; padding: 14px 28px; text-decoration: none; border-radius: 12px; font-weight: 600; display: inline-block;">View Pricing Plans</a>
           </div>
           <p style="margin-bottom: 0; font-size: 13px; color: #64748B;">You are receiving this reminder because you are currently using the Free plan. Upgrade to stop these alerts.</p>
         `),
-        text: `Supercharge your business with Hamro Pasal Premium!\n\nUnlock barcode scanning, thermal printing, staff management, and advanced reports. View plans: https://hamropasal.com/subscription`,
+        text: `Supercharge your business with Smart Saoji Premium!\n\nUnlock barcode scanning, thermal printing, staff management, and advanced reports. View plans: https://smartsaoji.com/subscription`,
       };
 
     case "expiry_reminder":
@@ -261,11 +261,11 @@ function renderHtmlTemplate(data: EmailTemplateData): { html: string; text: stri
           <p>This is a notice that your premium subscription is expiring in <strong>${data.days_left} day(s)</strong>.</p>
           <p>To avoid any disruption to your retail software services (including barcode scanning, thermal printing, and cashier staff management), please renew your membership before the expiration date.</p>
           <div style="text-align: center; margin: 32px 0;">
-            <a href="https://hamropasal.com/subscription" style="background-color: #D97706; color: white; padding: 14px 28px; text-decoration: none; border-radius: 12px; font-weight: 600; display: inline-block;">Renew Membership</a>
+            <a href="https://smartsaoji.com/subscription" style="background-color: #D97706; color: white; padding: 14px 28px; text-decoration: none; border-radius: 12px; font-weight: 600; display: inline-block;">Renew Membership</a>
           </div>
           <p style="margin-bottom: 0;">If you have any questions or need billing assistance, reply directly to this email.</p>
         `),
-        text: `Notice: Your Hamro Pasal subscription expires in ${data.days_left} day(s). Please renew in the subscription section of the app to avoid service interruption.`,
+        text: `Notice: Your Smart Saoji subscription expires in ${data.days_left} day(s). Please renew in the subscription section of the app to avoid service interruption.`,
       };
 
     default:
@@ -369,7 +369,7 @@ async function processEmailQueue() {
         let pushBody = "";
 
         if (templateData.template === "welcome") {
-          pushTitle = "Welcome to Hamro Pasal! 🎉";
+          pushTitle = "Welcome to Smart Saoji! 🎉";
           pushBody = "Start managing stock and invoicing right now.";
         } else if (templateData.template === "subscription_submitted") {
           pushTitle = "Subscription Pending Verification ⏳";

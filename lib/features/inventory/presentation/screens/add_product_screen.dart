@@ -3,22 +3,24 @@ import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:image_picker/image_picker.dart';
-import 'package:hamro_pasal/core/constants/app_constants.dart';
-import 'package:hamro_pasal/core/constants/supabase_constants.dart';
-import 'package:hamro_pasal/core/theme/app_theme.dart';
-import 'package:hamro_pasal/core/widgets/app_button.dart';
-import 'package:hamro_pasal/core/widgets/app_snackbar.dart';
-import 'package:hamro_pasal/core/widgets/app_text_field.dart';
-import 'package:hamro_pasal/features/inventory/data/models/product_model.dart';
-import 'package:hamro_pasal/features/inventory/presentation/screens/inventory_screen.dart';
-import 'package:hamro_pasal/core/services/daily_limit_service.dart';
-import 'package:hamro_pasal/core/widgets/plan_limit_dialog.dart';
+import 'package:smart_saoji/core/constants/app_constants.dart';
+import 'package:smart_saoji/core/constants/supabase_constants.dart';
+import 'package:smart_saoji/core/theme/app_theme.dart';
+import 'package:smart_saoji/core/widgets/app_button.dart';
+import 'package:smart_saoji/core/widgets/app_snackbar.dart';
+import 'package:smart_saoji/core/widgets/app_text_field.dart';
+import 'package:smart_saoji/features/inventory/data/models/product_model.dart';
+import 'package:smart_saoji/features/inventory/presentation/screens/inventory_screen.dart';
+import 'package:smart_saoji/core/services/daily_limit_service.dart';
+import 'package:smart_saoji/core/widgets/plan_limit_dialog.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 import 'package:uuid/uuid.dart';
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'dart:io';
-import 'package:hamro_pasal/core/widgets/barcode_scanner_modal.dart';
-import 'package:hamro_pasal/features/subscription/data/services/subscription_manager.dart';
+import 'dart:typed_data';
+import 'package:smart_saoji/core/widgets/barcode_scanner_modal.dart';
+import 'package:smart_saoji/features/subscription/data/services/subscription_manager.dart';
 
 class AddProductScreen extends ConsumerStatefulWidget {
   const AddProductScreen({super.key});
@@ -38,6 +40,7 @@ class _AddProductScreenState extends ConsumerState<AddProductScreen> {
   String? _selectedUnit;
   bool _isLoading = false;
   File? _imageFile;
+  Uint8List? _imageBytes; // used on web instead of File
 
   @override
   void dispose() {
@@ -77,14 +80,37 @@ class _AddProductScreenState extends ConsumerState<AddProductScreen> {
     final picker = ImagePicker();
     final picked =
         await picker.pickImage(source: ImageSource.gallery, imageQuality: 70);
-    if (picked != null) setState(() => _imageFile = File(picked.path));
+    if (picked != null) {
+      if (kIsWeb) {
+        final bytes = await picked.readAsBytes();
+        setState(() {
+          _imageBytes = bytes;
+          _imageFile = null;
+        });
+      } else {
+        setState(() {
+          _imageFile = File(picked.path);
+          _imageBytes = null;
+        });
+      }
+    }
   }
 
   Future<String?> _uploadImage(String productId) async {
-    if (_imageFile == null) return null;
     final supabase = Supabase.instance.client;
-    final bytes = await _imageFile!.readAsBytes();
-    final ext = _imageFile!.path.split('.').last;
+    late Uint8List bytes;
+    late String ext;
+
+    if (kIsWeb) {
+      if (_imageBytes == null) return null;
+      bytes = _imageBytes!;
+      ext = 'jpg'; // image_picker on web gives blob URL, default to jpg
+    } else {
+      if (_imageFile == null) return null;
+      bytes = await _imageFile!.readAsBytes();
+      ext = _imageFile!.path.split('.').last;
+    }
+
     final path = '$productId.$ext';
     await supabase.storage
         .from(SupabaseConstants.productImagesBucket)
@@ -186,15 +212,17 @@ class _AddProductScreenState extends ConsumerState<AddProductScreen> {
                     color: AppTheme.primaryColor.withValues(alpha: 0.08),
                     borderRadius: BorderRadius.circular(16),
                     border: Border.all(
-                        color: _imageFile != null
+                        color: (_imageFile != null || _imageBytes != null)
                             ? AppTheme.primaryColor
                             : AppTheme.lightBorder,
-                        width: _imageFile != null ? 2 : 1),
+                        width: (_imageFile != null || _imageBytes != null) ? 2 : 1),
                   ),
-                  child: _imageFile != null
+                  child: (_imageBytes != null || _imageFile != null)
                       ? ClipRRect(
                           borderRadius: BorderRadius.circular(14),
-                          child: Image.file(_imageFile!, fit: BoxFit.cover))
+                          child: kIsWeb
+                              ? Image.memory(_imageBytes!, fit: BoxFit.cover)
+                              : Image.file(_imageFile!, fit: BoxFit.cover))
                       : const Column(
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [

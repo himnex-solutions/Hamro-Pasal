@@ -3,9 +3,9 @@ import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:intl/intl.dart';
 import 'package:url_launcher/url_launcher.dart';
-import 'package:hamro_pasal/core/constants/app_constants.dart';
-import 'package:hamro_pasal/core/theme/app_theme.dart';
-import 'package:hamro_pasal/features/parties/data/models/party_model.dart';
+import 'package:smart_saoji/core/constants/app_constants.dart';
+import 'package:smart_saoji/core/theme/app_theme.dart';
+import 'package:smart_saoji/features/parties/data/models/party_model.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 final partyDetailProvider =
@@ -246,8 +246,8 @@ class PartyDetailScreen extends ConsumerWidget {
         ? '977${cleanPhone.substring(1)}'
         : '977$cleanPhone';
     final msg = balance > 0
-        ? 'Namaskar! Your outstanding balance is Rs. ${balance.toStringAsFixed(2)}. Please clear when convenient. Thank you! - Hamro Pasal'
-        : 'Namaskar! Please contact us regarding your account balance. Thank you! - Hamro Pasal';
+        ? 'Namaskar! Your outstanding balance is Rs. ${balance.toStringAsFixed(2)}. Please clear when convenient. Thank you! - Smart Saoji'
+        : 'Namaskar! Please contact us regarding your account balance. Thank you! - Smart Saoji';
     final url =
         Uri.parse('https://wa.me/$npPhone?text=${Uri.encodeComponent(msg)}');
     if (await canLaunchUrl(url)) await launchUrl(url);

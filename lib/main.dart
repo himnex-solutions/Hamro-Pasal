@@ -3,14 +3,14 @@ import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_web_plugins/url_strategy.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:hamro_pasal/core/theme/app_theme.dart';
-import 'package:hamro_pasal/core/theme/theme_provider.dart';
-import 'package:hamro_pasal/core/router/app_router.dart';
-import 'package:hamro_pasal/core/constants/supabase_constants.dart';
-import 'package:hamro_pasal/core/services/local_db_service.dart';
-import 'package:hamro_pasal/core/services/notification_service.dart';
-import 'package:hamro_pasal/core/providers/locale_provider.dart';
-import 'package:hamro_pasal/core/widgets/connectivity_overlay.dart';
+import 'package:smart_saoji/core/theme/app_theme.dart';
+import 'package:smart_saoji/core/theme/theme_provider.dart';
+import 'package:smart_saoji/core/router/app_router.dart';
+import 'package:smart_saoji/core/constants/supabase_constants.dart';
+import 'package:smart_saoji/core/services/local_db_service.dart';
+import 'package:smart_saoji/core/services/notification_service.dart';
+import 'package:smart_saoji/core/providers/locale_provider.dart';
+import 'package:smart_saoji/core/widgets/connectivity_overlay.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 void main() async {
@@ -37,13 +37,13 @@ void main() async {
 
   runApp(
     const ProviderScope(
-      child: HamroPasalApp(),
+      child: SmartSaojiApp(),
     ),
   );
 }
 
-class HamroPasalApp extends ConsumerWidget {
-  const HamroPasalApp({super.key});
+class SmartSaojiApp extends ConsumerWidget {
+  const SmartSaojiApp({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -52,7 +52,7 @@ class HamroPasalApp extends ConsumerWidget {
     final locale = ref.watch(localeProvider);
 
     return MaterialApp.router(
-      title: 'Hamro Pasal',
+      title: 'Smart Saoji',
       debugShowCheckedModeBanner: false,
       theme: AppTheme.lightTheme,
       darkTheme: AppTheme.darkTheme,

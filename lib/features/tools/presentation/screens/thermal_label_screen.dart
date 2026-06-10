@@ -3,19 +3,21 @@ import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
-import 'package:hamro_pasal/core/services/daily_limit_service.dart';
-import 'package:hamro_pasal/core/theme/app_theme.dart';
-import 'package:hamro_pasal/core/widgets/plan_limit_dialog.dart';
-import 'package:hamro_pasal/features/subscription/data/services/subscription_manager.dart';
-import 'package:hamro_pasal/features/tools/presentation/screens/label_print_models.dart';
-import 'package:hamro_pasal/features/tools/presentation/screens/label_pdf_builder.dart';
+import 'package:smart_saoji/core/services/daily_limit_service.dart';
+import 'package:smart_saoji/core/theme/app_theme.dart';
+import 'package:smart_saoji/core/widgets/plan_limit_dialog.dart';
+import 'package:smart_saoji/core/constants/app_constants.dart';
+import 'package:smart_saoji/features/subscription/data/services/subscription_manager.dart';
+import 'package:smart_saoji/features/tools/presentation/screens/label_print_models.dart';
+import 'package:smart_saoji/features/tools/presentation/screens/label_pdf_builder.dart';
 import 'package:printing/printing.dart';
 import 'package:qr_flutter/qr_flutter.dart';
 import 'package:barcode_widget/barcode_widget.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-import 'package:hamro_pasal/features/inventory/presentation/screens/inventory_screen.dart';
-import 'package:hamro_pasal/features/inventory/data/models/product_model.dart';
-import 'package:hamro_pasal/features/invoices/data/services/invoice_settings_service.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:smart_saoji/features/inventory/presentation/screens/inventory_screen.dart';
+import 'package:smart_saoji/features/inventory/data/models/product_model.dart';
+import 'package:smart_saoji/features/invoices/data/services/invoice_settings_service.dart';
 
 class ThermalLabelScreen extends ConsumerStatefulWidget {
   const ThermalLabelScreen({super.key});
@@ -35,7 +37,7 @@ class _ThermalLabelScreenState extends ConsumerState<ThermalLabelScreen> {
 
   // Common/Product inputs
   final _productNameCtrl = TextEditingController(text: 'Organic Green Tea');
-  final _shopNameCtrl = TextEditingController(text: 'Hamro Pasal Shop');
+  final _shopNameCtrl = TextEditingController(text: 'Smart Saoji Shop');
   final _brandNameCtrl = TextEditingController(text: 'Organic Nepal');
   final _priceCtrl = TextEditingController(text: '450');
   final _codeValueCtrl = TextEditingController(text: '978020137962');
@@ -53,22 +55,27 @@ class _ThermalLabelScreenState extends ConsumerState<ThermalLabelScreen> {
   final _shipNotesCtrl = TextEditingController(text: 'Fragile. Handle with care.');
 
   // Receipt inputs
-  final _receiptSubtotalCtrl = TextEditingController(text: '1200');
-  final _receiptDiscountCtrl = TextEditingController(text: '100');
-  final _receiptTaxCtrl = TextEditingController(text: '143');
-  final _receiptTotalCtrl = TextEditingController(text: '1243');
-  final _receiptFooterCtrl = TextEditingController(text: 'Follow us on Instagram!');
-  final List<Map<String, String>> _receiptItems = [
-    {'name': 'Chowmein Packet', 'qty': '2', 'price': '300'},
-    {'name': 'Brown Bread Large', 'qty': '1', 'price': '150'},
-    {'name': 'Clarified Butter 1L', 'qty': '1', 'price': '750'},
-  ];
+  final _receiptSubtotalCtrl = TextEditingController(text: '0');
+  final _receiptDiscountPctCtrl = TextEditingController(text: '0'); // discount %
+  final _receiptDiscountAmtCtrl = TextEditingController(text: '0'); // calculated
+  final _receiptTaxCtrl = TextEditingController(text: '0');
+  final _receiptTotalCtrl = TextEditingController(text: '0');
+  final _receiptFooterCtrl = TextEditingController(text: 'Thank you for your business!');
+  final List<Map<String, String>> _receiptItems = [];
   final List<Map<String, TextEditingController>> _receiptItemCtrls = [];
+
+  // Business info (read-only, fetched from DB)
+  String _businessPAN = '';
+  String _businessAddress = '';
+  String _businessPhone = '';
+  String _businessName = '';
+
+  // Product search cache from inventory
+  List<Map<String, dynamic>> _inventoryProducts = [];
 
   // Receipt customization controls (shifted from Thermal Receipt settings)
   late TextEditingController _receiptTitleCtrl;
   late TextEditingController _receiptPrefixCtrl;
-  late TextEditingController _receiptPanCtrl;
   bool _showReceiptTax = true;
   bool _showReceiptDiscount = true;
   bool _showReceiptAddress = true;
@@ -84,26 +91,17 @@ class _ThermalLabelScreenState extends ConsumerState<ThermalLabelScreen> {
     final invoiceSettings = ref.read(invoiceSettingsProvider);
     _receiptTitleCtrl = TextEditingController(text: invoiceSettings.title);
     _receiptPrefixCtrl = TextEditingController(text: invoiceSettings.prefix);
-    _receiptPanCtrl = TextEditingController(text: '601245678');
     _showReceiptTax = invoiceSettings.showTax;
     _showReceiptDiscount = invoiceSettings.showDiscount;
     _showReceiptAddress = invoiceSettings.showAddress;
     _showReceiptPAN = invoiceSettings.showPAN;
     _showReceiptPhone = invoiceSettings.showPhone;
 
-    for (var item in _receiptItems) {
-      _receiptItemCtrls.add({
-        'name': TextEditingController(text: item['name']),
-        'qty': TextEditingController(text: item['qty']),
-        'price': TextEditingController(text: item['price']),
-      });
-    }
+    // Always pre-load these so they are ready when user switches to Receipt
+    _fetchBusinessProfile();
+    _fetchInventoryProducts();
 
-    _loadSavedSettings().then((_) {
-      if (_activeType == LabelType.receipt) {
-        _fetchBusinessProfile();
-      }
-    });
+    _loadSavedSettings();
   }
 
   Future<void> _fetchBusinessProfile() async {
@@ -123,19 +121,55 @@ class _ThermalLabelScreenState extends ConsumerState<ThermalLabelScreen> {
       if (businessId != null) {
         final biz = await supabase
             .from('businesses')
-            .select('name, phone, address')
+            .select('name, phone, address, pan_number')
             .eq('id', businessId)
             .maybeSingle();
-        if (biz != null) {
+        if (biz != null && mounted) {
           setState(() {
-            _shopNameCtrl.text = biz['name'] as String? ?? '';
-            _shipFromAddrCtrl.text = biz['address'] as String? ?? '';
-            _shipFromPhoneCtrl.text = biz['phone'] as String? ?? '';
+            _businessName = biz['name'] as String? ?? '';
+            _businessAddress = biz['address'] as String? ?? '';
+            _businessPhone = biz['phone'] as String? ?? '';
+            _businessPAN = biz['pan_number'] as String? ?? '';
+            // Sync to existing controllers for PDF builder
+            _shopNameCtrl.text = _businessName;
+            _shipFromAddrCtrl.text = _businessAddress;
+            _shipFromPhoneCtrl.text = _businessPhone;
           });
         }
       }
     } catch (e) {
       debugPrint('Error fetching business profile: $e');
+    }
+  }
+
+  Future<void> _fetchInventoryProducts() async {
+    try {
+      final supabase = Supabase.instance.client;
+      final prefs = await SharedPreferences.getInstance();
+      final businessId = prefs.getString(AppConstants.kSelectedBusinessId);
+      if (businessId == null) return;
+
+      final rows = await supabase
+          .from('products')
+          .select('name, sku, selling_price, unit')
+          .eq('business_id', businessId)
+          .eq('is_active', true)
+          .order('name');
+
+      if (mounted) {
+        setState(() {
+          _inventoryProducts = (rows as List)
+              .map((r) => {
+                    'name': r['name'] as String? ?? '',
+                    'sku': r['sku'] as String? ?? '',
+                    'price': (r['selling_price'] as num?)?.toDouble() ?? 0.0,
+                    'unit': r['unit'] as String? ?? 'Pc',
+                  })
+              .toList();
+        });
+      }
+    } catch (e) {
+      debugPrint('Error fetching inventory: $e');
     }
   }
 
@@ -151,7 +185,7 @@ class _ThermalLabelScreenState extends ConsumerState<ThermalLabelScreen> {
         
         _productNameCtrl.text = prefs.getString('thermal_prod_name') ?? 'Organic Green Tea';
         _lastProductName = _productNameCtrl.text;
-        _shopNameCtrl.text = prefs.getString('thermal_shop_name') ?? 'Hamro Pasal Shop';
+        _shopNameCtrl.text = prefs.getString('thermal_shop_name') ?? 'Smart Saoji Shop';
         _brandNameCtrl.text = prefs.getString('thermal_brand_name') ?? 'Organic Nepal';
         _priceCtrl.text = prefs.getString('thermal_price') ?? '450';
         _codeValueCtrl.text = prefs.getString('thermal_code_val') ?? '978020137962';
@@ -167,15 +201,14 @@ class _ThermalLabelScreenState extends ConsumerState<ThermalLabelScreen> {
         _shipWeightCtrl.text = prefs.getString('thermal_ship_wt') ?? '1.2 kg';
         _shipNotesCtrl.text = prefs.getString('thermal_ship_notes') ?? 'Fragile. Handle with care.';
 
-        _receiptSubtotalCtrl.text = prefs.getString('thermal_rec_sub') ?? '1200';
-        _receiptDiscountCtrl.text = prefs.getString('thermal_rec_disc') ?? '100';
-        _receiptTaxCtrl.text = prefs.getString('thermal_rec_tax') ?? '143';
-        _receiptTotalCtrl.text = prefs.getString('thermal_rec_tot') ?? '1243';
-        _receiptFooterCtrl.text = prefs.getString('thermal_rec_foot') ?? 'Follow us on Instagram!';
+        _receiptSubtotalCtrl.text = prefs.getString('thermal_rec_sub') ?? '0';
+        _receiptDiscountPctCtrl.text = prefs.getString('thermal_rec_disc_pct') ?? '0';
+        _receiptTaxCtrl.text = prefs.getString('thermal_rec_tax') ?? '0';
+        _receiptTotalCtrl.text = prefs.getString('thermal_rec_tot') ?? '0';
+        _receiptFooterCtrl.text = prefs.getString('thermal_rec_foot') ?? 'Thank you for your business!';
 
         _receiptTitleCtrl.text = prefs.getString('thermal_rec_title') ?? _receiptTitleCtrl.text;
         _receiptPrefixCtrl.text = prefs.getString('thermal_rec_prefix') ?? _receiptPrefixCtrl.text;
-        _receiptPanCtrl.text = prefs.getString('thermal_rec_pan') ?? _receiptPanCtrl.text;
         _showReceiptTax = prefs.getBool('thermal_rec_show_tax') ?? _showReceiptTax;
         _showReceiptDiscount = prefs.getBool('thermal_rec_show_disc') ?? _showReceiptDiscount;
         _showReceiptAddress = prefs.getBool('thermal_rec_show_addr') ?? _showReceiptAddress;
@@ -214,14 +247,13 @@ class _ThermalLabelScreenState extends ConsumerState<ThermalLabelScreen> {
       await prefs.setString('thermal_ship_notes', _shipNotesCtrl.text);
 
       await prefs.setString('thermal_rec_sub', _receiptSubtotalCtrl.text);
-      await prefs.setString('thermal_rec_disc', _receiptDiscountCtrl.text);
+      await prefs.setString('thermal_rec_disc_pct', _receiptDiscountPctCtrl.text);
       await prefs.setString('thermal_rec_tax', _receiptTaxCtrl.text);
       await prefs.setString('thermal_rec_tot', _receiptTotalCtrl.text);
       await prefs.setString('thermal_rec_foot', _receiptFooterCtrl.text);
 
       await prefs.setString('thermal_rec_title', _receiptTitleCtrl.text);
       await prefs.setString('thermal_rec_prefix', _receiptPrefixCtrl.text);
-      await prefs.setString('thermal_rec_pan', _receiptPanCtrl.text);
       await prefs.setBool('thermal_rec_show_tax', _showReceiptTax);
       await prefs.setBool('thermal_rec_show_disc', _showReceiptDiscount);
       await prefs.setBool('thermal_rec_show_addr', _showReceiptAddress);
@@ -329,13 +361,18 @@ class _ThermalLabelScreenState extends ConsumerState<ThermalLabelScreen> {
     _shipWeightCtrl.dispose();
     _shipNotesCtrl.dispose();
     _receiptSubtotalCtrl.dispose();
-    _receiptDiscountCtrl.dispose();
+    _receiptDiscountPctCtrl.dispose();
+    _receiptDiscountAmtCtrl.dispose();
     _receiptTaxCtrl.dispose();
     _receiptTotalCtrl.dispose();
     _receiptFooterCtrl.dispose();
+    for (var ctrls in _receiptItemCtrls) {
+      ctrls['name']?.dispose();
+      ctrls['qty']?.dispose();
+      ctrls['price']?.dispose();
+    }
     _receiptTitleCtrl.dispose();
     _receiptPrefixCtrl.dispose();
-    _receiptPanCtrl.dispose();
     super.dispose();
   }
 
@@ -452,10 +489,10 @@ class _ThermalLabelScreenState extends ConsumerState<ThermalLabelScreen> {
           break;
         case LabelType.receipt:
           pdfBytes = await LabelPdfBuilder.receipt(
-            shopName: _shopNameCtrl.text,
-            address: _shipFromAddrCtrl.text,
-            phone: _shipFromPhoneCtrl.text,
-            pan: _receiptPanCtrl.text,
+            shopName: _businessName,
+            address: _businessAddress,
+            phone: _businessPhone,
+            pan: _businessPAN,
             title: _receiptTitleCtrl.text,
             prefix: _receiptPrefixCtrl.text,
             showAddress: _showReceiptAddress,
@@ -465,7 +502,7 @@ class _ThermalLabelScreenState extends ConsumerState<ThermalLabelScreen> {
             showDiscount: _showReceiptDiscount,
             items: _receiptItems,
             subtotal: _receiptSubtotalCtrl.text,
-            discount: _receiptDiscountCtrl.text,
+            discount: _receiptDiscountAmtCtrl.text,
             tax: _receiptTaxCtrl.text,
             total: _receiptTotalCtrl.text,
             paymentMethod: 'Cash',
@@ -496,7 +533,7 @@ class _ThermalLabelScreenState extends ConsumerState<ThermalLabelScreen> {
 
   // ── Render 1D/2D Barcode Preview ────────────────────────────────
   Widget _buildCodeWidgetPreview() {
-    final val = _codeValueCtrl.text.trim().isEmpty ? 'HamroPasal' : _codeValueCtrl.text.trim();
+    final val = _codeValueCtrl.text.trim().isEmpty ? 'SmartSaoji' : _codeValueCtrl.text.trim();
     if (_codeMode == BarcodeMode.qr) {
       return QrImageView(
         data: val,
@@ -670,6 +707,10 @@ class _ThermalLabelScreenState extends ConsumerState<ThermalLabelScreen> {
                     setState(() {
                       _activeType = type;
                     });
+                    if (type == LabelType.receipt) {
+                      _fetchBusinessProfile();
+                      if (_inventoryProducts.isEmpty) _fetchInventoryProducts();
+                    }
                   }
                 },
               );
@@ -997,44 +1038,157 @@ class _ThermalLabelScreenState extends ConsumerState<ThermalLabelScreen> {
         return Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            _textField(controller: _shopNameCtrl, label: 'Shop/Business Name', icon: Icons.storefront),
+            // ── Business Info Card (all read-only from DB) ──
+            Container(
+              decoration: BoxDecoration(
+                color: AppTheme.primaryColor.withValues(alpha: 0.05),
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(color: AppTheme.primaryColor.withValues(alpha: 0.2)),
+              ),
+              padding: const EdgeInsets.all(14),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const Row(
+                    children: [
+                      Icon(Icons.storefront_rounded, size: 16, color: AppTheme.primaryColor),
+                      SizedBox(width: 8),
+                      Text(
+                        'Registered Business (Read-Only)',
+                        style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: AppTheme.primaryColor),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 12),
+                  _infoRow(Icons.store_outlined, 'Business Name', _businessName.isEmpty ? 'Loading...' : _businessName),
+                  const SizedBox(height: 8),
+                  _infoRow(Icons.location_on_outlined, 'Address', _businessAddress.isEmpty ? 'Not set' : _businessAddress),
+                  const SizedBox(height: 8),
+                  _infoRow(Icons.phone_outlined, 'Phone', _businessPhone.isEmpty ? 'Not set' : _businessPhone),
+                  const SizedBox(height: 8),
+                  _infoRow(Icons.badge_outlined, 'PAN/VAT', _businessPAN.isEmpty ? 'Not set' : _businessPAN),
+                ],
+              ),
+            ),
+
+            const SizedBox(height: 20),
+
+            // ── Items Sold ──
+            Row(
+              children: [
+                const Icon(Icons.receipt_long_rounded, size: 16),
+                const SizedBox(width: 8),
+                const Text('Items Sold', style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold)),
+                const Spacer(),
+                if (_inventoryProducts.isEmpty)
+                  TextButton.icon(
+                    icon: const Icon(Icons.sync, size: 14),
+                    label: const Text('Load Inventory', style: TextStyle(fontSize: 12)),
+                    onPressed: () {
+                      _fetchInventoryProducts();
+                      _fetchBusinessProfile();
+                    },
+                  ),
+              ],
+            ),
             const SizedBox(height: 10),
-            _textField(controller: _shipFromAddrCtrl, label: 'Shop Address', icon: Icons.location_on_outlined),
-            const SizedBox(height: 10),
-            _textField(controller: _shipFromPhoneCtrl, label: 'Shop Contact No', icon: Icons.phone_outlined, numOnly: true),
-            const SizedBox(height: 16),
-            const Text('Items Sold', style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600)),
-            const SizedBox(height: 8),
             _buildReceiptItemsList(),
+
+            const SizedBox(height: 20),
+
+            // ── Totals Section (premium card) ──
+            Container(
+              decoration: BoxDecoration(
+                color: Theme.of(context).brightness == Brightness.dark
+                    ? const Color(0xFF1E293B)
+                    : Colors.white,
+                borderRadius: BorderRadius.circular(14),
+                border: Border.all(color: Colors.black.withValues(alpha: 0.08)),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black.withValues(alpha: 0.04),
+                    blurRadius: 12,
+                    offset: const Offset(0, 4),
+                  ),
+                ],
+              ),
+              padding: const EdgeInsets.all(16),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const Row(
+                    children: [
+                      Icon(Icons.calculate_rounded, size: 16),
+                      SizedBox(width: 8),
+                      Text('Bill Summary', style: TextStyle(fontSize: 13, fontWeight: FontWeight.bold)),
+                    ],
+                  ),
+                  const SizedBox(height: 14),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      const Text('Subtotal:', style: TextStyle(fontSize: 13, color: Colors.grey)),
+                      Text('Rs. ${_receiptSubtotalCtrl.text}', style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600)),
+                    ],
+                  ),
+                  const Divider(height: 16),
+                  // Discount %
+                  Row(
+                    children: [
+                      const Text('Discount:', style: TextStyle(fontSize: 13, color: Colors.grey)),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: TextField(
+                          controller: _receiptDiscountPctCtrl,
+                          keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                          style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600),
+                          textAlign: TextAlign.right,
+                          decoration: InputDecoration(
+                            hintText: '0',
+                            suffixText: '%',
+                            isDense: true,
+                            contentPadding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                            border: OutlineInputBorder(borderRadius: BorderRadius.circular(8)),
+                          ),
+                          onChanged: (_) => _recalculateReceiptTotals(),
+                        ),
+                      ),
+                      const SizedBox(width: 8),
+                      Text('= Rs. ${_receiptDiscountAmtCtrl.text}', style: const TextStyle(fontSize: 12, color: Colors.redAccent, fontWeight: FontWeight.w500)),
+                    ],
+                  ),
+                  const Divider(height: 16),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      const Text('VAT (13% fixed):', style: TextStyle(fontSize: 13, color: Colors.grey)),
+                      Text('Rs. ${_receiptTaxCtrl.text}', style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: Colors.orange)),
+                    ],
+                  ),
+                  const Divider(height: 20, thickness: 1.5),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      const Text('GRAND TOTAL:', style: TextStyle(fontSize: 15, fontWeight: FontWeight.bold)),
+                      Text(
+                        'Rs. ${_receiptTotalCtrl.text}',
+                        style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w900, color: AppTheme.primaryColor),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+
             const SizedBox(height: 16),
-            const Text('Totals', style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600)),
-            const SizedBox(height: 8),
-            Row(
-              children: [
-                Expanded(child: _textField(controller: _receiptSubtotalCtrl, label: 'Subtotal', icon: Icons.calculate, numOnly: true)),
-                const SizedBox(width: 10),
-                Expanded(child: _textField(controller: _receiptDiscountCtrl, label: 'Discount', icon: Icons.price_change, numOnly: true)),
-              ],
-            ),
-            const SizedBox(height: 10),
-            Row(
-              children: [
-                Expanded(child: _textField(controller: _receiptTaxCtrl, label: 'Tax', icon: Icons.percent, numOnly: true)),
-                const SizedBox(width: 10),
-                Expanded(child: _textField(controller: _receiptTotalCtrl, label: 'Final Total', icon: Icons.monetization_on, numOnly: true)),
-              ],
-            ),
-            const SizedBox(height: 12),
             _textField(controller: _receiptFooterCtrl, label: 'Receipt Footer Note', icon: Icons.chat_bubble_outline),
-            
+
             const Divider(height: 32),
-            const Text('Receipt Layout Customization', style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: AppTheme.primaryColor)),
+            const Text('Receipt Layout Settings', style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: AppTheme.primaryColor)),
             const SizedBox(height: 12),
-            _textField(controller: _receiptTitleCtrl, label: 'Receipt Title (e.g. BILL INVOICE)', icon: Icons.title_rounded),
+            _textField(controller: _receiptTitleCtrl, label: 'Receipt Title (e.g. TAX INVOICE)', icon: Icons.title_rounded),
             const SizedBox(height: 10),
             _textField(controller: _receiptPrefixCtrl, label: 'Invoice Prefix (e.g. INV)', icon: Icons.vpn_key_rounded),
-            const SizedBox(height: 10),
-            _textField(controller: _receiptPanCtrl, label: 'Business PAN/VAT', icon: Icons.badge_outlined, numOnly: true),
             const SizedBox(height: 16),
             const Text('Visibility Toggles', style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold)),
             SwitchListTile.adaptive(
@@ -1050,13 +1204,13 @@ class _ThermalLabelScreenState extends ConsumerState<ThermalLabelScreen> {
               contentPadding: EdgeInsets.zero,
             ),
             SwitchListTile.adaptive(
-              title: const Text('Show Business PAN/VAT', style: TextStyle(fontSize: 13)),
+              title: const Text('Show PAN/VAT No.', style: TextStyle(fontSize: 13)),
               value: _showReceiptPAN,
               onChanged: (v) => setState(() => _showReceiptPAN = v),
               contentPadding: EdgeInsets.zero,
             ),
             SwitchListTile.adaptive(
-              title: const Text('Show Tax Section', style: TextStyle(fontSize: 13)),
+              title: const Text('Show VAT Row', style: TextStyle(fontSize: 13)),
               value: _showReceiptTax,
               onChanged: (v) => setState(() => _showReceiptTax = v),
               contentPadding: EdgeInsets.zero,
@@ -1102,38 +1256,192 @@ class _ThermalLabelScreenState extends ConsumerState<ThermalLabelScreen> {
   }
 
   Widget _buildReceiptItemsList() {
-    return Container(
-      decoration: BoxDecoration(
-        color: Colors.black.withValues(alpha: 0.02),
-        borderRadius: BorderRadius.circular(10),
-        border: Border.all(color: Colors.black.withValues(alpha: 0.06)),
-      ),
-      padding: const EdgeInsets.all(8),
-      child: Column(
-        children: [
-          ..._receiptItems.asMap().entries.map((entry) {
-            final idx = entry.key;
-            final item = entry.value;
-            return Padding(
-              padding: const EdgeInsets.only(bottom: 6),
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    return Column(
+      children: [
+        // Column headers
+        if (_receiptItemCtrls.isNotEmpty)
+          Padding(
+            padding: const EdgeInsets.only(bottom: 8, left: 4, right: 52),
+            child: Row(
+              children: [
+                Expanded(
+                  flex: 5,
+                  child: Text('Item (Name or SKU)', style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: Colors.grey.shade600)),
+                ),
+                const SizedBox(width: 8),
+                Expanded(
+                  flex: 2,
+                  child: Text('Qty', style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: Colors.grey.shade600)),
+                ),
+                const SizedBox(width: 8),
+                Expanded(
+                  flex: 2,
+                  child: Text('Rate (Rs)', style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: Colors.grey.shade600)),
+                ),
+              ],
+            ),
+          ),
+        // Item rows
+        ListView.separated(
+          shrinkWrap: true,
+          physics: const NeverScrollableScrollPhysics(),
+          itemCount: _receiptItemCtrls.length,
+          separatorBuilder: (_, __) => const Divider(height: 16),
+          itemBuilder: (context, idx) {
+            final ctrls = _receiptItemCtrls[idx];
+            return Container(
+              decoration: BoxDecoration(
+                color: isDark ? Colors.white.withValues(alpha: 0.03) : Colors.grey.withValues(alpha: 0.03),
+                borderRadius: BorderRadius.circular(10),
+                border: Border.all(color: Colors.grey.withValues(alpha: 0.15)),
+              ),
+              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
               child: Row(
+                crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
+                  // ── Product search autocomplete ──
                   Expanded(
-                    flex: 3,
-                    child: Text(
-                      '${item['name']}',
-                      style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w500),
-                      overflow: TextOverflow.ellipsis,
+                    flex: 5,
+                    child: Autocomplete<Map<String, dynamic>>(
+                      displayStringForOption: (p) => p['name'] as String,
+                      optionsBuilder: (textEditingValue) {
+                        final query = textEditingValue.text.trim().toLowerCase();
+                        if (query.isEmpty) return const Iterable.empty();
+                        return _inventoryProducts.where((p) {
+                          final name = (p['name'] as String).toLowerCase();
+                          final sku = (p['sku'] as String).toLowerCase();
+                          return name.contains(query) || sku.contains(query);
+                        });
+                      },
+                      onSelected: (product) {
+                        setState(() {
+                          ctrls['price']?.text = (product['price'] as double).toStringAsFixed(2);
+                          _receiptItems[idx]['name'] = product['name'] as String;
+                          _receiptItems[idx]['price'] = (product['price'] as double).toStringAsFixed(2);
+                          _recalculateReceiptTotals();
+                        });
+                      },
+                      optionsViewBuilder: (context, onSelected, options) {
+                        return Align(
+                          alignment: Alignment.topLeft,
+                          child: Material(
+                            elevation: 6,
+                            borderRadius: BorderRadius.circular(10),
+                            child: ConstrainedBox(
+                              constraints: const BoxConstraints(maxHeight: 220, maxWidth: 320),
+                              child: ListView.builder(
+                                padding: const EdgeInsets.symmetric(vertical: 4),
+                                shrinkWrap: true,
+                                itemCount: options.length,
+                                itemBuilder: (context, i) {
+                                  final p = options.elementAt(i);
+                                  return InkWell(
+                                    onTap: () => onSelected(p),
+                                    child: Padding(
+                                      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+                                      child: Column(
+                                        crossAxisAlignment: CrossAxisAlignment.start,
+                                        children: [
+                                          Text(p['name'] as String, style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 13)),
+                                          const SizedBox(height: 2),
+                                          Row(
+                                            children: [
+                                              if ((p['sku'] as String).isNotEmpty) ...[
+                                                Container(
+                                                  padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                                                  margin: const EdgeInsets.only(right: 8),
+                                                  decoration: BoxDecoration(
+                                                    color: AppTheme.primaryColor.withValues(alpha: 0.1),
+                                                    borderRadius: BorderRadius.circular(4),
+                                                  ),
+                                                  child: Text('SKU: ${p['sku']}', style: const TextStyle(fontSize: 10, color: AppTheme.primaryColor)),
+                                                ),
+                                              ],
+                                              Text('Rs. ${(p['price'] as double).toStringAsFixed(0)}', style: TextStyle(fontSize: 11, color: Colors.grey.shade600)),
+                                            ],
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                  );
+                                },
+                              ),
+                            ),
+                          ),
+                        );
+                      },
+                      fieldViewBuilder: (context, ctrl, focusNode, onFieldSubmitted) {
+                        return TextField(
+                          controller: ctrl,
+                          focusNode: focusNode,
+                          style: const TextStyle(fontSize: 12),
+                          decoration: InputDecoration(
+                            hintText: _inventoryProducts.isEmpty
+                                ? 'Loading inventory...'
+                                : 'Type name or SKU to search',
+                            prefixIcon: const Icon(Icons.search_rounded, size: 15),
+                            contentPadding: const EdgeInsets.symmetric(horizontal: 8, vertical: 8),
+                            isDense: true,
+                          ),
+                          onChanged: (val) {
+                            _receiptItems[idx]['name'] = val;
+                          },
+                        );
+                      },
                     ),
                   ),
                   const SizedBox(width: 8),
-                  Text('${item['qty']}x', style: const TextStyle(fontSize: 12)),
+                  // ── Qty ──
+                  Expanded(
+                    flex: 2,
+                    child: TextField(
+                      controller: ctrls['qty'],
+                      style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600),
+                      keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                      textAlign: TextAlign.center,
+                      decoration: const InputDecoration(
+                        hintText: '1',
+                        contentPadding: EdgeInsets.symmetric(horizontal: 6, vertical: 8),
+                        isDense: true,
+                      ),
+                      onChanged: (val) {
+                        _receiptItems[idx]['qty'] = val;
+                        _recalculateReceiptTotals();
+                      },
+                    ),
+                  ),
                   const SizedBox(width: 8),
-                  Text('Rs.${item['price']}', style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold)),
+                  // ── Rate ──
+                  Expanded(
+                    flex: 2,
+                    child: TextField(
+                      controller: ctrls['price'],
+                      style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600),
+                      keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                      textAlign: TextAlign.center,
+                      decoration: const InputDecoration(
+                        hintText: '0',
+                        contentPadding: EdgeInsets.symmetric(horizontal: 6, vertical: 8),
+                        isDense: true,
+                      ),
+                      onChanged: (val) {
+                        _receiptItems[idx]['price'] = val;
+                        _recalculateReceiptTotals();
+                      },
+                    ),
+                  ),
+                  // ── Delete ──
                   IconButton(
-                    icon: const Icon(Icons.remove_circle_outline, size: 16, color: Colors.redAccent),
+                    icon: const Icon(Icons.delete_outline_rounded, size: 18, color: Colors.redAccent),
+                    padding: const EdgeInsets.all(4),
+                    constraints: const BoxConstraints(),
                     onPressed: () {
                       setState(() {
+                        ctrls['name']?.dispose();
+                        ctrls['qty']?.dispose();
+                        ctrls['price']?.dispose();
+                        _receiptItemCtrls.removeAt(idx);
                         _receiptItems.removeAt(idx);
                         _recalculateReceiptTotals();
                       });
@@ -1142,26 +1450,51 @@ class _ThermalLabelScreenState extends ConsumerState<ThermalLabelScreen> {
                 ],
               ),
             );
-          }),
-          const SizedBox(height: 6),
-          ElevatedButton.icon(
-            style: ElevatedButton.styleFrom(
-              minimumSize: const Size(double.infinity, 36),
-              backgroundColor: AppTheme.primaryColor.withValues(alpha: 0.1),
-              foregroundColor: AppTheme.primaryColor,
-              elevation: 0,
-            ),
-            icon: const Icon(Icons.add_shopping_cart, size: 14),
-            label: const Text('Add Demo Item', style: TextStyle(fontSize: 12)),
-            onPressed: () {
-              setState(() {
-                _receiptItems.add({'name': 'Premium Rice 1kg', 'qty': '1', 'price': '220'});
-                _recalculateReceiptTotals();
-              });
-            },
+          },
+        ),
+        const SizedBox(height: 12),
+        ElevatedButton.icon(
+          style: ElevatedButton.styleFrom(
+            minimumSize: const Size(double.infinity, 38),
+            backgroundColor: AppTheme.primaryColor.withValues(alpha: 0.1),
+            foregroundColor: AppTheme.primaryColor,
+            elevation: 0,
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
           ),
-        ],
-      ),
+          icon: const Icon(Icons.add_shopping_cart_rounded, size: 16),
+          label: const Text('Add Item', style: TextStyle(fontSize: 13, fontWeight: FontWeight.w600)),
+          onPressed: () {
+            setState(() {
+              _receiptItemCtrls.add({
+                'name': TextEditingController(text: ''),
+                'qty': TextEditingController(text: '1'),
+                'price': TextEditingController(text: '0'),
+              });
+              _receiptItems.add({'name': '', 'qty': '1', 'price': '0'});
+              _recalculateReceiptTotals();
+            });
+          },
+        ),
+      ],
+    );
+  }
+
+  Widget _infoRow(IconData icon, String label, String value) {
+    return Row(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Icon(icon, size: 15, color: Colors.grey.shade500),
+        const SizedBox(width: 8),
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(label, style: TextStyle(fontSize: 10, color: Colors.grey.shade500, fontWeight: FontWeight.w500)),
+              Text(value, style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600)),
+            ],
+          ),
+        ),
+      ],
     );
   }
 
@@ -1172,13 +1505,18 @@ class _ThermalLabelScreenState extends ConsumerState<ThermalLabelScreen> {
       final p = double.tryParse(it['price'] ?? '0') ?? 0;
       sub += q * p;
     }
-    final disc = double.tryParse(_receiptDiscountCtrl.text) ?? 0;
-    final tax = sub * 0.13; // 13% VAT
-    final tot = sub - disc + tax;
+    final discPct = double.tryParse(_receiptDiscountPctCtrl.text) ?? 0;
+    final discAmt = sub * discPct / 100;
+    final afterDiscount = sub - discAmt;
+    final tax = afterDiscount * 0.13; // fixed 13% VAT on post-discount amount
+    final tot = afterDiscount + tax;
 
-    _receiptSubtotalCtrl.text = sub.toStringAsFixed(0);
-    _receiptTaxCtrl.text = tax.toStringAsFixed(0);
-    _receiptTotalCtrl.text = tot.toStringAsFixed(0);
+    setState(() {
+      _receiptSubtotalCtrl.text = sub.toStringAsFixed(2);
+      _receiptDiscountAmtCtrl.text = discAmt.toStringAsFixed(2);
+      _receiptTaxCtrl.text = tax.toStringAsFixed(2);
+      _receiptTotalCtrl.text = tot.toStringAsFixed(2);
+    });
   }
 
   Widget _buildStickerPreviewLayout() {
@@ -1268,13 +1606,13 @@ class _ThermalLabelScreenState extends ConsumerState<ThermalLabelScreen> {
       case LabelType.receipt:
         return Column(
           children: [
-            Text(_shopNameCtrl.text, style: const TextStyle(color: Colors.black, fontWeight: FontWeight.w800, fontSize: 14), textAlign: TextAlign.center),
-            if (_showReceiptAddress && _shipFromAddrCtrl.text.isNotEmpty)
-              Text(_shipFromAddrCtrl.text, style: const TextStyle(color: Colors.black54, fontSize: 10), textAlign: TextAlign.center),
-            if (_showReceiptPhone && _shipFromPhoneCtrl.text.isNotEmpty)
-              Text('Tel: ${_shipFromPhoneCtrl.text}', style: const TextStyle(color: Colors.black54, fontSize: 10), textAlign: TextAlign.center),
-            if (_showReceiptPAN && _receiptPanCtrl.text.isNotEmpty)
-              Text('PAN: ${_receiptPanCtrl.text}', style: const TextStyle(color: Colors.black54, fontSize: 10), textAlign: TextAlign.center),
+            Text(_businessName.isEmpty ? 'Your Business Name' : _businessName, style: const TextStyle(color: Colors.black, fontWeight: FontWeight.w800, fontSize: 14), textAlign: TextAlign.center),
+            if (_showReceiptAddress && _businessAddress.isNotEmpty)
+              Text(_businessAddress, style: const TextStyle(color: Colors.black54, fontSize: 10), textAlign: TextAlign.center),
+            if (_showReceiptPhone && _businessPhone.isNotEmpty)
+              Text('Tel: $_businessPhone', style: const TextStyle(color: Colors.black54, fontSize: 10), textAlign: TextAlign.center),
+            if (_showReceiptPAN && _businessPAN.isNotEmpty)
+              Text('PAN: $_businessPAN', style: const TextStyle(color: Colors.black54, fontSize: 10), textAlign: TextAlign.center),
             const Divider(color: Colors.black38),
             Text(
               '${_receiptTitleCtrl.text.isEmpty ? "TAX INVOICE" : _receiptTitleCtrl.text.toUpperCase()} : ${_receiptPrefixCtrl.text.isEmpty ? "INV" : _receiptPrefixCtrl.text.toUpperCase()}-0001',
@@ -1282,17 +1620,66 @@ class _ThermalLabelScreenState extends ConsumerState<ThermalLabelScreen> {
               textAlign: TextAlign.center,
             ),
             const Divider(color: Colors.black38),
-            const SizedBox(height: 4),
-            ..._receiptItems.map((it) => Padding(
-                  padding: const EdgeInsets.symmetric(vertical: 2),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Text('${it['qty']}x ${it['name']}', style: const TextStyle(color: Colors.black87, fontSize: 10)),
-                      Text('Rs.${it['price']}', style: const TextStyle(color: Colors.black87, fontSize: 10)),
-                    ],
+            Table(
+              columnWidths: const {
+                0: FlexColumnWidth(4.5), // Name
+                1: FlexColumnWidth(1.5), // Qty
+                2: FlexColumnWidth(2.0), // Rate
+                3: FlexColumnWidth(2.0), // Amount
+              },
+              children: [
+                // Table Header
+                const TableRow(
+                  decoration: BoxDecoration(
+                    border: Border(bottom: BorderSide(color: Colors.black12, width: 0.5)),
                   ),
-                )),
+                  children: [
+                    Padding(
+                      padding: EdgeInsets.only(bottom: 2),
+                      child: Text('Item', style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold, fontSize: 8)),
+                    ),
+                    Padding(
+                      padding: EdgeInsets.only(bottom: 2),
+                      child: Text('Qty', style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold, fontSize: 8), textAlign: TextAlign.right),
+                    ),
+                    Padding(
+                      padding: EdgeInsets.only(bottom: 2),
+                      child: Text('Rate', style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold, fontSize: 8), textAlign: TextAlign.right),
+                    ),
+                    Padding(
+                      padding: EdgeInsets.only(bottom: 2),
+                      child: Text('Amount', style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold, fontSize: 8), textAlign: TextAlign.right),
+                    ),
+                  ],
+                ),
+                // Table Rows
+                ..._receiptItems.map((it) {
+                  final qty = double.tryParse(it['qty'] ?? '1') ?? 1;
+                  final rate = double.tryParse(it['price'] ?? '0') ?? 0;
+                  final totalAmt = qty * rate;
+                  return TableRow(
+                    children: [
+                      Padding(
+                        padding: const EdgeInsets.symmetric(vertical: 2),
+                        child: Text(it['name'] ?? '', style: const TextStyle(color: Colors.black87, fontSize: 8)),
+                      ),
+                      Padding(
+                        padding: const EdgeInsets.symmetric(vertical: 2),
+                        child: Text(qty.toStringAsFixed(0), style: const TextStyle(color: Colors.black87, fontSize: 8), textAlign: TextAlign.right),
+                      ),
+                      Padding(
+                        padding: const EdgeInsets.symmetric(vertical: 2),
+                        child: Text(rate.toStringAsFixed(2), style: const TextStyle(color: Colors.black87, fontSize: 8), textAlign: TextAlign.right),
+                      ),
+                      Padding(
+                        padding: const EdgeInsets.symmetric(vertical: 2),
+                        child: Text(totalAmt.toStringAsFixed(2), style: const TextStyle(color: Colors.black87, fontSize: 8), textAlign: TextAlign.right),
+                      ),
+                    ],
+                  );
+                }),
+              ],
+            ),
             const Divider(color: Colors.black26),
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -1306,7 +1693,7 @@ class _ThermalLabelScreenState extends ConsumerState<ThermalLabelScreen> {
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   const Text('Discount', style: TextStyle(color: Colors.black54, fontSize: 10)),
-                  Text('-Rs.${_receiptDiscountCtrl.text}', style: const TextStyle(color: Colors.black54, fontSize: 10)),
+                  Text('-Rs.${_receiptDiscountAmtCtrl.text}', style: const TextStyle(color: Colors.black54, fontSize: 10)),
                 ],
               ),
             if (_showReceiptTax)
@@ -1326,9 +1713,7 @@ class _ThermalLabelScreenState extends ConsumerState<ThermalLabelScreen> {
               ],
             ),
             const SizedBox(height: 8),
-            if (_receiptFooterCtrl.text.isNotEmpty)
-              Text(_receiptFooterCtrl.text, style: TextStyle(color: Colors.black.withValues(alpha: 0.48), fontSize: 8), textAlign: TextAlign.center),
-            const Text('--- Thank you for shopping ---', style: TextStyle(color: Colors.black54, fontSize: 9)),
+            const Text('--- Thank You For Your Visit ! ---', style: TextStyle(color: Colors.black54, fontSize: 9)),
           ],
         );
     }
@@ -1340,9 +1725,12 @@ class _ThermalLabelScreenState extends ConsumerState<ThermalLabelScreen> {
     required IconData icon,
     bool numOnly = false,
     Widget? suffixIcon,
+    bool readOnly = false,
+    ValueChanged<String>? onChanged,
   }) {
     return TextField(
       controller: controller,
+      readOnly: readOnly,
       keyboardType: numOnly ? const TextInputType.numberWithOptions(decimal: true) : TextInputType.text,
       onChanged: (val) {
         if (controller == _productNameCtrl) {
@@ -1351,6 +1739,9 @@ class _ThermalLabelScreenState extends ConsumerState<ThermalLabelScreen> {
           }
           _lastProductName = val;
         }
+        if (onChanged != null) {
+          onChanged(val);
+        }
         setState(() {});
       },
       decoration: InputDecoration(
@@ -1358,6 +1749,8 @@ class _ThermalLabelScreenState extends ConsumerState<ThermalLabelScreen> {
         prefixIcon: Icon(icon, size: 18),
         suffixIcon: suffixIcon,
         contentPadding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+        filled: readOnly ? true : null,
+        fillColor: readOnly ? (Theme.of(context).brightness == Brightness.dark ? Colors.white.withValues(alpha: 0.05) : Colors.grey.shade100) : null,
       ),
     );
   }

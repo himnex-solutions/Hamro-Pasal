@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
-import 'package:hamro_pasal/core/theme/app_theme.dart';
+import 'package:smart_saoji/core/theme/app_theme.dart';
 
 class PrivacyPolicyScreen extends StatelessWidget {
   const PrivacyPolicyScreen({super.key});
@@ -27,7 +27,7 @@ class PrivacyPolicyScreen extends StatelessWidget {
           heading: '2. How We Use Your Information',
           body:
               'We use the information we collect to:\n\n'
-              '• Provide, maintain, and improve Hamro Pasal\n'
+              '• Provide, maintain, and improve Smart Saoji\n'
               '• Process transactions and send related information\n'
               '• Send technical notices and support messages\n'
               '• Respond to comments and feedback\n'
@@ -46,13 +46,13 @@ class PrivacyPolicyScreen extends StatelessWidget {
               'We do not share your personal information with third parties except:\n\n'
               '• With your consent\n'
               '• To comply with legal obligations\n'
-              '• To protect the rights and safety of Hamro Pasal and its users\n'
+              '• To protect the rights and safety of Smart Saoji and its users\n'
               '• With service providers who assist in our operations (e.g., cloud hosting), under strict confidentiality agreements',
         ),
         _LegalSection(
           heading: '5. Cookies & Analytics',
           body:
-              'The web version of Hamro Pasal may use cookies and similar tracking technologies to maintain your session and remember your preferences. We use anonymised analytics to understand usage patterns. No personally identifiable data is shared with analytics providers.',
+              'The web version of Smart Saoji may use cookies and similar tracking technologies to maintain your session and remember your preferences. We use anonymised analytics to understand usage patterns. No personally identifiable data is shared with analytics providers.',
         ),
         _LegalSection(
           heading: '6. Your Rights',
@@ -67,7 +67,7 @@ class PrivacyPolicyScreen extends StatelessWidget {
         _LegalSection(
           heading: '7. Children\'s Privacy',
           body:
-              'Hamro Pasal is not directed at children under 13. We do not knowingly collect personal information from children under 13. If we learn that we have collected such information, we will promptly delete it.',
+              'Smart Saoji is not directed at children under 13. We do not knowingly collect personal information from children under 13. If we learn that we have collected such information, we will promptly delete it.',
         ),
         _LegalSection(
           heading: '8. Changes to This Policy',
@@ -98,12 +98,12 @@ class TermsOfServiceScreen extends StatelessWidget {
         _LegalSection(
           heading: '1. Acceptance of Terms',
           body:
-              'By accessing or using Hamro Pasal ("the App"), you agree to be bound by these Terms of Service. If you do not agree to these terms, please do not use the App.',
+              'By accessing or using Smart Saoji ("the App"), you agree to be bound by these Terms of Service. If you do not agree to these terms, please do not use the App.',
         ),
         _LegalSection(
           heading: '2. Use of the App',
           body:
-              'Hamro Pasal is designed for legitimate business management purposes. You agree to:\n\n'
+              'Smart Saoji is designed for legitimate business management purposes. You agree to:\n\n'
               '• Use the App only for lawful purposes\n'
               '• Provide accurate and complete business information\n'
               '• Keep your account credentials secure\n'
@@ -113,7 +113,7 @@ class TermsOfServiceScreen extends StatelessWidget {
         _LegalSection(
           heading: '3. Account Registration',
           body:
-              'To use Hamro Pasal, you must register with a valid email address and phone number. Each phone number and email may be associated with only one account. You are responsible for all activity that occurs under your account.',
+              'To use Smart Saoji, you must register with a valid email address and phone number. Each phone number and email may be associated with only one account. You are responsible for all activity that occurs under your account.',
         ),
         _LegalSection(
           heading: '4. Subscription & Free Trial',
@@ -124,7 +124,7 @@ class TermsOfServiceScreen extends StatelessWidget {
         _LegalSection(
           heading: '5. Data & Ownership',
           body:
-              'You retain full ownership of the business data you enter into Hamro Pasal. We do not claim any intellectual property rights over your data. You grant us a limited licence to store and process your data solely to provide the service.\n\n'
+              'You retain full ownership of the business data you enter into Smart Saoji. We do not claim any intellectual property rights over your data. You grant us a limited licence to store and process your data solely to provide the service.\n\n'
               'You may export your data at any time from the app settings.',
         ),
         _LegalSection(
@@ -306,7 +306,7 @@ class _LegalScreen extends StatelessWidget {
             child: Padding(
               padding: const EdgeInsets.fromLTRB(16, 0, 16, 40),
               child: Text(
-                '© ${DateTime.now().year} Hamro Pasal by Himnex Solutions. All rights reserved.',
+                '© ${DateTime.now().year} Smart Saoji by Himnex Solutions. All rights reserved.',
                 textAlign: TextAlign.center,
                 style: Theme.of(context).textTheme.bodySmall,
               ),
