@@ -15,6 +15,7 @@ import 'package:smart_saoji/features/dashboard/presentation/providers/dashboard_
 import 'package:smart_saoji/features/dashboard/presentation/screens/personal_dashboard_screen.dart';
 import 'package:loading_animation_widget/loading_animation_widget.dart';
 import 'package:smart_saoji/core/services/notification_service.dart';
+import 'package:smart_saoji/features/subscription/data/services/subscription_manager.dart';
 
 class DashboardScreen extends ConsumerWidget {
   const DashboardScreen({super.key});
@@ -254,7 +255,7 @@ class DashboardScreen extends ConsumerWidget {
               ),
               children: stats.recentTransactions.map((tx) {
                 final type = tx['type'] as String;
-                final amount = (tx['amount'] as num).toDouble();
+                final amount = (tx['amount'] as num?)?.toDouble() ?? 0.0;
                 final isIncome = type == AppConstants.txSale ||
                     type == AppConstants.txIncome;
                 final date = DateTime.parse(tx['transaction_date'] as String);
@@ -570,6 +571,9 @@ class _DashAppBar extends ConsumerWidget {
             ? l.goodAfternoon
             : l.goodEvening;
 
+    final subState = ref.watch(subscriptionManagerProvider);
+    final showUpgrade = subState.planCode != 'diamond';
+
     return SliverAppBar(
       expandedHeight: 132,
       floating: true,
@@ -589,12 +593,13 @@ class _DashAppBar extends ConsumerWidget {
           icon: const Icon(Icons.settings_outlined,
               size: 20, color: Colors.white70),
         ),
-        IconButton(
-          tooltip: 'Upgrade',
-          onPressed: () => context.push(AppRoutes.subscription),
-          icon: const Icon(Icons.workspace_premium_outlined,
-              size: 20, color: Colors.white70),
-        ),
+        if (showUpgrade)
+          IconButton(
+            tooltip: 'Upgrade',
+            onPressed: () => context.push(AppRoutes.subscription),
+            icon: const Icon(Icons.workspace_premium_outlined,
+                size: 20, color: Colors.white70),
+          ),
         Consumer(
           builder: (context, ref, child) {
             final list = ref.watch(inAppNotificationsProvider);

@@ -112,6 +112,15 @@ class AppStrings {
   String get noAccount => _s("Don't have an account?", 'खाता छैन?');
   String get haveAccount => _s('Already have an account?', 'खाता छ?');
   String get continueWith => _s('Continue with Google', 'Google सँग जारी राख्नुहोस्');
+  String get rememberMe => _s('Remember me', 'मलाई सम्झनुहोस्');
+  String get orSignInWith => _s('Or sign in with', 'अथवा यसबाट साइन इन गर्नुहोस्');
+  String get emailRequired => _s('Email is required', 'इमेल आवश्यक छ');
+  String get emailInvalid => _s('Enter a valid email', 'मान्य इमेल प्रविष्ट गर्नुहोस्');
+  String get passwordRequired => _s('Password is required', 'पासवर्ड आवश्यक छ');
+  String get passwordTooShort => _s('Minimum 6 characters', 'न्यूनतम ६ अक्षरहरू हुनुपर्छ');
+  String get highestPlanMsg => _s(
+      'You are already subscribed to the highest plan of Smart Saoji',
+      'तपाईंले पहिले नै स्मार्ट साहुजीको सबैभन्दा उच्च योजना सदस्यता लिनुभएको छ');
   String get signInToContinue => _s('Sign in to continue managing your business.',
       'आफ्नो व्यापार व्यवस्थापन जारी राख्न साइन इन गर्नुहोस्।');
   String get signOutConfirm => _s('Are you sure you want to sign out?',
@@ -345,4 +354,51 @@ class AppStrings {
     'You have reached the staff limit ($maxStaff) for your current plan. Please upgrade.',
     'तपाईंले आफ्नो वर्तमान योजनाको लागि कर्मचारी सीमा ($maxStaff) पार गर्नुभएको छ। कृपया अपग्रेड गर्नुहोस्।',
   );
+
+  // ── New/Added Keys for Parties, Products, & Tools ──────────
+  String get editParty => _s('Edit Party', 'पार्टी सम्पादन');
+  String get saveChanges => _s('Save Changes', 'परिवर्तनहरू बचत गर्नुहोस्');
+  String get partyType => _s('Party Type', 'पार्टीको प्रकार');
+  String get both => _s('Both', 'दुबै');
+  String get fullNameOrBusinessName => _s('Full name or business name', 'पूरा नाम वा व्यवसायको नाम');
+  String get phoneNumber => _s('Phone Number', 'फोन नम्बर');
+  String get openingBalance => _s('Opening Balance', 'सुरुको मौज्दात');
+  String get positiveNegNotes => _s('Positive = they owe you | Negative = you owe them', 'सकारात्मक = उनीहरूले तिर्नुपर्ने | नकारात्मक = तपाईंले तिर्नुपर्ने');
+  String get anyAdditionalNotes => _s('Any additional notes...', 'कुनै थप टिप्पणी...');
+  String get partyUpdated => _s('Party updated!', 'पार्टी अपडेट भयो!');
+
+  String get editProduct => _s('Edit Product', 'उत्पादन सम्पादन');
+  String get productNameRequired => _s('Product name is required', 'उत्पादनको नाम आवश्यक छ');
+  String get sellingPriceRequired => _s('Selling price is required', 'बिक्री मूल्य आवश्यक छ');
+  String get productUpdated => _s('Product updated!', 'उत्पादन अपडेट भयो!');
+  String get productAdded => _s('Product added successfully!', 'उत्पादन सफलतापूर्वक थपियो!');
+  String get costPriceRs => _s('Cost Price (Rs.) *', 'खरिद मूल्य (रु.) *');
+  String get sellingPriceRs => _s('Selling Price (Rs.) *', 'बिक्री मूल्य (रु.) *');
+  String get openingStock => _s('Opening Stock', 'सुरुको स्टक');
+  String get minStockAlert => _s('Min Stock Alert', 'न्यूनतम स्टक चेतावनी');
+  String get sku => _s('SKU', 'SKU');
+  String get barcode => _s('Barcode', 'बारकोड');
+  String get addPhoto => _s('Add Image', 'फोटो थप्नुहोस्');
+
+  String get businessTools => _s('Business Tools', 'व्यापारिक उपकरणहरू');
+  String get dailyCalculator => _s('Daily Calculator', 'दैनिक क्यालकुलेटर');
+  String get dailyCalculatorDesc => _s('Standard arithmetic for quick calculations', 'द्रुत गणनाका लागि साधारण गणित');
+  String get emiCalculator => _s('EMI Calculator', 'EMI क्यालकुलेटर');
+  String get emiCalculatorDesc => _s('Loan EMI with full amortization schedule', 'पूर्ण भुक्तानी तालिका सहित ऋण EMI');
+  String get thermalLabelPrinter => _s('Thermal Label Printer', 'थर्मल लेबल प्रिन्टर');
+  String get thermalLabelDesc => _s('Print product labels & barcodes', 'उत्पादन लेबल र बारकोड प्रिन्ट गर्नुहोस्');
+  String get comingSoon => _s('Coming Soon', 'चाँडै आउँदैछ');
+  String get comingSoonDesc => _s('GST Calculator, Currency Converter & more', 'GST क्यालकुलेटर, मुद्रा परिवर्तक र थप');
+  String get toolsForBusiness => _s('Tools for your Business', 'तपाईंको व्यवसायका लागि उपकरणहरू');
+  String get toolsDesc => _s('EMI, calculator & more — all in one place', 'EMI, क्यालकुलेटर र थप — सबै एकै ठाउँमा');
+
+  // ── Bank Accounts ──────────────────────────
+  String get bankName => _s('Bank Name', 'बैंकको नाम');
+  String get accountNumberLabel => _s('Account Number', 'खाता नम्बर');
+  String get branchName => _s('Branch Name', 'शाखाको नाम');
+  String get esewaId => _s('eSewa ID / Phone', 'ईसेवा ID / फोन नम्बर');
+  String get esewaName => _s('Wallet Name (eSewa/Khalti)', 'वालेटको नाम (ईसेवा/खल्ती)');
+  String get addAccount => _s('Add Account', 'खाता थप्नुहोस्');
+  String get accountName => _s('Account Name', 'खाताको नाम');
+  String get accountType => _s('Account Type', 'खाताको प्रकार');
 }

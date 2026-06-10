@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:go_router/go_router.dart';
 import 'package:smart_saoji/core/constants/app_constants.dart';
 import 'package:smart_saoji/core/services/daily_limit_service.dart';
 import 'package:smart_saoji/core/theme/app_theme.dart';
@@ -12,6 +11,7 @@ import 'package:smart_saoji/core/widgets/plan_limit_dialog.dart';
 import 'package:smart_saoji/features/parties/data/models/party_model.dart';
 import 'package:smart_saoji/features/parties/presentation/screens/parties_screen.dart';
 import 'package:smart_saoji/features/parties/presentation/screens/party_detail_screen.dart';
+import 'package:smart_saoji/core/l10n/app_strings.dart';
 import 'package:smart_saoji/features/subscription/data/services/subscription_manager.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
@@ -227,65 +227,65 @@ class _AddPartyScreenState extends ConsumerState<AddPartyScreen> {
   Widget build(BuildContext context) {
     final isEdit = widget.existingParty != null;
     return Scaffold(
-      appBar: AppBar(title: Text(isEdit ? 'Edit Party' : 'Add Party')),
+      appBar: AppBar(title: Text(isEdit ? context.l10n.editParty : context.l10n.addParty)),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(16),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             // Type selector
-            Text('Party Type', style: Theme.of(context).textTheme.titleMedium),
+            Text(context.l10n.partyType, style: Theme.of(context).textTheme.titleMedium),
             const SizedBox(height: 8),
             Row(
               children: [
                 _TypeChip(
-                    label: 'Customer',
+                    label: context.l10n.customer,
                     value: AppConstants.partyCustomer,
                     selected: _type,
                     onTap: (v) => setState(() => _type = v)),
                 const SizedBox(width: 10),
                 _TypeChip(
-                    label: 'Supplier',
+                    label: context.l10n.supplier,
                     value: AppConstants.partySupplier,
                     selected: _type,
                     onTap: (v) => setState(() => _type = v)),
                 const SizedBox(width: 10),
                 _TypeChip(
-                    label: 'Both',
+                    label: context.l10n.both,
                     value: AppConstants.partyBoth,
                     selected: _type,
                     onTap: (v) => setState(() => _type = v)),
               ],
             ).animate().fadeIn(),
             const SizedBox(height: 20),
-            _label(context, 'Name *'),
+            _label(context, '${context.l10n.name} *'),
             AppTextField(
                 controller: _nameCtrl,
-                hint: 'Full name or business name',
+                hint: context.l10n.fullNameOrBusinessName,
                 prefixIcon: Icons.person_outline),
             const SizedBox(height: 16),
-            _label(context, 'Phone Number'),
+            _label(context, context.l10n.phoneNumber),
             AppTextField(
                 controller: _phoneCtrl,
                 hint: '98XXXXXXXX',
                 keyboardType: TextInputType.phone,
                 prefixIcon: Icons.phone_outlined),
             const SizedBox(height: 16),
-            _label(context, 'Email'),
+            _label(context, context.l10n.email),
             AppTextField(
                 controller: _emailCtrl,
                 hint: 'email@example.com',
                 keyboardType: TextInputType.emailAddress,
                 prefixIcon: Icons.email_outlined),
             const SizedBox(height: 16),
-            _label(context, 'Address'),
+            _label(context, context.l10n.address),
             AppTextField(
                 controller: _addressCtrl,
                 hint: 'Street, City',
                 prefixIcon: Icons.location_on_outlined,
                 maxLines: 2),
             const SizedBox(height: 16),
-            _label(context, 'Opening Balance (Rs.)'),
+            _label(context, '${context.l10n.openingBalance} (Rs.)'),
             AppTextField(
                 controller: _openingBalCtrl,
                 hint: '0',
@@ -293,20 +293,18 @@ class _AddPartyScreenState extends ConsumerState<AddPartyScreen> {
                 prefixIcon: Icons.account_balance_wallet_outlined),
             const SizedBox(height: 8),
             Text(
-              _type == AppConstants.partyCustomer
-                  ? 'Positive = they owe you | Negative = you owe them'
-                  : 'Positive = they owe you | Negative = you owe them',
+              context.l10n.positiveNegNotes,
               style: Theme.of(context).textTheme.bodySmall,
             ),
             const SizedBox(height: 16),
-            _label(context, 'Notes (Optional)'),
+            _label(context, '${context.l10n.notes} (${context.l10n.optional})'),
             AppTextField(
                 controller: _notesCtrl,
-                hint: 'Any additional notes...',
+                hint: context.l10n.anyAdditionalNotes,
                 maxLines: 3),
             const SizedBox(height: 32),
             AppButton(
-                label: isEdit ? 'Save Changes' : 'Add Party',
+                label: isEdit ? context.l10n.saveChanges : context.l10n.addParty,
                 onPressed: _save,
                 isLoading: _isLoading,
                 icon: isEdit ? Icons.save_rounded : Icons.person_add_rounded),

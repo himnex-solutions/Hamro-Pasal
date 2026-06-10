@@ -6,6 +6,8 @@ import 'package:go_router/go_router.dart';
 import 'package:smart_saoji/core/router/app_router.dart';
 import 'package:smart_saoji/core/widgets/app_snackbar.dart';
 import 'package:smart_saoji/features/auth/presentation/providers/auth_provider.dart';
+import 'package:smart_saoji/core/providers/locale_provider.dart';
+import 'package:smart_saoji/core/l10n/app_strings.dart';
 
 import 'package:smart_saoji/core/widgets/wavy_divider.dart';
 
@@ -88,6 +90,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
   Widget build(BuildContext context) {
     final screenHeight = MediaQuery.of(context).size.height;
     final topSectionHeight = screenHeight * 0.38;
+    final currentLocale = ref.watch(localeProvider);
 
     return Scaffold(
       resizeToAvoidBottomInset: true,
@@ -136,6 +139,82 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                         ),
                       ),
                     ),
+
+                    // Language Selector
+                    PopupMenuButton<Locale>(
+                      initialValue: currentLocale,
+                      tooltip: 'Select Language',
+                      onSelected: (Locale locale) async {
+                        await ref
+                            .read(localeProvider.notifier)
+                            .setLocale(locale);
+                      },
+                      itemBuilder: (context) => [
+                        const PopupMenuItem(
+                          value: Locale('en'),
+                          child: Row(
+                            children: [
+                              Text('🇬🇧', style: TextStyle(fontSize: 16)),
+                              SizedBox(width: 8),
+                              Text('English',
+                                  style:
+                                      TextStyle(fontWeight: FontWeight.w600)),
+                            ],
+                          ),
+                        ),
+                        const PopupMenuItem(
+                          value: Locale('ne'),
+                          child: Row(
+                            children: [
+                              Text('🇳🇵', style: TextStyle(fontSize: 16)),
+                              SizedBox(width: 8),
+                              Text('नेपाली',
+                                  style:
+                                      TextStyle(fontWeight: FontWeight.w600)),
+                            ],
+                          ),
+                        ),
+                      ],
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 12, vertical: 6),
+                        decoration: BoxDecoration(
+                          color: Colors.white.withValues(alpha: 0.15),
+                          borderRadius: BorderRadius.circular(20),
+                          border: Border.all(
+                            color: Colors.white.withValues(alpha: 0.25),
+                            width: 1,
+                          ),
+                        ),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Text(
+                              currentLocale.languageCode == 'ne' ? '🇳🇵' : '🇬🇧',
+                              style: const TextStyle(fontSize: 14),
+                            ),
+                            const SizedBox(width: 6),
+                            Text(
+                              currentLocale.languageCode == 'ne'
+                                  ? 'नेपाली'
+                                  : 'English',
+                              style: const TextStyle(
+                                color: Colors.white,
+                                fontSize: 12,
+                                fontWeight: FontWeight.w700,
+                                letterSpacing: 0.3,
+                              ),
+                            ),
+                            const SizedBox(width: 4),
+                            const Icon(
+                              Icons.keyboard_arrow_down_rounded,
+                              color: Colors.white,
+                              size: 16,
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
                   ],
                 ),
               ),
@@ -152,7 +231,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
               bottom: false,
               child: Center(
                 child: const Text(
-                  'SmartSaoji',
+                  'Smart Saoji',
                   style: TextStyle(
                     fontSize: 42,
                     fontWeight: FontWeight.w800,
@@ -189,6 +268,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
 
   // ── Form ──────────────────────────────────────────────────────
   Widget _buildForm() {
+    final l = context.l10n;
     return Form(
       key: _formKey,
       child: Column(
@@ -199,13 +279,13 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
           // Email
           _CustomAuthField(
             controller: _emailCtrl,
-            label: 'Email Address',
+            label: l.email,
             icon: Icons.mail_outline_rounded,
             keyboardType: TextInputType.emailAddress,
             textInputAction: TextInputAction.next,
             validator: (v) {
-              if (v == null || v.isEmpty) return 'Email is required';
-              if (!v.contains('@')) return 'Enter a valid email';
+              if (v == null || v.isEmpty) return l.emailRequired;
+              if (!v.contains('@')) return l.emailInvalid;
               return null;
             },
           ).animate().fadeIn(delay: 280.ms),
@@ -215,7 +295,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
           // Password
           _CustomAuthField(
             controller: _passwordCtrl,
-            label: 'Password',
+            label: l.password,
             icon: Icons.lock_outline_rounded,
             obscureText: _obscurePassword,
             textInputAction: TextInputAction.done,
@@ -231,8 +311,8 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
               ),
             ),
             validator: (v) {
-              if (v == null || v.isEmpty) return 'Password is required';
-              if (v.length < 6) return 'Minimum 6 characters';
+              if (v == null || v.isEmpty) return l.passwordRequired;
+              if (v.length < 6) return l.passwordTooShort;
               return null;
             },
           ).animate().fadeIn(delay: 310.ms),
@@ -270,9 +350,9 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                   const SizedBox(width: 8),
                   GestureDetector(
                     onTap: () => setState(() => _rememberMe = !_rememberMe),
-                    child: const Text(
-                      'Remember me',
-                      style: TextStyle(
+                    child: Text(
+                      l.rememberMe,
+                      style: const TextStyle(
                         fontSize: 13.5,
                         color: Color(0xFF475569),
                         fontWeight: FontWeight.w500,
@@ -284,9 +364,9 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
               // Forgot Password
               GestureDetector(
                 onTap: () => context.push(AppRoutes.forgotPassword),
-                child: const Text(
-                  'Forgot password?',
-                  style: TextStyle(
+                child: Text(
+                  l.forgotPassword,
+                  style: const TextStyle(
                     fontSize: 13.5,
                     color: Color(0xFF475569),
                     fontWeight: FontWeight.w600,
@@ -300,7 +380,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
 
           // Sign in button
           _GradientButton(
-            label: 'Sign in',
+            label: l.signIn,
             isLoading: _isLoading,
             onPressed: _login,
           ).animate().fadeIn(delay: 340.ms),
@@ -308,20 +388,20 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
           const SizedBox(height: 24),
 
           // Divider
-          const Row(children: [
-            Expanded(child: Divider(color: _border, thickness: 1)),
+          Row(children: [
+            const Expanded(child: Divider(color: _border, thickness: 1)),
             Padding(
-              padding: EdgeInsets.symmetric(horizontal: 16),
+              padding: const EdgeInsets.symmetric(horizontal: 16),
               child: Text(
-                'Or sign in with',
-                style: TextStyle(
+                l.orSignInWith,
+                style: const TextStyle(
                   fontSize: 13,
                   color: _grey,
                   fontWeight: FontWeight.w500,
                 ),
               ),
             ),
-            Expanded(child: Divider(color: _border, thickness: 1)),
+            const Expanded(child: Divider(color: _border, thickness: 1)),
           ]).animate().fadeIn(delay: 400.ms),
 
           const SizedBox(height: 22),
@@ -367,9 +447,9 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
           Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              const Text(
-                "Don't have an account? ",
-                style: TextStyle(
+              Text(
+                '${l.noAccount} ',
+                style: const TextStyle(
                   color: Color(0xFF64748B), // Slate 500
                   fontSize: 14,
                   fontWeight: FontWeight.w500,
@@ -377,9 +457,9 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
               ),
               GestureDetector(
                 onTap: () => context.push(AppRoutes.signup),
-                child: const Text(
-                  'Sign Up',
-                  style: TextStyle(
+                child: Text(
+                  l.signUp,
+                  style: const TextStyle(
                     color: Color(0xFF2C3BD5), // Accent blue
                     fontSize: 14,
                     fontWeight: FontWeight.w700,

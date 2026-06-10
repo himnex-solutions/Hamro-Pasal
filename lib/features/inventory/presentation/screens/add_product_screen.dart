@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:go_router/go_router.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:smart_saoji/core/constants/app_constants.dart';
 import 'package:smart_saoji/core/constants/supabase_constants.dart';
@@ -12,6 +11,7 @@ import 'package:smart_saoji/core/widgets/app_text_field.dart';
 import 'package:smart_saoji/features/inventory/data/models/product_model.dart';
 import 'package:smart_saoji/features/inventory/presentation/screens/inventory_screen.dart';
 import 'package:smart_saoji/features/inventory/presentation/screens/product_detail_screen.dart';
+import 'package:smart_saoji/core/l10n/app_strings.dart';
 import 'package:smart_saoji/core/services/daily_limit_service.dart';
 import 'package:smart_saoji/core/widgets/plan_limit_dialog.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -140,11 +140,11 @@ class _AddProductScreenState extends ConsumerState<AddProductScreen> {
 
   Future<void> _save() async {
     if (_nameCtrl.text.trim().isEmpty) {
-      AppSnackbar.show(context, 'Product name is required', isError: true);
+      AppSnackbar.show(context, context.l10n.productNameRequired, isError: true);
       return;
     }
     if (_sellCtrl.text.isEmpty) {
-      AppSnackbar.show(context, 'Selling price is required', isError: true);
+      AppSnackbar.show(context, context.l10n.sellingPriceRequired, isError: true);
       return;
     }
     setState(() => _isLoading = true);
@@ -179,7 +179,7 @@ class _AddProductScreenState extends ConsumerState<AddProductScreen> {
           messenger
             ..hideCurrentSnackBar()
             ..showSnackBar(SnackBar(
-                content: const Text('Product updated!', style: TextStyle(color: Colors.white)),
+                content: Text(context.l10n.productUpdated, style: const TextStyle(color: Colors.white)),
                 backgroundColor: AppTheme.successColor,
                 behavior: SnackBarBehavior.floating,
                 shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
@@ -237,7 +237,7 @@ class _AddProductScreenState extends ConsumerState<AddProductScreen> {
           messenger
             ..hideCurrentSnackBar()
             ..showSnackBar(SnackBar(
-                content: const Text('Product added successfully!', style: TextStyle(color: Colors.white)),
+                content: Text(context.l10n.productAdded, style: const TextStyle(color: Colors.white)),
                 backgroundColor: AppTheme.successColor,
                 behavior: SnackBarBehavior.floating,
                 shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
@@ -264,7 +264,7 @@ class _AddProductScreenState extends ConsumerState<AddProductScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text(widget.existingProduct != null ? 'Edit Product' : 'Add Product')),
+      appBar: AppBar(title: Text(widget.existingProduct != null ? context.l10n.editProduct : context.l10n.addProduct)),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(16),
         child: Column(
@@ -293,14 +293,14 @@ class _AddProductScreenState extends ConsumerState<AddProductScreen> {
                           child: kIsWeb
                               ? Image.memory(_imageBytes!, fit: BoxFit.cover)
                               : Image.file(_imageFile!, fit: BoxFit.cover))
-                      : const Column(
+                      : Column(
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
-                            Icon(Icons.add_photo_alternate_outlined,
+                            const Icon(Icons.add_photo_alternate_outlined,
                                 color: AppTheme.primaryColor, size: 32),
-                            SizedBox(height: 4),
-                            Text('Add Image',
-                                style: TextStyle(
+                            const SizedBox(height: 4),
+                            Text(context.l10n.addPhoto,
+                                style: const TextStyle(
                                     color: AppTheme.primaryColor,
                                     fontSize: 12,
                                     fontWeight: FontWeight.w600)),
@@ -311,7 +311,7 @@ class _AddProductScreenState extends ConsumerState<AddProductScreen> {
             ).animate().scale(duration: 400.ms, curve: Curves.elasticOut),
             const SizedBox(height: 24),
 
-            _label(context, 'Product Name *'),
+            _label(context, '${context.l10n.productName} *'),
             AppTextField(
                 controller: _nameCtrl,
                 hint: 'e.g. Basmati Rice 1kg',
@@ -324,7 +324,7 @@ class _AddProductScreenState extends ConsumerState<AddProductScreen> {
                     child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                      _label(context, 'SKU'),
+                      _label(context, context.l10n.sku),
                       AppTextField(controller: _skuCtrl, hint: 'e.g. RICE001'),
                     ])),
                 const SizedBox(width: 12),
@@ -332,7 +332,7 @@ class _AddProductScreenState extends ConsumerState<AddProductScreen> {
                     child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                      _label(context, 'Barcode'),
+                      _label(context, context.l10n.barcode),
                       AppTextField(
                           controller: _barcodeCtrl,
                           hint: 'Scan or enter',
@@ -346,7 +346,7 @@ class _AddProductScreenState extends ConsumerState<AddProductScreen> {
             ).animate(delay: 50.ms).fadeIn(),
             const SizedBox(height: 16),
 
-            _label(context, 'Unit'),
+            _label(context, context.l10n.unit),
             _UnitDropdown(
               selected: _selectedUnit,
               onChanged: (v) => setState(() => _selectedUnit = v),
@@ -359,7 +359,7 @@ class _AddProductScreenState extends ConsumerState<AddProductScreen> {
                     child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                      _label(context, 'Cost Price (Rs.) *'),
+                      _label(context, context.l10n.costPriceRs),
                       AppTextField(
                           controller: _costCtrl,
                           hint: '0.00',
@@ -371,7 +371,7 @@ class _AddProductScreenState extends ConsumerState<AddProductScreen> {
                     child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                      _label(context, 'Selling Price (Rs.) *'),
+                      _label(context, context.l10n.sellingPriceRs),
                       AppTextField(
                           controller: _sellCtrl,
                           hint: '0.00',
@@ -388,7 +388,7 @@ class _AddProductScreenState extends ConsumerState<AddProductScreen> {
                     child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                      _label(context, 'Opening Stock'),
+                      _label(context, context.l10n.openingStock),
                       AppTextField(
                           controller: _stockCtrl,
                           hint: '0',
@@ -400,7 +400,7 @@ class _AddProductScreenState extends ConsumerState<AddProductScreen> {
                     child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                      _label(context, 'Min Stock Alert'),
+                      _label(context, context.l10n.minStockAlert),
                       AppTextField(
                           controller: _minStockCtrl,
                           hint: '5',
@@ -412,7 +412,7 @@ class _AddProductScreenState extends ConsumerState<AddProductScreen> {
             const SizedBox(height: 32),
 
             AppButton(
-              label: widget.existingProduct != null ? 'Save Changes' : 'Add Product',
+              label: widget.existingProduct != null ? context.l10n.saveChanges : context.l10n.addProduct,
               onPressed: _save,
               isLoading: _isLoading,
               icon: widget.existingProduct != null ? Icons.save_rounded : Icons.add_box_rounded,

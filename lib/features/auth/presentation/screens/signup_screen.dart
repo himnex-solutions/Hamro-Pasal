@@ -222,7 +222,7 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
               bottom: false,
               child: Center(
                 child: const Text(
-                  'SmartSaoji',
+                  'Smart Saoji',
                   style: TextStyle(
                     fontSize: 42,
                     fontWeight: FontWeight.w800,

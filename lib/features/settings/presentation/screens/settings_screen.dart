@@ -85,9 +85,19 @@ class SettingsScreen extends ConsumerWidget {
             title: l.manageSubscription,
             subtitle: l.viewPlans,
             color: AppTheme.primaryColor,
-            onTap: () => context.push(AppRoutes.subscription),
+            onTap: () {
+              final plan = ref.read(subscriptionManagerProvider).planCode;
+              if (plan == 'diamond') {
+                AppSnackbar.show(
+                  context,
+                  l.highestPlanMsg,
+                  isSuccess: true,
+                );
+              } else {
+                context.push(AppRoutes.subscription);
+              }
+            },
           ),
-
           const SizedBox(height: 20),
 
           // ── Tools ──────────────────────────────────────────

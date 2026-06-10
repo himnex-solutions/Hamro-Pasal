@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:smart_saoji/core/router/app_router.dart';
 import 'package:smart_saoji/core/theme/app_theme.dart';
+import 'package:smart_saoji/core/l10n/app_strings.dart';
 import 'package:smart_saoji/features/subscription/data/services/subscription_manager.dart';
 import 'package:smart_saoji/core/widgets/plan_limit_dialog.dart';
 
@@ -16,24 +17,25 @@ class ToolsScreen extends ConsumerWidget {
     final plan = ref.watch(subscriptionManagerProvider).planCode;
     final canUseThermal = plan == 'gold' || plan == 'diamond';
     final isBasic = plan == 'basic';
+    final isNe = context.l10n.isNepali;
 
     final tools = [
-      const _ToolItem(
-        title: 'Daily Calculator',
-        subtitle: 'Standard arithmetic for quick calculations',
+      _ToolItem(
+        title: context.l10n.dailyCalculator,
+        subtitle: context.l10n.dailyCalculatorDesc,
         icon: Icons.calculate_rounded,
-        gradient: LinearGradient(
+        gradient: const LinearGradient(
           colors: [Color(0xFF2537D5), Color(0xFFD362EC)],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
         ),
         route: AppRoutes.calculator,
       ),
-      const _ToolItem(
-        title: 'EMI Calculator',
-        subtitle: 'Loan EMI with full amortization schedule',
+      _ToolItem(
+        title: context.l10n.emiCalculator,
+        subtitle: context.l10n.emiCalculatorDesc,
         icon: Icons.account_balance_rounded,
-        gradient: LinearGradient(
+        gradient: const LinearGradient(
           colors: [Color(0xFF7C3AED), Color(0xFFA78BFA)],
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
@@ -41,10 +43,12 @@ class ToolsScreen extends ConsumerWidget {
         route: AppRoutes.emiCalculator,
       ),
       _ToolItem(
-        title: 'Thermal Label Printer',
+        title: context.l10n.thermalLabelPrinter,
         subtitle: canUseThermal
-            ? (plan == 'diamond' ? '💎 Unlimited prints · Web & Desktop' : '🥇 Gold · 10 prints/day · Web & Desktop')
-            : '🔒 Gold & Diamond · Print product labels & barcodes',
+            ? (plan == 'diamond'
+                ? (isNe ? '💎 असीमित प्रिन्ट · वेब र डेस्कटप' : '💎 Unlimited prints · Web & Desktop')
+                : (isNe ? '🥇 गोल्ड · १० प्रिन्ट/दिन · वेब र डेस्कटप' : '🥇 Gold · 10 prints/day · Web & Desktop'))
+            : (isNe ? '🔒 गोल्ड र डाइमण्ड · सामान लेबल र बारकोड प्रिन्ट' : '🔒 Gold & Diamond · Print product labels & barcodes'),
         icon: Icons.label_important_rounded,
         gradient: const LinearGradient(
           colors: [Color(0xFF059669), Color(0xFF34D399)],
@@ -57,8 +61,8 @@ class ToolsScreen extends ConsumerWidget {
       ),
 
       _ToolItem(
-        title: 'Coming Soon',
-        subtitle: 'GST Calculator, Currency Converter & more',
+        title: context.l10n.comingSoon,
+        subtitle: context.l10n.comingSoonDesc,
         icon: Icons.more_horiz_rounded,
         gradient: LinearGradient(
           colors: [Colors.grey.shade400, Colors.grey.shade500],
@@ -72,7 +76,7 @@ class ToolsScreen extends ConsumerWidget {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Business Tools'),
+        title: Text(context.l10n.businessTools),
         centerTitle: false,
       ),
       body: ListView(
@@ -96,9 +100,9 @@ class ToolsScreen extends ConsumerWidget {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      const Text(
-                        'Tools for your Business',
-                        style: TextStyle(
+                      Text(
+                        context.l10n.toolsForBusiness,
+                        style: const TextStyle(
                           color: Colors.white,
                           fontWeight: FontWeight.w800,
                           fontSize: 17,
@@ -106,7 +110,7 @@ class ToolsScreen extends ConsumerWidget {
                       ),
                       const SizedBox(height: 4),
                       Text(
-                        'EMI, calculator & more — all in one place',
+                        context.l10n.toolsDesc,
                         style: TextStyle(
                           color: Colors.white.withValues(alpha: 0.8),
                           fontSize: 13,

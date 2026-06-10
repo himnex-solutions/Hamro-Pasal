@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
@@ -45,25 +46,37 @@ class DashboardNotifier extends AsyncNotifier<DashboardStats> {
     final now = DateTime.now();
     final todayStart = DateTime(now.year, now.month, now.day).toIso8601String();
 
+    double todaySales = 0;
+    double todayExpenses = 0;
+    double receivables = 0;
+    double payables = 0;
+    int lowStock = 0;
+    List<Map<String, dynamic>> recentTransactions = [];
+    String subStatus = AppConstants.statusActive;
+    int? trialDaysLeft;
+
+    // 1. Fetch Today's Transactions
     try {
-      // Today's transactions
       final txRes = await supabase
           .from('transactions')
           .select('type, amount')
           .eq('business_id', businessId)
           .gte('transaction_date', todayStart);
 
-      double todaySales = 0, todayExpenses = 0;
       for (final tx in txRes as List) {
-        final amount = (tx['amount'] as num).toDouble();
+        final amount = (tx['amount'] as num?)?.toDouble() ?? 0.0;
         if (tx['type'] == AppConstants.txSale) todaySales += amount;
         if (tx['type'] == AppConstants.txExpense ||
             tx['type'] == AppConstants.txPurchase) {
           todayExpenses += amount;
         }
       }
+    } catch (e, st) {
+      debugPrint('Dashboard Error (Today\'s Transactions): $e\n$st');
+    }
 
-      // Today's general expenses from the expenses table
+    // 2. Fetch Today's General Expenses
+    try {
       final expRes = await supabase
           .from('expenses')
           .select('amount')
@@ -71,37 +84,47 @@ class DashboardNotifier extends AsyncNotifier<DashboardStats> {
           .gte('expense_date', todayStart);
 
       for (final exp in expRes as List) {
-        todayExpenses += (exp['amount'] as num).toDouble();
+        todayExpenses += (exp['amount'] as num?)?.toDouble() ?? 0.0;
       }
+    } catch (e, st) {
+      debugPrint('Dashboard Error (General Expenses): $e\n$st');
+    }
 
-      // Party balances (receivables/payables)
+    // 3. Fetch Party Balances (Receivables & Payables)
+    try {
       final partyRes = await supabase
           .from('parties')
           .select('current_balance')
           .eq('business_id', businessId);
 
-      double receivables = 0, payables = 0;
       for (final p in partyRes as List) {
-        final bal = (p['current_balance'] as num).toDouble();
+        final bal = (p['current_balance'] as num?)?.toDouble() ?? 0.0;
         if (bal > 0) receivables += bal;
         if (bal < 0) payables += bal.abs();
       }
+    } catch (e, st) {
+      debugPrint('Dashboard Error (Party Balances): $e\n$st');
+    }
 
-      // Low stock count
+    // 4. Fetch Low Stock Count
+    try {
       final stockRes = await supabase
           .from('products')
           .select('stock_quantity, min_stock_alert')
           .eq('business_id', businessId)
           .eq('is_active', true);
 
-      int lowStock = 0;
       for (final p in stockRes as List) {
-        final qty = (p['stock_quantity'] as num).toDouble();
-        final min = (p['min_stock_alert'] as num).toDouble();
+        final qty = (p['stock_quantity'] as num?)?.toDouble() ?? 0.0;
+        final min = (p['min_stock_alert'] as num?)?.toDouble() ?? 5.0;
         if (qty <= min) lowStock++;
       }
+    } catch (e, st) {
+      debugPrint('Dashboard Error (Low Stock Count): $e\n$st');
+    }
 
-      // Recent transactions (last 5)
+    // 5. Fetch Recent Transactions
+    try {
       final recentRes = await supabase
           .from('transactions')
           .select(
@@ -109,16 +132,19 @@ class DashboardNotifier extends AsyncNotifier<DashboardStats> {
           .eq('business_id', businessId)
           .order('transaction_date', ascending: false)
           .limit(AppConstants.dashboardRecentTxCount);
+      recentTransactions = (recentRes as List).cast<Map<String, dynamic>>();
+    } catch (e, st) {
+      debugPrint('Dashboard Error (Recent Transactions): $e\n$st');
+    }
 
-      // Subscription status
+    // 6. Fetch Subscription Status
+    try {
       final subRes = await supabase
           .from('subscriptions')
           .select('status, trial_end_date')
           .eq('business_id', businessId)
           .maybeSingle();
 
-      String subStatus = AppConstants.statusActive;
-      int? trialDaysLeft;
       if (subRes != null) {
         subStatus = subRes['status'] as String? ?? AppConstants.statusActive;
         if (subRes['trial_end_date'] != null) {
@@ -126,21 +152,21 @@ class DashboardNotifier extends AsyncNotifier<DashboardStats> {
           trialDaysLeft = endDate.difference(now).inDays;
         }
       }
-
-      return DashboardStats(
-        todaySales: todaySales,
-        todayExpenses: todayExpenses,
-        totalReceivables: receivables,
-        totalPayables: payables,
-        todayProfit: todaySales - todayExpenses,
-        lowStockCount: lowStock,
-        recentTransactions: (recentRes as List).cast<Map<String, dynamic>>(),
-        subscriptionStatus: subStatus,
-        trialDaysLeft: trialDaysLeft,
-      );
-    } catch (e) {
-      return const DashboardStats();
+    } catch (e, st) {
+      debugPrint('Dashboard Error (Subscription): $e\n$st');
     }
+
+    return DashboardStats(
+      todaySales: todaySales,
+      todayExpenses: todayExpenses,
+      totalReceivables: receivables,
+      totalPayables: payables,
+      todayProfit: todaySales - todayExpenses,
+      lowStockCount: lowStock,
+      recentTransactions: recentTransactions,
+      subscriptionStatus: subStatus,
+      trialDaysLeft: trialDaysLeft,
+    );
   }
 
   Future<void> refresh() async {

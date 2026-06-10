@@ -197,16 +197,35 @@ class _MainShellScreenState extends ConsumerState<MainShellScreen> with WidgetsB
                       ),
                     ),
                     const SizedBox(height: 12),
-                    TextButton(
-                      onPressed: () async {
-                        await Supabase.instance.client.auth.signOut();
-                      },
-                      style: TextButton.styleFrom(
-                        foregroundColor: Theme.of(context).brightness == Brightness.dark
-                            ? Colors.white.withValues(alpha: 0.6)
-                            : AppTheme.lightTextHint,
-                      ),
-                      child: const Text('Sign Out'),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        TextButton.icon(
+                          onPressed: () => context.push(AppRoutes.settings),
+                          icon: const Icon(Icons.settings_outlined, size: 16),
+                          label: const Text('Settings'),
+                          style: TextButton.styleFrom(
+                            foregroundColor: AppTheme.primaryColor,
+                          ),
+                        ),
+                        Text('•',
+                            style: TextStyle(
+                              color: Theme.of(context).brightness == Brightness.dark
+                                  ? Colors.white24
+                                  : AppTheme.lightTextHint,
+                            )),
+                        TextButton(
+                          onPressed: () async {
+                            await Supabase.instance.client.auth.signOut();
+                          },
+                          style: TextButton.styleFrom(
+                            foregroundColor: Theme.of(context).brightness == Brightness.dark
+                                ? Colors.white.withValues(alpha: 0.6)
+                                : AppTheme.lightTextHint,
+                          ),
+                          child: const Text('Sign Out'),
+                        ),
+                      ],
                     ),
                   ],
                 ),
@@ -505,6 +524,7 @@ class _PremiumSidebar extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final connectivity = ref.watch(connectivityProvider);
+    final manager = ref.watch(subscriptionManagerProvider);
 
     return Container(
       width: 248,
@@ -621,10 +641,11 @@ class _PremiumSidebar extends ConsumerWidget {
           ),
 
           // Upgrade tile
-          Padding(
-            padding: const EdgeInsets.fromLTRB(8, 4, 8, 16),
-            child: _UpgradeTile(onTap: () => context.push(AppRoutes.subscription)),
-          ),
+          if (manager.planCode != 'diamond')
+            Padding(
+              padding: const EdgeInsets.fromLTRB(8, 4, 8, 16),
+              child: _UpgradeTile(onTap: () => context.push(AppRoutes.subscription)),
+            ),
         ],
       ),
     );
