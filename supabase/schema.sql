@@ -429,14 +429,25 @@ ALTER TABLE sync_queue ENABLE ROW LEVEL SECURITY;
 
 -- Helper: check if user belongs to a business
 CREATE OR REPLACE FUNCTION user_has_business_access(p_business_id UUID)
-RETURNS BOOLEAN AS $$
+RETURNS BOOLEAN
+LANGUAGE plpgsql
+SECURITY DEFINER
+SET search_path = public
+STABLE
+AS $$
+DECLARE
+  v_exists BOOLEAN;
+BEGIN
   SELECT EXISTS (
-    SELECT 1 FROM business_members
+    SELECT 1 FROM public.business_members
     WHERE business_id = p_business_id
       AND user_id = auth.uid()
       AND is_active = TRUE
-  );
-$$ LANGUAGE sql SECURITY DEFINER STABLE;
+  ) INTO v_exists;
+  
+  RETURN COALESCE(v_exists, FALSE);
+END;
+$$;
 
 -- user_profiles: own data only
 CREATE POLICY "own_profile" ON user_profiles
