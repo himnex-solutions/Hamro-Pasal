@@ -126,7 +126,7 @@ function renderHtmlTemplate(data: EmailTemplateData): { html: string; text: stri
   const footer = `
     <div style="padding: 24px; text-align: center; font-family: 'Inter', sans-serif; font-size: 12px; color: #64748B; border-top: 1px solid #E2E8F0; margin-top: 32px;">
       <p style="margin: 0 0 8px 0;">&copy; ${new Date().getFullYear()} Smart Saoji. All rights reserved.</p>
-      <p style="margin: 0;">Need help? Contact our support at <a href="mailto:support@smartsaoji.com" style="color: ${primaryColor}; text-decoration: none; font-weight: 600;">support@smartsaoji.com</a></p>
+      <p style="margin: 0;">Need help? Contact our support at <a href="mailto:smartsaoji@gmail.com" style="color: ${primaryColor}; text-decoration: none; font-weight: 600;">smartsaoji@gmail.com</a></p>
     </div>
   `;
 
@@ -159,7 +159,7 @@ function renderHtmlTemplate(data: EmailTemplateData): { html: string; text: stri
           </div>
           <p style="margin-bottom: 0;">If you ever have questions, don't hesitate to reach out. We are here to support your retail journey every step of the way!</p>
         `),
-        text: `Welcome to Smart Saoji, ${data.name || "User"}!\n\nWe are thrilled to have you join us. Smart Saoji is built to help you run, grow, and optimize your retail business. Start managing stock, recording transactions, and generating invoices today.\n\nSupport contact: support@smartsaoji.com`,
+        text: `Welcome to Smart Saoji, ${data.name || "User"}!\n\nWe are thrilled to have you join us. Smart Saoji is built to help you run, grow, and optimize your retail business. Start managing stock, recording transactions, and generating invoices today.\n\nSupport contact: smartsaoji@gmail.com`,
       };
 
     case "subscription_submitted":
@@ -304,7 +304,9 @@ async function sendEmail(to: string, subject: string, templateData: EmailTemplat
   };
 
   // If this is an admin alert containing a payment screenshot, attach it!
-  if (templateData.template === "admin_subscription_submitted" && templateData.screenshot_url) {
+  if (templateData.template === "admin_subscription_submitted" && 
+      templateData.screenshot_url && 
+      templateData.screenshot_url.startsWith("http")) {
     try {
       const response = await fetch(templateData.screenshot_url);
       if (response.ok) {

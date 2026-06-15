@@ -382,6 +382,16 @@ class AuthNotifier extends StateNotifier<AuthState> {
         } catch (_) {} // non-fatal — trigger already wrote the row
       }
 
+      // ④ Trigger email queue processing immediately so the welcome email is sent
+      try {
+        await _supabase.functions.invoke(
+          'send-email',
+          body: {'action': 'process_queue'},
+        );
+      } catch (e) {
+        // non-fatal
+      }
+
       await _supabase.auth.signOut();
       state = AuthState.unauthenticated();
       return true;

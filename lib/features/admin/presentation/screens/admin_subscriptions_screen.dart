@@ -316,10 +316,20 @@ class _AdminSubscriptionsScreenState extends State<AdminSubscriptionsScreen> {
         'status': 'approved',
       }).eq('id', reqId);
 
+      // 3. Process email queue → sends approval email to user
+      try {
+        await _db.functions.invoke(
+          'send-email',
+          body: {'action': 'process_queue'},
+        );
+      } catch (e) {
+        debugPrint('Email queue trigger (non-fatal): $e');
+      }
+
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
-            content: Text('Payment approved! Notification triggered to user device.'),
+            content: Text('Payment approved! Email & notification sent to user.'),
             backgroundColor: AppTheme.successColor,
           ),
         );
@@ -400,9 +410,19 @@ class _AdminSubscriptionsScreenState extends State<AdminSubscriptionsScreen> {
           'rejection_reason': reason,
         }).eq('id', req['id']);
 
+        // Process email queue → sends rejection email to user
+        try {
+          await _db.functions.invoke(
+            'send-email',
+            body: {'action': 'process_queue'},
+          );
+        } catch (e) {
+          debugPrint('Email queue trigger (non-fatal): $e');
+        }
+
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('Payment request rejected. User notified.'), backgroundColor: AppTheme.errorColor),
+            const SnackBar(content: Text('Payment request rejected. Email & notification sent to user.'), backgroundColor: AppTheme.errorColor),
           );
           _fetchData();
         }

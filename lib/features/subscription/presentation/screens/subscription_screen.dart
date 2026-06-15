@@ -896,6 +896,16 @@ class _ManualPaymentModalState extends State<_ManualPaymentModal> {
         'status': 'pending',
       });
 
+      // 3. Immediately trigger email queue so user + admin get notified
+      try {
+        await supabase.functions.invoke(
+          'send-email',
+          body: {'action': 'process_queue'},
+        );
+      } catch (e) {
+        debugPrint('Email queue trigger (non-fatal): $e');
+      }
+
       if (mounted) {
         AppSnackbar.show(
           context,
