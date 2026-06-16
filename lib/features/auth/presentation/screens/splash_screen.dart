@@ -191,17 +191,14 @@ class _SplashScreenState extends ConsumerState<SplashScreen>
               bottom: 40,
               left: 0,
               right: 0,
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Text('Made with ',
-                      style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                          color: const Color(0xFF94A3B8), letterSpacing: 1)),
-                  const Icon(Icons.favorite, color: Colors.red, size: 14),
-                  Text(' in Nepal',
-                      style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                          color: const Color(0xFF94A3B8), letterSpacing: 1)),
-                ],
+              child: Text(
+                'Himnex Solutions Pvt. Ltd.',
+                textAlign: TextAlign.center,
+                style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                      color: const Color(0xFF94A3B8),
+                      fontWeight: FontWeight.w500,
+                      letterSpacing: 1.2,
+                    ),
               ).animate(delay: 1200.ms).fadeIn(),
             ),
           ],

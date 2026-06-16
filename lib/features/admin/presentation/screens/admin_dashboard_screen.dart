@@ -149,9 +149,10 @@ class AdminDashboardScreen extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final statsAsync = ref.watch(adminStatsProvider);
+    final isDark = Theme.of(context).brightness == Brightness.dark;
 
     return Scaffold(
-      backgroundColor: AppTheme.darkBg,
+      backgroundColor: isDark ? AppTheme.darkBg : AppTheme.lightBg,
       extendBodyBehindAppBar: true,
       appBar: AppBar(
         backgroundColor: Colors.transparent,
@@ -160,18 +161,20 @@ class AdminDashboardScreen extends ConsumerWidget {
           child: BackdropFilter(
             filter: ImageFilter.blur(sigmaX: 12, sigmaY: 12),
             child: Container(
-              color: AppTheme.darkSurface.withValues(alpha: 0.4),
+              color: (isDark ? AppTheme.darkSurface : AppTheme.lightSurface).withValues(alpha: 0.4),
             ),
           ),
         ),
-        title: const Text(
+        title: Text(
           'Admin Dashboard',
           style: TextStyle(
-              color: Colors.white, fontSize: 18, fontWeight: FontWeight.w700),
+              color: isDark ? Colors.white : AppTheme.lightTextPrimary,
+              fontSize: 18,
+              fontWeight: FontWeight.w700),
         ),
         actions: [
           IconButton(
-            icon: const Icon(Icons.refresh_rounded, color: Colors.white54),
+            icon: Icon(Icons.refresh_rounded, color: isDark ? Colors.white54 : AppTheme.lightTextSecondary),
             onPressed: () {
               ref.invalidate(adminStatsProvider);
               ref.invalidate(adminDashboardActivityProvider);
@@ -181,9 +184,10 @@ class AdminDashboardScreen extends ConsumerWidget {
         ],
       ),
       body: PolyMeshBackground(
+        isLight: !isDark,
         child: statsAsync.when(
-          loading: () => const Center(
-            child: CircularProgressIndicator(color: AppTheme.primaryLight),
+          loading: () => Center(
+            child: CircularProgressIndicator(color: isDark ? AppTheme.primaryLight : AppTheme.primaryColor),
           ),
           error: (e, _) => _ErrorView(error: e.toString()),
           data: (stats) => SafeArea(
@@ -204,6 +208,7 @@ class _DashboardBody extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     final totalUsers = (stats['total_users'] as num?)?.toInt() ?? 0;
     final totalBusinesses = (stats['total_businesses'] as num?)?.toInt() ?? 0;
     final activeTrials = (stats['active_trials'] as num?)?.toInt() ?? 0;
@@ -276,10 +281,10 @@ class _DashboardBody extends StatelessWidget {
             const SizedBox(height: 24),
             
             // Stats Grid Section
-            const Text(
+            Text(
               'PLATFORM OVERVIEW',
               style: TextStyle(
-                color: Colors.white,
+                color: isDark ? Colors.white : AppTheme.lightTextSecondary,
                 fontSize: 11,
                 fontWeight: FontWeight.w800,
                 letterSpacing: 1.5,
@@ -325,10 +330,10 @@ class _DashboardBody extends StatelessWidget {
             const SizedBox(height: 24),
 
             // Quick Actions Section
-            const Text(
+            Text(
               'QUICK ACTIONS',
               style: TextStyle(
-                color: Colors.white,
+                color: isDark ? Colors.white : AppTheme.lightTextSecondary,
                 fontSize: 11,
                 fontWeight: FontWeight.w800,
                 letterSpacing: 1.5,
@@ -435,6 +440,7 @@ class _DashboardBody extends StatelessWidget {
 class _ConsoleHeader extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     final dateStr = DateFormat('EEEE, MMMM d, y').format(DateTime.now());
     final screenWidth = MediaQuery.sizeOf(context).width;
     final isMobile = screenWidth < 550;
@@ -442,9 +448,9 @@ class _ConsoleHeader extends StatelessWidget {
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        color: AppTheme.darkCard.withValues(alpha: 0.45),
+        color: isDark ? AppTheme.darkCard.withValues(alpha: 0.45) : AppTheme.lightCard.withValues(alpha: 0.85),
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: AppTheme.darkBorder.withValues(alpha: 0.5), width: 1),
+        border: Border.all(color: (isDark ? AppTheme.darkBorder : AppTheme.lightBorder).withValues(alpha: 0.5), width: 1),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -456,20 +462,20 @@ class _ConsoleHeader extends StatelessWidget {
                 Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const Text(
+                    Text(
                       'SYSTEM OPERATOR CONSOLE',
                       style: TextStyle(
-                        color: AppTheme.primaryLight,
+                        color: isDark ? AppTheme.primaryLight : AppTheme.primaryColor,
                         fontSize: 10,
                         fontWeight: FontWeight.w800,
                         letterSpacing: 2,
                       ),
                     ),
                     const SizedBox(height: 4),
-                    const Text(
+                    Text(
                       'Welcome Back, Admin',
                       style: TextStyle(
-                        color: Colors.white,
+                        color: isDark ? Colors.white : AppTheme.lightTextPrimary,
                         fontSize: 22,
                         fontWeight: FontWeight.w800,
                       ),
@@ -480,7 +486,7 @@ class _ConsoleHeader extends StatelessWidget {
                     Text(
                       dateStr,
                       style: TextStyle(
-                        color: Colors.white.withValues(alpha: 0.4),
+                        color: isDark ? Colors.white.withValues(alpha: 0.4) : AppTheme.lightTextSecondary,
                         fontSize: 12,
                       ),
                       maxLines: 1,
@@ -538,20 +544,20 @@ class _ConsoleHeader extends StatelessWidget {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      const Text(
+                      Text(
                         'SYSTEM OPERATOR CONSOLE',
                         style: TextStyle(
-                          color: AppTheme.primaryLight,
+                          color: isDark ? AppTheme.primaryLight : AppTheme.primaryColor,
                           fontSize: 10,
                           fontWeight: FontWeight.w800,
                           letterSpacing: 2,
                         ),
                       ),
                       const SizedBox(height: 4),
-                      const Text(
+                      Text(
                         'Welcome Back, Admin',
                         style: TextStyle(
-                          color: Colors.white,
+                          color: isDark ? Colors.white : AppTheme.lightTextPrimary,
                           fontSize: 22,
                           fontWeight: FontWeight.w800,
                         ),
@@ -562,7 +568,7 @@ class _ConsoleHeader extends StatelessWidget {
                       Text(
                         dateStr,
                         style: TextStyle(
-                          color: Colors.white.withValues(alpha: 0.4),
+                          color: isDark ? Colors.white.withValues(alpha: 0.4) : AppTheme.lightTextSecondary,
                           fontSize: 12,
                         ),
                         maxLines: 1,
@@ -614,7 +620,7 @@ class _ConsoleHeader extends StatelessWidget {
               ],
             ),
           const SizedBox(height: 16),
-          const Divider(color: AppTheme.darkBorder, height: 1),
+          Divider(color: isDark ? AppTheme.darkBorder : AppTheme.lightBorder, height: 1),
           const SizedBox(height: 16),
           // Server Metrics Row
           Row(
@@ -669,6 +675,7 @@ class _ServerMetricTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     final screenWidth = MediaQuery.sizeOf(context).width;
     final isCompact = screenWidth < 480;
 
@@ -688,7 +695,7 @@ class _ServerMetricTile extends StatelessWidget {
               Text(
                 label,
                 style: TextStyle(
-                  color: Colors.white.withValues(alpha: 0.35),
+                  color: isDark ? Colors.white.withValues(alpha: 0.35) : AppTheme.lightTextSecondary.withValues(alpha: 0.7),
                   fontSize: isCompact ? 8 : 9,
                   fontWeight: FontWeight.w700,
                   letterSpacing: isCompact ? 0.5 : 1.0,
@@ -700,7 +707,7 @@ class _ServerMetricTile extends StatelessWidget {
               Text(
                 value,
                 style: TextStyle(
-                  color: Colors.white,
+                  color: isDark ? Colors.white : AppTheme.lightTextPrimary,
                   fontSize: isCompact ? 10 : 12,
                   fontWeight: FontWeight.w700,
                 ),
@@ -799,6 +806,7 @@ class _StatCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     final screenWidth = MediaQuery.sizeOf(context).width;
     final isCompact = screenWidth < 480;
     final hideSubtitle = screenWidth < 380;
@@ -811,10 +819,10 @@ class _StatCard extends StatelessWidget {
           width: double.infinity,
           height: isCompact ? 135 : 155,
           decoration: BoxDecoration(
-            color: AppTheme.darkCard.withValues(alpha: 0.65),
+            color: isDark ? AppTheme.darkCard.withValues(alpha: 0.65) : AppTheme.lightCard.withValues(alpha: 0.85),
             borderRadius: BorderRadius.circular(20),
             border: Border.all(
-              color: AppTheme.darkBorder.withValues(alpha: 0.8),
+              color: (isDark ? AppTheme.darkBorder : AppTheme.lightBorder).withValues(alpha: 0.8),
               width: 1,
             ),
             boxShadow: [
@@ -853,7 +861,7 @@ class _StatCard extends StatelessWidget {
                           child: Text(
                             label,
                             style: TextStyle(
-                              color: Colors.white.withValues(alpha: 0.5),
+                              color: isDark ? Colors.white.withValues(alpha: 0.5) : AppTheme.lightTextSecondary,
                               fontSize: isCompact ? 10 : 11,
                               fontWeight: FontWeight.w600,
                             ),
@@ -879,7 +887,7 @@ class _StatCard extends StatelessWidget {
                     Text(
                       value,
                       style: TextStyle(
-                        color: Colors.white,
+                        color: isDark ? Colors.white : AppTheme.lightTextPrimary,
                         fontSize: isCompact ? 18 : 22,
                         fontWeight: FontWeight.w800,
                         letterSpacing: -0.5,
@@ -916,7 +924,7 @@ class _StatCard extends StatelessWidget {
                           Text(
                             ' vs last week',
                             style: TextStyle(
-                              color: Colors.white.withValues(alpha: 0.3),
+                              color: isDark ? Colors.white.withValues(alpha: 0.3) : AppTheme.lightTextHint,
                               fontSize: isCompact ? 9 : 10,
                             ),
                           ),
@@ -947,6 +955,7 @@ class _QuickAction extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     return InkWell(
       onTap: () {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -962,7 +971,7 @@ class _QuickAction extends StatelessWidget {
         width: double.infinity,
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
         decoration: BoxDecoration(
-          color: AppTheme.darkCard.withValues(alpha: 0.55),
+          color: isDark ? AppTheme.darkCard.withValues(alpha: 0.55) : AppTheme.lightCard.withValues(alpha: 0.85),
           borderRadius: BorderRadius.circular(16),
           border: Border.all(color: color.withValues(alpha: 0.25), width: 1),
           boxShadow: [
@@ -988,8 +997,8 @@ class _QuickAction extends StatelessWidget {
             Expanded(
               child: Text(
                 label,
-                style: const TextStyle(
-                  color: Colors.white,
+                style: TextStyle(
+                  color: isDark ? Colors.white : AppTheme.lightTextPrimary,
                   fontWeight: FontWeight.w700,
                   fontSize: 11.5,
                   height: 1.25,
@@ -1011,43 +1020,44 @@ class _AnalyticsChart extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     final screenWidth = MediaQuery.sizeOf(context).width;
     final isChartMobile = screenWidth < 520;
 
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        color: AppTheme.darkCard.withValues(alpha: 0.65),
+        color: isDark ? AppTheme.darkCard.withValues(alpha: 0.65) : AppTheme.lightCard.withValues(alpha: 0.85),
         borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: AppTheme.darkBorder, width: 1),
+        border: Border.all(color: isDark ? AppTheme.darkBorder : AppTheme.lightBorder, width: 1),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           if (isChartMobile)
-            const Column(
+            Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
                   'Growth Analytics',
                   style: TextStyle(
-                    color: Colors.white,
+                    color: isDark ? Colors.white : AppTheme.lightTextPrimary,
                     fontSize: 16,
                     fontWeight: FontWeight.w700,
                   ),
                 ),
-                SizedBox(height: 2),
+                const SizedBox(height: 2),
                 Text(
                   'Historical platform engagement trends',
                   style: TextStyle(
-                    color: Colors.white30,
+                    color: isDark ? Colors.white30 : AppTheme.lightTextSecondary,
                     fontSize: 11,
                   ),
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                 ),
-                SizedBox(height: 12),
-                Row(
+                const SizedBox(height: 12),
+                const Row(
                   children: [
                     _LegendIndicator(color: AppTheme.primaryLight, label: 'Revenue'),
                     SizedBox(width: 16),
@@ -1057,7 +1067,7 @@ class _AnalyticsChart extends StatelessWidget {
               ],
             )
           else
-            const Row(
+            Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 Expanded(
@@ -1067,16 +1077,16 @@ class _AnalyticsChart extends StatelessWidget {
                       Text(
                         'Growth Analytics',
                         style: TextStyle(
-                          color: Colors.white,
+                          color: isDark ? Colors.white : AppTheme.lightTextPrimary,
                           fontSize: 16,
                           fontWeight: FontWeight.w700,
                         ),
                       ),
-                      SizedBox(height: 2),
+                      const SizedBox(height: 2),
                       Text(
                         'Historical platform engagement trends',
                         style: TextStyle(
-                          color: Colors.white30,
+                          color: isDark ? Colors.white30 : AppTheme.lightTextSecondary,
                           fontSize: 11,
                         ),
                         maxLines: 1,
@@ -1085,8 +1095,8 @@ class _AnalyticsChart extends StatelessWidget {
                     ],
                   ),
                 ),
-                SizedBox(width: 16),
-                Row(
+                const SizedBox(width: 16),
+                const Row(
                   children: [
                     _LegendIndicator(color: AppTheme.primaryLight, label: 'Revenue'),
                     SizedBox(width: 16),
@@ -1104,7 +1114,7 @@ class _AnalyticsChart extends StatelessWidget {
                   show: true,
                   drawVerticalLine: false,
                   getDrawingHorizontalLine: (value) => FlLine(
-                    color: AppTheme.darkBorder.withValues(alpha: 0.3),
+                    color: (isDark ? AppTheme.darkBorder : AppTheme.lightBorder).withValues(alpha: 0.3),
                     strokeWidth: 1,
                   ),
                 ),
@@ -1121,8 +1131,8 @@ class _AnalyticsChart extends StatelessWidget {
                           axisSide: meta.axisSide,
                           child: Text(
                             value >= 1000 ? '${(value / 1000).toStringAsFixed(0)}k' : value.toStringAsFixed(0),
-                            style: const TextStyle(
-                              color: Colors.white38,
+                            style: TextStyle(
+                              color: isDark ? Colors.white38 : AppTheme.lightTextHint,
                               fontSize: 10,
                               fontWeight: FontWeight.bold,
                             ),
@@ -1144,8 +1154,8 @@ class _AnalyticsChart extends StatelessWidget {
                             space: 8,
                             child: Text(
                               days[value.toInt()],
-                              style: const TextStyle(
-                                color: Colors.white38,
+                              style: TextStyle(
+                                color: isDark ? Colors.white38 : AppTheme.lightTextHint,
                                 fontSize: 10,
                                 fontWeight: FontWeight.bold,
                               ),
@@ -1164,7 +1174,7 @@ class _AnalyticsChart extends StatelessWidget {
                 maxY: 5000,
                 lineTouchData: LineTouchData(
                   touchTooltipData: LineTouchTooltipData(
-                    getTooltipColor: (touchedSpot) => AppTheme.darkSurface,
+                    getTooltipColor: (touchedSpot) => isDark ? AppTheme.darkSurface : AppTheme.lightSurface,
                     tooltipRoundedRadius: 8,
                     getTooltipItems: (touchedSpots) {
                       return touchedSpots.map((spot) {
@@ -1174,7 +1184,7 @@ class _AnalyticsChart extends StatelessWidget {
                               ? 'Revenue: NPR ${spot.y.toStringAsFixed(0)}'
                               : 'Users: ${spot.y.toStringAsFixed(0)}',
                           TextStyle(
-                            color: isRevenue ? AppTheme.primaryLight : AppTheme.successColor,
+                            color: isRevenue ? (isDark ? AppTheme.primaryLight : AppTheme.primaryColor) : AppTheme.successColor,
                             fontWeight: FontWeight.bold,
                             fontSize: 12,
                           ),
@@ -1260,6 +1270,7 @@ class _LegendIndicator extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     return Row(
       children: [
         Container(
@@ -1273,8 +1284,8 @@ class _LegendIndicator extends StatelessWidget {
         const SizedBox(width: 6),
         Text(
           label,
-          style: const TextStyle(
-            color: Colors.white70,
+          style: TextStyle(
+            color: isDark ? Colors.white70 : AppTheme.lightTextSecondary,
             fontSize: 12,
             fontWeight: FontWeight.w600,
           ),
@@ -1292,13 +1303,14 @@ class _LiveActivityFeed extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final activityAsync = ref.watch(adminDashboardActivityProvider);
+    final isDark = Theme.of(context).brightness == Brightness.dark;
 
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        color: AppTheme.darkCard.withValues(alpha: 0.65),
+        color: isDark ? AppTheme.darkCard.withValues(alpha: 0.65) : AppTheme.lightCard.withValues(alpha: 0.85),
         borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: AppTheme.darkBorder, width: 1),
+        border: Border.all(color: isDark ? AppTheme.darkBorder : AppTheme.lightBorder, width: 1),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -1306,29 +1318,29 @@ class _LiveActivityFeed extends ConsumerWidget {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              const Column(
+              Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
                     'Live Activity Feed',
                     style: TextStyle(
-                      color: Colors.white,
+                      color: isDark ? Colors.white : AppTheme.lightTextPrimary,
                       fontSize: 16,
                       fontWeight: FontWeight.w700,
                     ),
                   ),
-                  SizedBox(height: 2),
+                  const SizedBox(height: 2),
                   Text(
                     'Real-time operations',
                     style: TextStyle(
-                      color: Colors.white30,
+                      color: isDark ? Colors.white30 : AppTheme.lightTextSecondary,
                       fontSize: 11,
                     ),
                   ),
                 ],
               ),
               IconButton(
-                icon: const Icon(Icons.refresh_rounded, color: Colors.white54, size: 18),
+                icon: Icon(Icons.refresh_rounded, color: isDark ? Colors.white54 : AppTheme.lightTextSecondary, size: 18),
                 onPressed: () => ref.invalidate(adminDashboardActivityProvider),
                 tooltip: 'Refresh Feed',
               ),
@@ -1336,10 +1348,10 @@ class _LiveActivityFeed extends ConsumerWidget {
           ),
           const SizedBox(height: 16),
           activityAsync.when(
-            loading: () => const Center(
+            loading: () => Center(
               child: Padding(
-                padding: EdgeInsets.symmetric(vertical: 24),
-                child: CircularProgressIndicator(color: AppTheme.primaryLight),
+                padding: const EdgeInsets.symmetric(vertical: 24),
+                child: CircularProgressIndicator(color: isDark ? AppTheme.primaryLight : AppTheme.primaryColor),
               ),
             ),
             error: (err, _) => Center(
@@ -1347,18 +1359,18 @@ class _LiveActivityFeed extends ConsumerWidget {
                 padding: const EdgeInsets.symmetric(vertical: 16),
                 child: Text(
                   'Error loading feed: $err',
-                  style: const TextStyle(color: Colors.white38, fontSize: 12),
+                  style: TextStyle(color: isDark ? Colors.white38 : AppTheme.lightTextHint, fontSize: 12),
                 ),
               ),
             ),
             data: (items) {
               if (items.isEmpty) {
-                return const Center(
+                return Center(
                   child: Padding(
-                    padding: EdgeInsets.symmetric(vertical: 24),
+                    padding: const EdgeInsets.symmetric(vertical: 24),
                     child: Text(
                       'No recent activity',
-                      style: TextStyle(color: Colors.white38, fontSize: 13),
+                      style: TextStyle(color: isDark ? Colors.white38 : AppTheme.lightTextHint, fontSize: 13),
                     ),
                   ),
                 );
@@ -1370,8 +1382,8 @@ class _LiveActivityFeed extends ConsumerWidget {
                 shrinkWrap: true,
                 physics: const NeverScrollableScrollPhysics(),
                 itemCount: displayItems.length,
-                separatorBuilder: (context, index) => const Divider(
-                  color: AppTheme.darkBorder,
+                separatorBuilder: (context, index) => Divider(
+                  color: isDark ? AppTheme.darkBorder : AppTheme.lightBorder,
                   height: 16,
                   thickness: 0.5,
                 ),
@@ -1394,6 +1406,7 @@ class _ActivityItemRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     IconData icon;
     Color color;
 
@@ -1418,7 +1431,7 @@ class _ActivityItemRow extends StatelessWidget {
         break;
       default:
         icon = Icons.info_outline_rounded;
-        color = Colors.white54;
+        color = isDark ? Colors.white54 : AppTheme.lightTextSecondary;
     }
 
     final relativeTime = _getRelativeTime(item.timestamp);
@@ -1442,8 +1455,8 @@ class _ActivityItemRow extends StatelessWidget {
             children: [
               Text(
                 item.title,
-                style: const TextStyle(
-                  color: Colors.white,
+                style: TextStyle(
+                  color: isDark ? Colors.white : AppTheme.lightTextPrimary,
                   fontSize: 13,
                   fontWeight: FontWeight.w700,
                 ),
@@ -1452,7 +1465,7 @@ class _ActivityItemRow extends StatelessWidget {
               Text(
                 item.subtitle,
                 style: TextStyle(
-                  color: Colors.white.withValues(alpha: 0.6),
+                  color: isDark ? Colors.white.withValues(alpha: 0.6) : AppTheme.lightTextSecondary,
                   fontSize: 11,
                   height: 1.3,
                 ),
@@ -1466,7 +1479,7 @@ class _ActivityItemRow extends StatelessWidget {
         Text(
           relativeTime,
           style: TextStyle(
-            color: Colors.white.withValues(alpha: 0.3),
+            color: isDark ? Colors.white.withValues(alpha: 0.3) : AppTheme.lightTextHint,
             fontSize: 10,
             fontWeight: FontWeight.w600,
           ),
@@ -1497,6 +1510,7 @@ class _ErrorView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     return Center(
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
@@ -1506,7 +1520,7 @@ class _ErrorView extends StatelessWidget {
           const SizedBox(height: 12),
           Text(
             'Failed to load stats:\n$error',
-            style: const TextStyle(color: Colors.white54, fontSize: 13),
+            style: TextStyle(color: isDark ? Colors.white54 : AppTheme.lightTextSecondary, fontSize: 13),
             textAlign: TextAlign.center,
           ),
         ],

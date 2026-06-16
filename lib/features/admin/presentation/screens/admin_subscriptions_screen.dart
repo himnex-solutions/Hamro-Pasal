@@ -346,31 +346,33 @@ class _AdminSubscriptionsScreenState extends State<AdminSubscriptionsScreen> {
 
   Future<void> _rejectPayment(Map<String, dynamic> req) async {
     final reasonCtrl = TextEditingController();
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
     final confirm = await showDialog<bool>(
       context: context,
       builder: (ctx) => AlertDialog(
-        backgroundColor: AppTheme.darkCard,
+        backgroundColor: isDark ? AppTheme.darkCard : AppTheme.lightCard,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-        title: const Text('Reject Payment Request', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+        title: Text('Reject Payment Request', style: TextStyle(color: isDark ? Colors.white : AppTheme.lightTextPrimary, fontWeight: FontWeight.bold)),
         content: SingleChildScrollView(
           child: Column(
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const Text('Provide a reason for rejection:', style: TextStyle(color: Colors.white70, fontSize: 13)),
+              Text('Provide a reason for rejection:', style: TextStyle(color: isDark ? Colors.white70 : AppTheme.lightTextSecondary, fontSize: 13)),
               const SizedBox(height: 12),
               TextField(
                 controller: reasonCtrl,
-                style: const TextStyle(color: Colors.white),
+                style: TextStyle(color: isDark ? Colors.white : AppTheme.lightTextPrimary),
                 maxLines: 3,
                 decoration: InputDecoration(
                   hintText: 'e.g. screenshot is blur / payment not received.',
-                  hintStyle: TextStyle(color: Colors.white.withValues(alpha: 0.3)),
+                  hintStyle: TextStyle(color: isDark ? Colors.white24 : AppTheme.lightTextHint),
                   filled: true,
-                  fillColor: AppTheme.darkSurface,
+                  fillColor: isDark ? AppTheme.darkSurface : AppTheme.lightBg,
                   border: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(10),
-                      borderSide: const BorderSide(color: AppTheme.darkBorder)),
+                      borderSide: BorderSide(color: isDark ? AppTheme.darkBorder : AppTheme.lightBorder)),
                   focusedBorder: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(10),
                       borderSide: const BorderSide(color: AppTheme.errorColor)),
@@ -382,7 +384,7 @@ class _AdminSubscriptionsScreenState extends State<AdminSubscriptionsScreen> {
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(ctx, false),
-            child: const Text('Cancel', style: TextStyle(color: Colors.white54)),
+            child: Text('Cancel', style: TextStyle(color: isDark ? Colors.white54 : AppTheme.lightTextSecondary)),
           ),
           ElevatedButton(
             onPressed: () => Navigator.pop(ctx, true),
@@ -442,6 +444,7 @@ class _AdminSubscriptionsScreenState extends State<AdminSubscriptionsScreen> {
     String currentPlan = sub['plan_code'] ?? 'basic';
     String currentStatus = sub['status'] ?? 'active';
     DateTime? currentExpiry = sub['expiry_date'] != null ? DateTime.parse(sub['expiry_date']) : null;
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     
     final daysCtrl = TextEditingController();
 
@@ -449,30 +452,30 @@ class _AdminSubscriptionsScreenState extends State<AdminSubscriptionsScreen> {
       context: context,
       builder: (ctx) => StatefulBuilder(
         builder: (dialogCtx, setDialogState) => AlertDialog(
-          backgroundColor: AppTheme.darkCard,
+          backgroundColor: isDark ? AppTheme.darkCard : AppTheme.lightCard,
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-          title: const Text('Manage User Subscription', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+          title: Text('Manage User Subscription', style: TextStyle(color: isDark ? Colors.white : AppTheme.lightTextPrimary, fontWeight: FontWeight.bold)),
           content: SingleChildScrollView(
             child: Column(
               mainAxisSize: MainAxisSize.min,
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 // Plan Selection
-                const Text('Upgrade / Downgrade Plan:', style: TextStyle(color: Colors.white70, fontSize: 12)),
+                Text('Upgrade / Downgrade Plan:', style: TextStyle(color: isDark ? Colors.white70 : AppTheme.lightTextSecondary, fontSize: 12)),
                 const SizedBox(height: 6),
                 Container(
                   padding: const EdgeInsets.symmetric(horizontal: 12),
                   decoration: BoxDecoration(
-                    color: AppTheme.darkSurface,
+                    color: isDark ? AppTheme.darkSurface : AppTheme.lightBg,
                     borderRadius: BorderRadius.circular(10),
-                    border: Border.all(color: AppTheme.darkBorder),
+                    border: Border.all(color: isDark ? AppTheme.darkBorder : AppTheme.lightBorder),
                   ),
                   child: DropdownButtonHideUnderline(
                     child: DropdownButton<String>(
-                      dropdownColor: AppTheme.darkCard,
+                      dropdownColor: isDark ? AppTheme.darkCard : AppTheme.lightCard,
                       value: currentPlan,
                       isExpanded: true,
-                      style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w600),
+                      style: TextStyle(color: isDark ? Colors.white : AppTheme.lightTextPrimary, fontWeight: FontWeight.w600),
                       items: _planCodes.map((p) => DropdownMenuItem(
                         value: p,
                         child: Text(p.toUpperCase()),
@@ -486,21 +489,21 @@ class _AdminSubscriptionsScreenState extends State<AdminSubscriptionsScreen> {
                 const SizedBox(height: 16),
 
                 // Status Selection
-                const Text('Subscription Status:', style: TextStyle(color: Colors.white70, fontSize: 12)),
+                Text('Subscription Status:', style: TextStyle(color: isDark ? Colors.white70 : AppTheme.lightTextSecondary, fontSize: 12)),
                 const SizedBox(height: 6),
                 Container(
                   padding: const EdgeInsets.symmetric(horizontal: 12),
                   decoration: BoxDecoration(
-                    color: AppTheme.darkSurface,
+                    color: isDark ? AppTheme.darkSurface : AppTheme.lightBg,
                     borderRadius: BorderRadius.circular(10),
-                    border: Border.all(color: AppTheme.darkBorder),
+                    border: Border.all(color: isDark ? AppTheme.darkBorder : AppTheme.lightBorder),
                   ),
                   child: DropdownButtonHideUnderline(
                     child: DropdownButton<String>(
-                      dropdownColor: AppTheme.darkCard,
+                      dropdownColor: isDark ? AppTheme.darkCard : AppTheme.lightCard,
                       value: currentStatus,
                       isExpanded: true,
-                      style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w600),
+                      style: TextStyle(color: isDark ? Colors.white : AppTheme.lightTextPrimary, fontWeight: FontWeight.w600),
                       items: ['active', 'suspended', 'expired'].map((s) => DropdownMenuItem(
                         value: s,
                         child: Text(s.toUpperCase()),
@@ -516,7 +519,7 @@ class _AdminSubscriptionsScreenState extends State<AdminSubscriptionsScreen> {
                 // Expiry Date Selection
                 Text(
                   'Expiry Date: ${currentExpiry != null ? DateFormat('dd MMM yyyy').format(currentExpiry!) : "Lifetime (Basic)"}',
-                  style: const TextStyle(color: Colors.white, fontSize: 13, fontWeight: FontWeight.w600),
+                  style: TextStyle(color: isDark ? Colors.white : AppTheme.lightTextPrimary, fontSize: 13, fontWeight: FontWeight.w600),
                 ),
                 const SizedBox(height: 8),
                 Row(
@@ -537,8 +540,8 @@ class _AdminSubscriptionsScreenState extends State<AdminSubscriptionsScreen> {
                         icon: const Icon(Icons.calendar_month, size: 14),
                         label: const Text('Pick Date', style: TextStyle(fontSize: 11)),
                         style: ElevatedButton.styleFrom(
-                          backgroundColor: AppTheme.darkSurface,
-                          foregroundColor: Colors.white,
+                          backgroundColor: isDark ? AppTheme.darkSurface : AppTheme.lightBg,
+                          foregroundColor: isDark ? Colors.white : AppTheme.lightTextPrimary,
                           padding: const EdgeInsets.symmetric(vertical: 10),
                         ),
                       ),
@@ -548,13 +551,13 @@ class _AdminSubscriptionsScreenState extends State<AdminSubscriptionsScreen> {
                       child: TextField(
                         controller: daysCtrl,
                         keyboardType: TextInputType.number,
-                        style: const TextStyle(color: Colors.white, fontSize: 12),
-                        decoration: const InputDecoration(
+                        style: TextStyle(color: isDark ? Colors.white : AppTheme.lightTextPrimary, fontSize: 12),
+                        decoration: InputDecoration(
                           hintText: '+ Days (e.g. 30)',
-                          hintStyle: TextStyle(color: Colors.white24, fontSize: 11),
+                          hintStyle: TextStyle(color: isDark ? Colors.white24 : AppTheme.lightTextHint, fontSize: 11),
                           filled: true,
-                          fillColor: AppTheme.darkSurface,
-                          contentPadding: EdgeInsets.symmetric(horizontal: 10, vertical: 10),
+                          fillColor: isDark ? AppTheme.darkSurface : AppTheme.lightBg,
+                          contentPadding: const EdgeInsets.symmetric(horizontal: 10, vertical: 10),
                           border: InputBorder.none,
                         ),
                         onSubmitted: (val) {
@@ -575,7 +578,7 @@ class _AdminSubscriptionsScreenState extends State<AdminSubscriptionsScreen> {
           actions: [
             TextButton(
               onPressed: () => Navigator.pop(ctx),
-              child: const Text('Cancel', style: TextStyle(color: Colors.white54)),
+              child: Text('Cancel', style: TextStyle(color: isDark ? Colors.white54 : AppTheme.lightTextSecondary)),
             ),
             ElevatedButton(
               onPressed: () async {
@@ -611,13 +614,14 @@ class _AdminSubscriptionsScreenState extends State<AdminSubscriptionsScreen> {
   }
 
   void _showScreenshotDialog(String url) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     showDialog(
       context: context,
       barrierColor: Colors.black87,
       builder: (ctx) {
         final screenH = MediaQuery.sizeOf(context).height;
         return Dialog(
-          backgroundColor: AppTheme.darkCard,
+          backgroundColor: isDark ? AppTheme.darkCard : AppTheme.lightCard,
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
           insetPadding: const EdgeInsets.symmetric(horizontal: 28, vertical: 40),
           child: ConstrainedBox(
@@ -634,14 +638,14 @@ class _AdminSubscriptionsScreenState extends State<AdminSubscriptionsScreen> {
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      const Row(
+                      Row(
                         children: [
-                          Icon(Icons.receipt_long_rounded, color: AppTheme.primaryLight, size: 20),
-                          SizedBox(width: 8),
+                          Icon(Icons.receipt_long_rounded, color: isDark ? AppTheme.primaryLight : AppTheme.primaryColor, size: 20),
+                          const SizedBox(width: 8),
                           Text(
                             'Payment Proof Receipt',
                             style: TextStyle(
-                              color: Colors.white,
+                              color: isDark ? Colors.white : AppTheme.lightTextPrimary,
                               fontWeight: FontWeight.bold,
                               fontSize: 16,
                             ),
@@ -649,7 +653,7 @@ class _AdminSubscriptionsScreenState extends State<AdminSubscriptionsScreen> {
                         ],
                       ),
                       IconButton(
-                        icon: const Icon(Icons.close_rounded, color: Colors.white60, size: 22),
+                        icon: Icon(Icons.close_rounded, color: isDark ? Colors.white60 : AppTheme.lightTextSecondary, size: 22),
                         onPressed: () => Navigator.pop(ctx),
                       ),
                     ],
@@ -683,7 +687,7 @@ class _AdminSubscriptionsScreenState extends State<AdminSubscriptionsScreen> {
                                   children: [
                                     CircularProgressIndicator(
                                       value: pct,
-                                      color: AppTheme.primaryLight,
+                                      color: isDark ? AppTheme.primaryLight : AppTheme.primaryColor,
                                       strokeWidth: 2.5,
                                     ),
                                     const SizedBox(height: 12),
@@ -691,32 +695,32 @@ class _AdminSubscriptionsScreenState extends State<AdminSubscriptionsScreen> {
                                       pct != null
                                           ? 'Loading ${(pct * 100).toStringAsFixed(0)}%'
                                           : 'Loading image…',
-                                      style: const TextStyle(color: Colors.white54, fontSize: 12),
+                                      style: TextStyle(color: isDark ? Colors.white54 : AppTheme.lightTextSecondary, fontSize: 12),
                                     ),
                                   ],
                                 ),
                               );
                             },
-                            errorBuilder: (_, __, ___) => const Center(
+                            errorBuilder: (_, __, ___) => Center(
                               child: Padding(
-                                padding: EdgeInsets.all(32),
+                                padding: const EdgeInsets.all(32),
                                 child: Column(
                                   mainAxisSize: MainAxisSize.min,
                                   children: [
-                                    Icon(Icons.image_not_supported_outlined,
+                                    const Icon(Icons.image_not_supported_outlined,
                                         color: AppTheme.errorColor, size: 56),
-                                    SizedBox(height: 14),
+                                    const SizedBox(height: 14),
                                     Text(
                                       'Unable to Preview Image',
                                       style: TextStyle(
-                                          color: Colors.white,
+                                          color: isDark ? Colors.white : AppTheme.lightTextPrimary,
                                           fontWeight: FontWeight.bold,
                                           fontSize: 15),
                                     ),
-                                    SizedBox(height: 8),
+                                    const SizedBox(height: 8),
                                     Text(
                                       'CORS or private storage settings may block\nin-app preview. Tap "Open in New Tab" below.',
-                                      style: TextStyle(color: Colors.white54, fontSize: 12),
+                                      style: TextStyle(color: isDark ? Colors.white54 : AppTheme.lightTextSecondary, fontSize: 12),
                                       textAlign: TextAlign.center,
                                     ),
                                   ],
@@ -735,12 +739,15 @@ class _AdminSubscriptionsScreenState extends State<AdminSubscriptionsScreen> {
                   Column(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      const Center(
-                        child: Text(
-                          'Pinch/scroll to zoom  •  Drag to pan',
-                          style: TextStyle(
-                              color: Colors.white30, fontSize: 10, fontStyle: FontStyle.italic),
-                        ),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Text(
+                            'Pinch/scroll to zoom  •  Drag to pan',
+                            style: TextStyle(
+                                color: isDark ? Colors.white30 : AppTheme.lightTextHint, fontSize: 10, fontStyle: FontStyle.italic),
+                          ),
+                        ],
                       ),
                       const SizedBox(height: 12),
                       Row(
@@ -748,8 +755,8 @@ class _AdminSubscriptionsScreenState extends State<AdminSubscriptionsScreen> {
                         children: [
                           TextButton(
                             onPressed: () => Navigator.pop(ctx),
-                            child: const Text('Close',
-                                style: TextStyle(color: Colors.white60)),
+                            child: Text('Close',
+                                style: TextStyle(color: isDark ? Colors.white60 : AppTheme.lightTextSecondary)),
                           ),
                           const SizedBox(width: 8),
                           ElevatedButton.icon(
@@ -781,7 +788,7 @@ class _AdminSubscriptionsScreenState extends State<AdminSubscriptionsScreen> {
                                     fontWeight: FontWeight.bold, fontSize: 12)),
                             style: ElevatedButton.styleFrom(
                               backgroundColor: AppTheme.primaryLight,
-                              foregroundColor: Colors.black,
+                              foregroundColor: Colors.white,
                               minimumSize: const Size(120, 40),
                               shape: RoundedRectangleBorder(
                                   borderRadius: BorderRadius.circular(10)),
@@ -848,13 +855,14 @@ class _AdminSubscriptionsScreenState extends State<AdminSubscriptionsScreen> {
   }
 
   Color _getPlanColor(String planCode) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     switch (planCode.toLowerCase()) {
       case 'gold':
         return AppTheme.warningColor;
       case 'diamond':
-        return AppTheme.primaryLight;
+        return isDark ? AppTheme.primaryLight : AppTheme.primaryColor;
       default:
-        return Colors.white54;
+        return isDark ? Colors.white54 : AppTheme.lightTextSecondary;
     }
   }
 
@@ -862,20 +870,21 @@ class _AdminSubscriptionsScreenState extends State<AdminSubscriptionsScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     final screenWidth = MediaQuery.sizeOf(context).width;
     final showLabels = screenWidth >= 360;
     final showUnselected = screenWidth >= 480;
 
     return Scaffold(
-      backgroundColor: AppTheme.darkBg,
+      backgroundColor: isDark ? AppTheme.darkBg : AppTheme.lightBg,
       appBar: AppBar(
-        backgroundColor: AppTheme.darkSurface,
+        backgroundColor: isDark ? AppTheme.darkSurface : AppTheme.lightSurface,
         elevation: 0,
-        title: const Text('Admin Dashboard',
-            style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 16)),
+        title: Text('Subscriptions',
+            style: TextStyle(color: isDark ? Colors.white : AppTheme.lightTextPrimary, fontWeight: FontWeight.bold, fontSize: 16)),
         actions: [
           IconButton(
-            icon: const Icon(Icons.refresh_rounded, color: Colors.white70),
+            icon: Icon(Icons.refresh_rounded, color: isDark ? Colors.white70 : AppTheme.lightTextSecondary),
             onPressed: _fetchData,
           ),
         ],
@@ -890,9 +899,9 @@ class _AdminSubscriptionsScreenState extends State<AdminSubscriptionsScreen> {
             _fetchFeatureControlData();
           }
         },
-        backgroundColor: AppTheme.darkSurface,
-        selectedItemColor: AppTheme.primaryLight,
-        unselectedItemColor: Colors.white38,
+        backgroundColor: isDark ? AppTheme.darkSurface : AppTheme.lightSurface,
+        selectedItemColor: isDark ? AppTheme.primaryLight : AppTheme.primaryColor,
+        unselectedItemColor: isDark ? Colors.white38 : AppTheme.lightTextHint,
         type: BottomNavigationBarType.fixed,
         showSelectedLabels: showLabels,
         showUnselectedLabels: showLabels && showUnselected,
@@ -906,7 +915,7 @@ class _AdminSubscriptionsScreenState extends State<AdminSubscriptionsScreen> {
         ],
       ),
       body: _loading && _subs.isEmpty
-          ? const Center(child: CircularProgressIndicator(color: AppTheme.primaryLight))
+          ? Center(child: CircularProgressIndicator(color: isDark ? AppTheme.primaryLight : AppTheme.primaryColor))
           : AnimatedSwitcher(
               duration: const Duration(milliseconds: 200),
               child: _buildActiveTab(),
@@ -933,20 +942,13 @@ class _AdminSubscriptionsScreenState extends State<AdminSubscriptionsScreen> {
 
   Widget _buildOverviewTab() {
     final isDesktop = MediaQuery.of(context).size.width > 600;
+    final isDark = Theme.of(context).brightness == Brightness.dark;
 
     return SingleChildScrollView(
       padding: const EdgeInsets.all(16),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(
-            'Subscription Overview',
-            style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                  color: Colors.white,
-                  fontWeight: FontWeight.bold,
-                ),
-          ),
-          const SizedBox(height: 16),
 
           // Metrics Grid
           GridView.count(
@@ -969,23 +971,23 @@ class _AdminSubscriptionsScreenState extends State<AdminSubscriptionsScreen> {
           Container(
             padding: const EdgeInsets.all(20),
             decoration: BoxDecoration(
-              color: AppTheme.darkCard,
+              color: isDark ? AppTheme.darkCard : AppTheme.lightCard,
               borderRadius: BorderRadius.circular(16),
-              border: Border.all(color: AppTheme.darkBorder),
+              border: Border.all(color: isDark ? AppTheme.darkBorder : AppTheme.lightBorder),
             ),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Text(
+                Text(
                   'Plan Distribution',
-                  style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 14),
+                  style: TextStyle(color: isDark ? Colors.white : AppTheme.lightTextPrimary, fontWeight: FontWeight.bold, fontSize: 14),
                 ),
                 const SizedBox(height: 20),
                 _buildDistributionBar('Basic Free Plan', _planDistribution['basic'] ?? 0, _totalSubscribers, Colors.grey),
                 const SizedBox(height: 14),
                 _buildDistributionBar('Gold Premium Plan', _planDistribution['gold'] ?? 0, _totalSubscribers, AppTheme.warningColor),
                 const SizedBox(height: 14),
-                _buildDistributionBar('Diamond Enterprise Plan', _planDistribution['diamond'] ?? 0, _totalSubscribers, AppTheme.primaryLight),
+                _buildDistributionBar('Diamond Enterprise Plan', _planDistribution['diamond'] ?? 0, _totalSubscribers, isDark ? AppTheme.primaryLight : AppTheme.primaryColor),
               ],
             ),
           ).animate().fadeIn(),
@@ -995,12 +997,13 @@ class _AdminSubscriptionsScreenState extends State<AdminSubscriptionsScreen> {
   }
 
   Widget _buildMetricCard(String label, String value, IconData icon, Color color) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: AppTheme.darkCard,
+        color: isDark ? AppTheme.darkCard : AppTheme.lightCard,
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: AppTheme.darkBorder),
+        border: Border.all(color: isDark ? AppTheme.darkBorder : AppTheme.lightBorder),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -1024,12 +1027,12 @@ class _AdminSubscriptionsScreenState extends State<AdminSubscriptionsScreen> {
             children: [
               Text(
                 value,
-                style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 18),
+                style: TextStyle(color: isDark ? Colors.white : AppTheme.lightTextPrimary, fontWeight: FontWeight.bold, fontSize: 18),
               ),
               const SizedBox(height: 2),
               Text(
                 label,
-                style: const TextStyle(color: Colors.white38, fontSize: 10),
+                style: TextStyle(color: isDark ? Colors.white38 : AppTheme.lightTextSecondary, fontSize: 10),
               ),
             ],
           ),
@@ -1039,6 +1042,7 @@ class _AdminSubscriptionsScreenState extends State<AdminSubscriptionsScreen> {
   }
 
   Widget _buildDistributionBar(String title, int count, int total, Color color) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     final double pct = total > 0 ? (count / total) : 0.0;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -1046,9 +1050,9 @@ class _AdminSubscriptionsScreenState extends State<AdminSubscriptionsScreen> {
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            Text(title, style: const TextStyle(color: Colors.white70, fontSize: 12)),
+            Text(title, style: TextStyle(color: isDark ? Colors.white70 : AppTheme.lightTextSecondary, fontSize: 12)),
             Text('$count (${(pct * 100).toStringAsFixed(0)}%)',
-                style: const TextStyle(color: Colors.white38, fontSize: 11)),
+                style: TextStyle(color: isDark ? Colors.white38 : AppTheme.lightTextHint, fontSize: 11)),
           ],
         ),
         const SizedBox(height: 6),
@@ -1056,7 +1060,7 @@ class _AdminSubscriptionsScreenState extends State<AdminSubscriptionsScreen> {
           borderRadius: BorderRadius.circular(10),
           child: LinearProgressIndicator(
             value: pct,
-            backgroundColor: Colors.white.withValues(alpha: 0.05),
+            backgroundColor: isDark ? Colors.white.withValues(alpha: 0.05) : AppTheme.lightBg,
             color: color,
             minHeight: 8,
           ),
@@ -1068,6 +1072,7 @@ class _AdminSubscriptionsScreenState extends State<AdminSubscriptionsScreen> {
   // ── 2. Payment Verification Panel Tab ────────────────────────────
 
   Widget _buildPaymentsTab() {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     return Column(
       children: [
         // Plan filters for payments
@@ -1075,7 +1080,7 @@ class _AdminSubscriptionsScreenState extends State<AdminSubscriptionsScreen> {
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
           child: Row(
             children: [
-              const Text('Filter Plan: ', style: TextStyle(color: Colors.white54, fontSize: 12)),
+              Text('Filter Plan: ', style: TextStyle(color: isDark ? Colors.white54 : AppTheme.lightTextSecondary, fontSize: 12)),
               const SizedBox(width: 8),
               ...['all', 'gold', 'diamond'].map((code) => Padding(
                 padding: const EdgeInsets.only(right: 6),
@@ -1083,14 +1088,14 @@ class _AdminSubscriptionsScreenState extends State<AdminSubscriptionsScreen> {
                   label: Text(code.toUpperCase()),
                   selected: _paymentPlanFilter == code,
                   onSelected: (_) => setState(() => _paymentPlanFilter = code),
-                  selectedColor: AppTheme.primaryLight,
-                  backgroundColor: AppTheme.darkSurface,
-                  labelStyle: const TextStyle(
-                    color: Colors.white,
+                  selectedColor: isDark ? AppTheme.primaryLight : AppTheme.primaryColor,
+                  backgroundColor: isDark ? AppTheme.darkSurface : AppTheme.lightBg,
+                  labelStyle: TextStyle(
+                    color: _paymentPlanFilter == code ? Colors.white : (isDark ? Colors.white70 : AppTheme.lightTextPrimary),
                     fontWeight: FontWeight.bold,
                     fontSize: 10,
                   ),
-                  side: BorderSide(color: _paymentPlanFilter == code ? AppTheme.primaryLight : AppTheme.darkBorder),
+                  side: BorderSide(color: _paymentPlanFilter == code ? (isDark ? AppTheme.primaryLight : AppTheme.primaryColor) : (isDark ? AppTheme.darkBorder : AppTheme.lightBorder)),
                 ),
               )),
             ],
@@ -1100,7 +1105,7 @@ class _AdminSubscriptionsScreenState extends State<AdminSubscriptionsScreen> {
         // List
         Expanded(
           child: _filteredPayments.isEmpty
-              ? const Center(child: Text('No pending payment requests', style: TextStyle(color: Colors.white38)))
+              ? Center(child: Text('No pending payment requests', style: TextStyle(color: isDark ? Colors.white38 : AppTheme.lightTextHint)))
               : ListView.separated(
                   padding: const EdgeInsets.symmetric(horizontal: 16),
                   itemCount: _filteredPayments.length,
@@ -1118,9 +1123,9 @@ class _AdminSubscriptionsScreenState extends State<AdminSubscriptionsScreen> {
                     return Container(
                       padding: const EdgeInsets.all(16),
                       decoration: BoxDecoration(
-                        color: AppTheme.darkCard,
+                        color: isDark ? AppTheme.darkCard : AppTheme.lightCard,
                         borderRadius: BorderRadius.circular(16),
-                        border: Border.all(color: AppTheme.darkBorder),
+                        border: Border.all(color: isDark ? AppTheme.darkBorder : AppTheme.lightBorder),
                       ),
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
@@ -1132,13 +1137,13 @@ class _AdminSubscriptionsScreenState extends State<AdminSubscriptionsScreen> {
                                 child: Column(
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   children: [
-                                    Text(userName, style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 14)),
-                                    Text(phone, style: const TextStyle(color: Colors.white38, fontSize: 11)),
+                                    Text(userName, style: TextStyle(color: isDark ? Colors.white : AppTheme.lightTextPrimary, fontWeight: FontWeight.bold, fontSize: 14)),
+                                    Text(phone, style: TextStyle(color: isDark ? Colors.white38 : AppTheme.lightTextSecondary, fontSize: 11)),
                                     const SizedBox(height: 8),
-                                    Text('Requested: $plan', style: const TextStyle(color: AppTheme.primaryLight, fontWeight: FontWeight.bold, fontSize: 13)),
-                                    Text('Amount: Rs. ${amount.toInt()}', style: const TextStyle(color: Colors.white70, fontSize: 12)),
+                                    Text('Requested: $plan', style: TextStyle(color: isDark ? AppTheme.primaryLight : AppTheme.primaryColor, fontWeight: FontWeight.bold, fontSize: 13)),
+                                    Text('Amount: Rs. ${amount.toInt()}', style: TextStyle(color: isDark ? Colors.white70 : AppTheme.lightTextPrimary, fontSize: 12)),
                                     const SizedBox(height: 4),
-                                    Text('Submitted: $date', style: const TextStyle(color: Colors.white38, fontSize: 10)),
+                                    Text('Submitted: $date', style: TextStyle(color: isDark ? Colors.white38 : AppTheme.lightTextHint, fontSize: 10)),
                                   ],
                                 ),
                               ),
@@ -1150,7 +1155,7 @@ class _AdminSubscriptionsScreenState extends State<AdminSubscriptionsScreen> {
                                     height: 80,
                                     decoration: BoxDecoration(
                                       borderRadius: BorderRadius.circular(12),
-                                      border: Border.all(color: Colors.white24, width: 1.5),
+                                      border: Border.all(color: isDark ? Colors.white24 : AppTheme.lightBorder, width: 1.5),
                                       boxShadow: const [
                                         BoxShadow(
                                           color: Colors.black26,
@@ -1168,9 +1173,9 @@ class _AdminSubscriptionsScreenState extends State<AdminSubscriptionsScreen> {
                                             req['screenshot_url'],
                                             fit: BoxFit.cover,
                                             errorBuilder: (_, __, ___) => Container(
-                                              color: Colors.white.withValues(alpha: 0.05),
-                                              child: const Center(
-                                                child: Icon(Icons.image_not_supported_outlined, color: AppTheme.primaryLight, size: 24),
+                                              color: isDark ? Colors.white.withValues(alpha: 0.05) : AppTheme.lightBg,
+                                              child: Center(
+                                                child: Icon(Icons.image_not_supported_outlined, color: isDark ? AppTheme.primaryLight : AppTheme.primaryColor, size: 24),
                                               ),
                                             ),
                                           ),
@@ -1264,6 +1269,9 @@ class _AdminSubscriptionsScreenState extends State<AdminSubscriptionsScreen> {
   // ── 3. User Subscription Management Tab ──────────────────────────
 
   Widget _buildUsersTab() {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final primaryAccentColor = isDark ? AppTheme.primaryLight : AppTheme.primaryColor;
+
     return Column(
       children: [
         // Search & Filters Box
@@ -1274,21 +1282,21 @@ class _AdminSubscriptionsScreenState extends State<AdminSubscriptionsScreen> {
               // Search input
               TextField(
                 controller: _searchController,
-                style: const TextStyle(color: Colors.white),
+                style: TextStyle(color: isDark ? Colors.white : AppTheme.lightTextPrimary),
                 decoration: InputDecoration(
                   hintText: 'Search subscriber name or phone...',
-                  hintStyle: TextStyle(color: Colors.white.withValues(alpha: 0.3), fontSize: 13),
-                  prefixIcon: const Icon(Icons.search, color: Colors.white38),
+                  hintStyle: TextStyle(color: isDark ? Colors.white.withValues(alpha: 0.3) : AppTheme.lightTextHint, fontSize: 13),
+                  prefixIcon: Icon(Icons.search, color: isDark ? Colors.white38 : AppTheme.lightTextSecondary),
                   filled: true,
-                  fillColor: AppTheme.darkSurface,
+                  fillColor: isDark ? AppTheme.darkSurface : AppTheme.lightSurface,
                   contentPadding: const EdgeInsets.symmetric(vertical: 12),
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(12),
-                    borderSide: const BorderSide(color: AppTheme.darkBorder),
+                    borderSide: BorderSide(color: isDark ? AppTheme.darkBorder : AppTheme.lightBorder),
                   ),
                   focusedBorder: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(12),
-                    borderSide: const BorderSide(color: AppTheme.primaryLight),
+                    borderSide: BorderSide(color: primaryAccentColor),
                   ),
                 ),
                 onChanged: (val) {
@@ -1304,7 +1312,7 @@ class _AdminSubscriptionsScreenState extends State<AdminSubscriptionsScreen> {
                 scrollDirection: Axis.horizontal,
                 child: Row(
                   children: [
-                    const Text('Status: ', style: TextStyle(color: Colors.white38, fontSize: 11)),
+                    Text('Status: ', style: TextStyle(color: isDark ? Colors.white38 : AppTheme.lightTextSecondary, fontSize: 11)),
                     const SizedBox(width: 6),
                     ...['all', 'active', 'suspended', 'expired'].map((st) => Padding(
                       padding: const EdgeInsets.only(right: 6),
@@ -1312,14 +1320,14 @@ class _AdminSubscriptionsScreenState extends State<AdminSubscriptionsScreen> {
                         label: Text(st.toUpperCase()),
                         selected: _userStatusFilter == st,
                         onSelected: (_) => setState(() => _userStatusFilter = st),
-                        selectedColor: AppTheme.primaryLight,
-                        backgroundColor: AppTheme.darkSurface,
-                        labelStyle: const TextStyle(
-                          color: Colors.white,
+                        selectedColor: primaryAccentColor,
+                        backgroundColor: isDark ? AppTheme.darkSurface : AppTheme.lightBg,
+                        labelStyle: TextStyle(
+                          color: _userStatusFilter == st ? Colors.white : (isDark ? Colors.white70 : AppTheme.lightTextPrimary),
                           fontWeight: FontWeight.bold,
                           fontSize: 9,
                         ),
-                        side: BorderSide(color: _userStatusFilter == st ? AppTheme.primaryLight : AppTheme.darkBorder),
+                        side: BorderSide(color: _userStatusFilter == st ? primaryAccentColor : (isDark ? AppTheme.darkBorder : AppTheme.lightBorder)),
                       ),
                     )),
                   ],
@@ -1332,7 +1340,7 @@ class _AdminSubscriptionsScreenState extends State<AdminSubscriptionsScreen> {
         // List
         Expanded(
           child: _filteredUsers.isEmpty
-              ? const Center(child: Text('No matching subscribers found', style: TextStyle(color: Colors.white38)))
+              ? Center(child: Text('No matching subscribers found', style: TextStyle(color: isDark ? Colors.white38 : AppTheme.lightTextHint)))
               : ListView.separated(
                   padding: const EdgeInsets.symmetric(horizontal: 16),
                   itemCount: _filteredUsers.length,
@@ -1346,7 +1354,7 @@ class _AdminSubscriptionsScreenState extends State<AdminSubscriptionsScreen> {
                     final status = sub['status'] as String? ?? 'active';
                     
                     final expiryStr = sub['expiry_date'] != null
-                        ? DateFormat('dd MMM yyyy').format(DateTime.parse(sub['expiry_date']))
+                         ? DateFormat('dd MMM yyyy').format(DateTime.parse(sub['expiry_date']))
                         : 'Lifetime';
 
                     // Get business profiles belonging to this user
@@ -1364,9 +1372,9 @@ class _AdminSubscriptionsScreenState extends State<AdminSubscriptionsScreen> {
                     return Container(
                       padding: const EdgeInsets.all(16),
                       decoration: BoxDecoration(
-                        color: AppTheme.darkCard,
+                        color: isDark ? AppTheme.darkCard : AppTheme.lightCard,
                         borderRadius: BorderRadius.circular(16),
-                        border: Border.all(color: AppTheme.darkBorder),
+                        border: Border.all(color: isDark ? AppTheme.darkBorder : AppTheme.lightBorder),
                       ),
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
@@ -1374,7 +1382,7 @@ class _AdminSubscriptionsScreenState extends State<AdminSubscriptionsScreen> {
                           Row(
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: [
-                              Text(userName, style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 14)),
+                              Text(userName, style: TextStyle(color: isDark ? Colors.white : AppTheme.lightTextPrimary, fontWeight: FontWeight.bold, fontSize: 14)),
                               Container(
                                 padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                                 decoration: BoxDecoration(
@@ -1386,21 +1394,21 @@ class _AdminSubscriptionsScreenState extends State<AdminSubscriptionsScreen> {
                               ),
                             ],
                           ),
-                          Text('Phone: $phone', style: const TextStyle(color: Colors.white38, fontSize: 11)),
+                          Text('Phone: $phone', style: TextStyle(color: isDark ? Colors.white38 : AppTheme.lightTextSecondary, fontSize: 11)),
                           const SizedBox(height: 8),
                           Row(
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: [
                               Text('Plan: $plan', style: TextStyle(color: planColor, fontWeight: FontWeight.bold, fontSize: 12)),
-                              Text('Expires: $expiryStr', style: const TextStyle(color: Colors.white54, fontSize: 11)),
+                              Text('Expires: $expiryStr', style: TextStyle(color: isDark ? Colors.white54 : AppTheme.lightTextSecondary, fontSize: 11)),
                             ],
                           ),
                           if (userBizs.isNotEmpty) ...[
                             const SizedBox(height: 8),
-                            const Divider(color: Colors.white10),
-                            const Text('LINKED BUSINESSES:', style: TextStyle(color: Colors.white24, fontSize: 9, fontWeight: FontWeight.bold)),
+                            Divider(color: isDark ? Colors.white10 : AppTheme.lightBorder),
+                            Text('LINKED BUSINESSES:', style: TextStyle(color: isDark ? Colors.white24 : AppTheme.lightTextHint, fontSize: 9, fontWeight: FontWeight.bold)),
                             const SizedBox(height: 4),
-                            Text(userBizs.join(', '), style: const TextStyle(color: Colors.white70, fontSize: 11)),
+                            Text(userBizs.join(', '), style: TextStyle(color: isDark ? Colors.white70 : AppTheme.lightTextSecondary, fontSize: 11)),
                           ],
                           const SizedBox(height: 12),
                           SizedBox(
@@ -1410,8 +1418,8 @@ class _AdminSubscriptionsScreenState extends State<AdminSubscriptionsScreen> {
                               icon: const Icon(Icons.settings_suggest, size: 14),
                               label: const Text('Manage & Change Plan', style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold)),
                               style: OutlinedButton.styleFrom(
-                                foregroundColor: AppTheme.primaryLight,
-                                side: const BorderSide(color: AppTheme.primaryLight),
+                                foregroundColor: primaryAccentColor,
+                                side: BorderSide(color: primaryAccentColor),
                                 shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
                               ),
                             ),
@@ -1429,28 +1437,31 @@ class _AdminSubscriptionsScreenState extends State<AdminSubscriptionsScreen> {
   // ── 4. Feature Control Tab ───────────────────────────────────────
 
   Widget _buildFeaturesTab() {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final primaryAccentColor = isDark ? AppTheme.primaryLight : AppTheme.primaryColor;
+
     return SingleChildScrollView(
       padding: const EdgeInsets.all(16),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text('Select Plan to Customize:', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 15)),
+          Text('Select Plan to Customize:', style: TextStyle(color: isDark ? Colors.white : AppTheme.lightTextPrimary, fontWeight: FontWeight.bold, fontSize: 15)),
           const SizedBox(height: 10),
 
           // Selector
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 16),
             decoration: BoxDecoration(
-              color: AppTheme.darkSurface,
+              color: isDark ? AppTheme.darkSurface : AppTheme.lightBg,
               borderRadius: BorderRadius.circular(12),
-              border: Border.all(color: AppTheme.darkBorder),
+              border: Border.all(color: isDark ? AppTheme.darkBorder : AppTheme.lightBorder),
             ),
             child: DropdownButtonHideUnderline(
               child: DropdownButton<String>(
-                dropdownColor: AppTheme.darkCard,
+                dropdownColor: isDark ? AppTheme.darkCard : AppTheme.lightCard,
                 value: _selectedPlanCode,
                 isExpanded: true,
-                style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w600),
+                style: TextStyle(color: isDark ? Colors.white : AppTheme.lightTextPrimary, fontWeight: FontWeight.w600),
                 items: _planCodes.map((p) => DropdownMenuItem(
                   value: p,
                   child: Text(p.toUpperCase()),
@@ -1472,30 +1483,30 @@ class _AdminSubscriptionsScreenState extends State<AdminSubscriptionsScreen> {
           Container(
             padding: const EdgeInsets.all(16),
             decoration: BoxDecoration(
-              color: AppTheme.darkCard,
+              color: isDark ? AppTheme.darkCard : AppTheme.lightCard,
               borderRadius: BorderRadius.circular(16),
-              border: Border.all(color: AppTheme.darkBorder),
+              border: Border.all(color: isDark ? AppTheme.darkBorder : AppTheme.lightBorder),
             ),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Text('Plan Parameter Limits', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 13)),
+                Text('Plan Parameter Limits', style: TextStyle(color: isDark ? Colors.white : AppTheme.lightTextPrimary, fontWeight: FontWeight.bold, fontSize: 13)),
                 const SizedBox(height: 16),
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    const Text('Max Staff Accounts:', style: TextStyle(color: Colors.white70, fontSize: 12)),
+                    Text('Max Staff Accounts:', style: TextStyle(color: isDark ? Colors.white70 : AppTheme.lightTextSecondary, fontSize: 12)),
                     Row(
                       children: [
                         IconButton(
-                          icon: const Icon(Icons.remove_circle_outline, color: Colors.white38),
+                          icon: Icon(Icons.remove_circle_outline, color: isDark ? Colors.white38 : AppTheme.lightTextHint),
                           onPressed: () {
                             if (_maxStaffCtrl > 0) setState(() => _maxStaffCtrl--);
                           },
                         ),
-                        Text('$_maxStaffCtrl', style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+                        Text('$_maxStaffCtrl', style: TextStyle(color: isDark ? Colors.white : AppTheme.lightTextPrimary, fontWeight: FontWeight.bold)),
                         IconButton(
-                          icon: const Icon(Icons.add_circle_outline, color: AppTheme.primaryLight),
+                          icon: Icon(Icons.add_circle_outline, color: primaryAccentColor),
                           onPressed: () => setState(() => _maxStaffCtrl++),
                         ),
                       ],
@@ -1505,18 +1516,18 @@ class _AdminSubscriptionsScreenState extends State<AdminSubscriptionsScreen> {
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    const Text('Max Business Profiles:', style: TextStyle(color: Colors.white70, fontSize: 12)),
+                    Text('Max Business Profiles:', style: TextStyle(color: isDark ? Colors.white70 : AppTheme.lightTextSecondary, fontSize: 12)),
                     Row(
                       children: [
                         IconButton(
-                          icon: const Icon(Icons.remove_circle_outline, color: Colors.white38),
+                          icon: Icon(Icons.remove_circle_outline, color: isDark ? Colors.white38 : AppTheme.lightTextHint),
                           onPressed: () {
                             if (_maxBizCtrl > 1) setState(() => _maxBizCtrl--);
                           },
                         ),
-                        Text('$_maxBizCtrl', style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+                        Text('$_maxBizCtrl', style: TextStyle(color: isDark ? Colors.white : AppTheme.lightTextPrimary, fontWeight: FontWeight.bold)),
                         IconButton(
-                          icon: const Icon(Icons.add_circle_outline, color: AppTheme.primaryLight),
+                          icon: Icon(Icons.add_circle_outline, color: primaryAccentColor),
                           onPressed: () => setState(() => _maxBizCtrl++),
                         ),
                       ],
@@ -1529,19 +1540,19 @@ class _AdminSubscriptionsScreenState extends State<AdminSubscriptionsScreen> {
           const SizedBox(height: 20),
 
           // Permissions switches lists
-          const Text('Feature Flag Permissions', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 13)),
+          Text('Feature Flag Permissions', style: TextStyle(color: isDark ? Colors.white : AppTheme.lightTextPrimary, fontWeight: FontWeight.bold, fontSize: 13)),
           const SizedBox(height: 10),
 
           _planPermissions.isEmpty
-              ? const Padding(
-                  padding: EdgeInsets.symmetric(vertical: 20),
-                  child: Center(child: Text('No flags setup for this plan.', style: TextStyle(color: Colors.white38))),
+              ? Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 20),
+                  child: Center(child: Text('No flags setup for this plan.', style: TextStyle(color: isDark ? Colors.white38 : AppTheme.lightTextHint))),
                 )
               : ListView.separated(
                   shrinkWrap: true,
                   physics: const NeverScrollableScrollPhysics(),
                   itemCount: _planPermissions.length,
-                  separatorBuilder: (_, __) => const Divider(color: Colors.white10),
+                  separatorBuilder: (_, __) => Divider(color: isDark ? Colors.white10 : AppTheme.lightBorder),
                   itemBuilder: (context, idx) {
                     final perm = _planPermissions[idx];
                     final bool isAllowed = perm['is_allowed'] as bool? ?? false;
@@ -1551,10 +1562,10 @@ class _AdminSubscriptionsScreenState extends State<AdminSubscriptionsScreen> {
                       contentPadding: EdgeInsets.zero,
                       title: Text(
                         name.replaceAll('_', ' ').toUpperCase(),
-                        style: const TextStyle(color: Colors.white70, fontSize: 13, fontWeight: FontWeight.w600),
+                        style: TextStyle(color: isDark ? Colors.white70 : AppTheme.lightTextPrimary, fontSize: 13, fontWeight: FontWeight.w600),
                       ),
                       value: isAllowed,
-                      activeThumbColor: AppTheme.primaryLight,
+                      activeThumbColor: primaryAccentColor,
                       onChanged: (val) {
                         setState(() {
                           _planPermissions[idx]['is_allowed'] = val;

@@ -90,11 +90,12 @@ class _AdminBusinessesScreenState extends State<AdminBusinessesScreen> {
     final emailCtrl = TextEditingController(text: biz['email'] ?? '');
     final addressCtrl = TextEditingController(text: biz['address'] ?? '');
     final panCtrl = TextEditingController(text: biz['pan_number'] ?? '');
+    final isDark = Theme.of(context).brightness == Brightness.dark;
 
     final result = await showDialog<bool>(
       context: context,
       builder: (ctx) => Dialog(
-        backgroundColor: AppTheme.darkCard,
+        backgroundColor: isDark ? AppTheme.darkCard : AppTheme.lightCard,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
         insetPadding:
             const EdgeInsets.symmetric(horizontal: 20, vertical: 24),
@@ -107,10 +108,10 @@ class _AdminBusinessesScreenState extends State<AdminBusinessesScreen> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 // Title
-                const Text(
+                Text(
                   'Edit Business',
                   style: TextStyle(
-                      color: Colors.white,
+                      color: isDark ? Colors.white : AppTheme.lightTextPrimary,
                       fontWeight: FontWeight.w700,
                       fontSize: 18),
                 ),
@@ -162,8 +163,8 @@ class _AdminBusinessesScreenState extends State<AdminBusinessesScreen> {
                       child: OutlinedButton(
                         onPressed: () => Navigator.pop(ctx, false),
                         style: OutlinedButton.styleFrom(
-                          foregroundColor: Colors.white54,
-                          side: const BorderSide(color: Colors.white24),
+                          foregroundColor: isDark ? Colors.white54 : AppTheme.lightTextSecondary,
+                          side: BorderSide(color: isDark ? Colors.white24 : AppTheme.lightBorder),
                           padding: const EdgeInsets.symmetric(vertical: 13),
                           shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(9)),
@@ -208,21 +209,22 @@ class _AdminBusinessesScreenState extends State<AdminBusinessesScreen> {
   }
 
   Future<bool> _showConfirmDialog(String title, String message) async {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     return await showDialog<bool>(
           context: context,
           builder: (ctx) => AlertDialog(
-            backgroundColor: AppTheme.darkCard,
+            backgroundColor: isDark ? AppTheme.darkCard : AppTheme.lightCard,
             shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(16)),
             title: Text(title,
-                style: const TextStyle(
-                    color: Colors.white, fontWeight: FontWeight.w700)),
+                style: TextStyle(
+                    color: isDark ? Colors.white : AppTheme.lightTextPrimary, fontWeight: FontWeight.w700)),
             content: Column(
               mainAxisSize: MainAxisSize.min,
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(message,
-                    style: const TextStyle(color: Colors.white70)),
+                    style: TextStyle(color: isDark ? Colors.white70 : AppTheme.lightTextSecondary)),
                 const SizedBox(height: 20),
                 Row(
                   children: [
@@ -246,8 +248,8 @@ class _AdminBusinessesScreenState extends State<AdminBusinessesScreen> {
                       child: OutlinedButton(
                         onPressed: () => Navigator.pop(ctx, false),
                         style: OutlinedButton.styleFrom(
-                          foregroundColor: Colors.white54,
-                          side: const BorderSide(color: Colors.white24),
+                          foregroundColor: isDark ? Colors.white54 : AppTheme.lightTextSecondary,
+                          side: BorderSide(color: isDark ? Colors.white24 : AppTheme.lightBorder),
                           padding: const EdgeInsets.symmetric(vertical: 12),
                           shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(8)),
@@ -266,25 +268,26 @@ class _AdminBusinessesScreenState extends State<AdminBusinessesScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     final screenWidth = MediaQuery.sizeOf(context).width;
     final isCompact = screenWidth < 420;
     final pad = isCompact ? 12.0 : 16.0;
 
     return Scaffold(
-      backgroundColor: AppTheme.darkBg,
+      backgroundColor: isDark ? AppTheme.darkBg : AppTheme.lightBg,
       appBar: AppBar(
-        backgroundColor: AppTheme.darkSurface,
+        backgroundColor: isDark ? AppTheme.darkSurface : AppTheme.lightSurface,
         elevation: 0,
         title: Text(
           'Businesses',
           style: TextStyle(
-              color: Colors.white,
+              color: isDark ? Colors.white : AppTheme.lightTextPrimary,
               fontWeight: FontWeight.w700,
               fontSize: isCompact ? 15 : 17),
         ),
         actions: [
           IconButton(
-            icon: const Icon(Icons.refresh_rounded, color: Colors.white54),
+            icon: Icon(Icons.refresh_rounded, color: isDark ? Colors.white54 : AppTheme.lightTextSecondary),
             onPressed: _fetchBusinesses,
           ),
         ],
@@ -296,25 +299,25 @@ class _AdminBusinessesScreenState extends State<AdminBusinessesScreen> {
             padding: EdgeInsets.all(pad),
             child: TextField(
               onChanged: (v) => setState(() => _search = v),
-              style: const TextStyle(color: Colors.white),
+              style: TextStyle(color: isDark ? Colors.white : AppTheme.lightTextPrimary),
               decoration: InputDecoration(
                 hintText: 'Search businesses…',
                 hintStyle:
-                    TextStyle(color: Colors.white.withValues(alpha: 0.3)),
+                    TextStyle(color: isDark ? Colors.white.withValues(alpha: 0.3) : AppTheme.lightTextHint),
                 prefixIcon:
-                    const Icon(Icons.search, color: AppTheme.primaryLight),
+                    Icon(Icons.search, color: isDark ? AppTheme.primaryLight : AppTheme.primaryColor),
                 filled: true,
-                fillColor: AppTheme.darkSurface,
+                fillColor: isDark ? AppTheme.darkSurface : AppTheme.lightSurface,
                 border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(12),
-                    borderSide: const BorderSide(color: AppTheme.darkBorder)),
+                    borderSide: BorderSide(color: isDark ? AppTheme.darkBorder : AppTheme.lightBorder)),
                 enabledBorder: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(12),
-                    borderSide: const BorderSide(color: AppTheme.darkBorder)),
+                    borderSide: BorderSide(color: isDark ? AppTheme.darkBorder : AppTheme.lightBorder)),
                 focusedBorder: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(12),
                     borderSide:
-                        const BorderSide(color: AppTheme.primaryLight)),
+                        BorderSide(color: isDark ? AppTheme.primaryLight : AppTheme.primaryColor)),
               ),
             ),
           ),
@@ -322,13 +325,13 @@ class _AdminBusinessesScreenState extends State<AdminBusinessesScreen> {
           // List
           Expanded(
             child: _loading
-                ? const Center(
+                ? Center(
                     child: CircularProgressIndicator(
-                        color: AppTheme.primaryLight))
+                        color: isDark ? AppTheme.primaryLight : AppTheme.primaryColor))
                 : _filtered.isEmpty
-                    ? const Center(
+                    ? Center(
                         child: Text('No businesses found',
-                            style: TextStyle(color: Colors.white38)))
+                            style: TextStyle(color: isDark ? Colors.white38 : AppTheme.lightTextHint)))
                     : ListView.separated(
                         padding: EdgeInsets.symmetric(horizontal: pad),
                         itemCount: _filtered.length,
@@ -370,97 +373,128 @@ class _BusinessCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final iconWidget = Container(
-      width: isCompact ? 36 : 42,
-      height: isCompact ? 36 : 42,
-      decoration: BoxDecoration(
-        color: AppTheme.accentColor.withValues(alpha: 0.15),
-        borderRadius: BorderRadius.circular(10),
-      ),
-      child: Icon(Icons.store_rounded,
-          color: AppTheme.accentColor, size: isCompact ? 18 : 22),
-    );
-
-    final infoSection = Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          biz['name'] ?? 'Unknown',
-          style: TextStyle(
-              color: Colors.white,
-              fontWeight: FontWeight.w600,
-              fontSize: isCompact ? 13 : 14),
-          overflow: TextOverflow.ellipsis,
-        ),
-        if (biz['email'] != null)
-          Text(
-            biz['email'],
-            style: TextStyle(
-                color: Colors.white.withValues(alpha: 0.5),
-                fontSize: isCompact ? 11 : 12),
-            overflow: TextOverflow.ellipsis,
-          ),
-        Wrap(
-          spacing: 6,
-          children: [
-            if (biz['type'] != null)
-              _Tag(label: biz['type'], color: AppTheme.primaryLight),
-            _Tag(
-                label: biz['currency'] ?? 'NPR',
-                color: AppTheme.successColor),
-          ],
-        ),
-      ],
-    );
-
-    final actions = isCompact
-        ? Column(
-            children: [
-              _ActionButton(
-                  icon: Icons.edit_rounded,
-                  color: AppTheme.primaryLight,
-                  onTap: onEdit,
-                  tooltip: 'Edit Business'),
-              const SizedBox(height: 6),
-              _ActionButton(
-                  icon: Icons.delete_rounded,
-                  color: AppTheme.errorColor,
-                  onTap: onDelete,
-                  tooltip: 'Delete Business'),
-            ],
-          )
-        : Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              _ActionButton(
-                  icon: Icons.edit_rounded,
-                  color: AppTheme.primaryLight,
-                  onTap: onEdit,
-                  tooltip: 'Edit Business'),
-              const SizedBox(width: 8),
-              _ActionButton(
-                  icon: Icons.delete_rounded,
-                  color: AppTheme.errorColor,
-                  onTap: onDelete,
-                  tooltip: 'Delete Business'),
-            ],
-          );
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final primaryAccentColor =
+        isDark ? AppTheme.primaryLight : AppTheme.primaryColor;
 
     return Container(
-      padding: EdgeInsets.all(isCompact ? 12 : 16),
+      padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: AppTheme.darkCard,
+        color: isDark ? AppTheme.darkCard : AppTheme.lightCard,
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: AppTheme.darkBorder),
+        border: Border.all(
+            color: isDark ? AppTheme.darkBorder : AppTheme.lightBorder),
       ),
-      child: Row(
+      child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          iconWidget,
-          SizedBox(width: isCompact ? 10 : 12),
-          Expanded(child: infoSection),
-          SizedBox(width: isCompact ? 8 : 12),
-          actions,
+          // ── Business info row ──────────────────────────────────
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Container(
+                width: isCompact ? 36 : 42,
+                height: isCompact ? 36 : 42,
+                decoration: BoxDecoration(
+                  color: AppTheme.accentColor.withValues(alpha: 0.15),
+                  borderRadius: BorderRadius.circular(10),
+                ),
+                child: Icon(Icons.store_rounded,
+                    color: AppTheme.accentColor,
+                    size: isCompact ? 18 : 22),
+              ),
+              SizedBox(width: isCompact ? 10 : 12),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      biz['name'] ?? 'Unknown',
+                      style: TextStyle(
+                          color: isDark
+                              ? Colors.white
+                              : AppTheme.lightTextPrimary,
+                          fontWeight: FontWeight.w600,
+                          fontSize: isCompact ? 13 : 14),
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                    if (biz['email'] != null)
+                      Text(
+                        biz['email'],
+                        style: TextStyle(
+                            color: isDark
+                                ? Colors.white.withValues(alpha: 0.5)
+                                : AppTheme.lightTextSecondary,
+                            fontSize: isCompact ? 11 : 12),
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    Wrap(
+                      spacing: 6,
+                      children: [
+                        if (biz['type'] != null)
+                          _Tag(label: biz['type'], color: primaryAccentColor),
+                        _Tag(
+                            label: biz['currency'] ?? 'NPR',
+                            color: AppTheme.successColor),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+
+          const SizedBox(height: 12),
+
+          // ── Action buttons — always side by side ───────────────
+          Row(
+            children: [
+              Expanded(
+                child: OutlinedButton.icon(
+                  onPressed: onEdit,
+                  icon: const Icon(Icons.edit_rounded, size: 14),
+                  label: const Text(
+                    'Edit',
+                    style: TextStyle(
+                        fontSize: 12, fontWeight: FontWeight.w600),
+                  ),
+                  style: OutlinedButton.styleFrom(
+                    foregroundColor: primaryAccentColor,
+                    side: BorderSide(
+                        color: primaryAccentColor.withValues(alpha: 0.5)),
+                    padding: const EdgeInsets.symmetric(vertical: 9),
+                    shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(8)),
+                    backgroundColor:
+                        primaryAccentColor.withValues(alpha: 0.06),
+                  ),
+                ),
+              ),
+              const SizedBox(width: 8),
+              Expanded(
+                child: OutlinedButton.icon(
+                  onPressed: onDelete,
+                  icon: const Icon(Icons.delete_rounded, size: 14),
+                  label: const Text(
+                    'Delete',
+                    style: TextStyle(
+                        fontSize: 12, fontWeight: FontWeight.w600),
+                  ),
+                  style: OutlinedButton.styleFrom(
+                    foregroundColor: AppTheme.errorColor,
+                    side: BorderSide(
+                        color:
+                            AppTheme.errorColor.withValues(alpha: 0.5)),
+                    padding: const EdgeInsets.symmetric(vertical: 9),
+                    shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(8)),
+                    backgroundColor:
+                        AppTheme.errorColor.withValues(alpha: 0.05),
+                  ),
+                ),
+              ),
+            ],
+          ),
         ],
       ),
     );
@@ -470,6 +504,7 @@ class _BusinessCard extends StatelessWidget {
 // ─────────────────────────────────────────────────────────────────────────────
 // Shared helpers
 // ─────────────────────────────────────────────────────────────────────────────
+
 
 class _Tag extends StatelessWidget {
   final String label;
@@ -501,63 +536,27 @@ class _DialogField extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     return TextField(
       controller: controller,
-      style: const TextStyle(color: Colors.white, fontSize: 14),
+      style: TextStyle(color: isDark ? Colors.white : AppTheme.lightTextPrimary, fontSize: 14),
       decoration: InputDecoration(
         labelText: label,
-        labelStyle: TextStyle(color: Colors.white.withValues(alpha: 0.5)),
-        prefixIcon: Icon(icon, color: AppTheme.primaryLight, size: 18),
+        labelStyle: TextStyle(color: isDark ? Colors.white.withValues(alpha: 0.5) : AppTheme.lightTextSecondary),
+        prefixIcon: Icon(icon, color: isDark ? AppTheme.primaryLight : AppTheme.primaryColor, size: 18),
         filled: true,
-        fillColor: AppTheme.darkSurface,
+        fillColor: isDark ? AppTheme.darkSurface : AppTheme.lightBg,
         border: OutlineInputBorder(
             borderRadius: BorderRadius.circular(10),
-            borderSide: const BorderSide(color: AppTheme.darkBorder)),
+            borderSide: BorderSide(color: isDark ? AppTheme.darkBorder : AppTheme.lightBorder)),
         enabledBorder: OutlineInputBorder(
             borderRadius: BorderRadius.circular(10),
-            borderSide: const BorderSide(color: AppTheme.darkBorder)),
+            borderSide: BorderSide(color: isDark ? AppTheme.darkBorder : AppTheme.lightBorder)),
         focusedBorder: OutlineInputBorder(
             borderRadius: BorderRadius.circular(10),
-            borderSide: const BorderSide(color: AppTheme.primaryLight)),
+            borderSide: BorderSide(color: isDark ? AppTheme.primaryLight : AppTheme.primaryColor)),
       ),
     );
   }
 }
 
-class _ActionButton extends StatelessWidget {
-  final IconData icon;
-  final Color color;
-  final VoidCallback onTap;
-  final String tooltip;
-
-  const _ActionButton({
-    required this.icon,
-    required this.color,
-    required this.onTap,
-    required this.tooltip,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return Tooltip(
-      message: tooltip,
-      child: Material(
-        color: Colors.transparent,
-        child: InkWell(
-          onTap: onTap,
-          borderRadius: BorderRadius.circular(8),
-          child: Container(
-            width: 34,
-            height: 34,
-            decoration: BoxDecoration(
-              color: color.withValues(alpha: 0.1),
-              borderRadius: BorderRadius.circular(8),
-              border: Border.all(color: color.withValues(alpha: 0.25)),
-            ),
-            child: Center(child: Icon(icon, color: color, size: 18)),
-          ),
-        ),
-      ),
-    );
-  }
-}

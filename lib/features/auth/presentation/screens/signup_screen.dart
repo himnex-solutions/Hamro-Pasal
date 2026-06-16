@@ -610,7 +610,7 @@ class _NepalPhonePrefix extends StatelessWidget {
 //  Custom Auth Text Field (label-inside-border custom design)
 // ─────────────────────────────────────────────────────────────
 
-class _CustomAuthField extends StatefulWidget {
+class _CustomAuthField extends StatelessWidget {
   final TextEditingController controller;
   final String label;
   final IconData? icon;
@@ -640,280 +640,76 @@ class _CustomAuthField extends StatefulWidget {
   });
 
   @override
-  State<_CustomAuthField> createState() => _CustomAuthFieldState();
-}
-
-class _CustomAuthFieldState extends State<_CustomAuthField> {
-  late FocusNode _internalFocus;
-  bool _isFocused = false;
-  String? _errorText;
-
-  @override
-  void initState() {
-    super.initState();
-    _internalFocus = widget.focusNode ?? FocusNode();
-    _internalFocus.addListener(_onFocusChange);
-    widget.controller.addListener(_onTextChanged);
-  }
-
-  void _onFocusChange() {
-    if (mounted) {
-      setState(() {
-        _isFocused = _internalFocus.hasFocus;
-      });
-    }
-  }
-
-  void _onTextChanged() {
-    if (mounted) {
-      setState(() {});
-    }
-  }
-
-  @override
-  void dispose() {
-    _internalFocus.removeListener(_onFocusChange);
-    widget.controller.removeListener(_onTextChanged);
-    if (widget.focusNode == null) {
-      _internalFocus.dispose();
-    }
-    super.dispose();
-  }
-
-  @override
   Widget build(BuildContext context) {
-    final hasError = _errorText != null;
-    final hasPrefix = widget.prefix != null;
-    final isFloated = widget.controller.text.isNotEmpty || _isFocused;
-
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        GestureDetector(
-          onTap: () => _internalFocus.requestFocus(),
-          child: Container(
-            height: 60,
-            padding: const EdgeInsets.symmetric(horizontal: 16),
-            decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.circular(16),
-              border: Border.all(
-                color: hasError
-                    ? const Color(0xFFEF4444)
-                    : _isFocused
-                        ? const Color(0xFF2C3BD5)
-                        : const Color(0xFFE2E8F0),
-                width: _isFocused || hasError ? 1.5 : 1.2,
-              ),
-            ),
-            child: hasPrefix
-                // ── PREFIX MODE: flag + code | input ────────────────────
-                ? Row(
-                    crossAxisAlignment: CrossAxisAlignment.center,
-                    children: [
-                      // The prefix widget (Nepal flag + +977)
-                      widget.prefix!,
-                      // Thin divider
-                      Container(
-                        width: 1,
-                        height: 28,
-                        margin: const EdgeInsets.symmetric(horizontal: 10),
-                        color: const Color(0xFFE2E8F0),
-                      ),
-                      // Floating-label stack for the text input portion
-                      Expanded(
-                        child: Stack(
-                          children: [
-                            TextFormField(
-                              controller: widget.controller,
-                              focusNode: _internalFocus,
-                              obscureText: widget.obscureText,
-                              keyboardType: widget.keyboardType,
-                              textInputAction: widget.textInputAction,
-                              inputFormatters: widget.inputFormatters,
-                              onFieldSubmitted: widget.onSubmitted,
-                              style: const TextStyle(
-                                fontSize: 14.5,
-                                color: Color(0xFF0F172A),
-                                fontWeight: FontWeight.w500,
-                              ),
-                              decoration: const InputDecoration(
-                                isDense: true,
-                                contentPadding:
-                                    EdgeInsets.only(top: 24, bottom: 8),
-                                border: InputBorder.none,
-                                enabledBorder: InputBorder.none,
-                                focusedBorder: InputBorder.none,
-                                errorBorder: InputBorder.none,
-                                focusedErrorBorder: InputBorder.none,
-                                disabledBorder: InputBorder.none,
-                                filled: false,
-                                errorStyle: TextStyle(
-                                  color: Colors.transparent,
-                                  fontSize: 0,
-                                  height: 0,
-                                ),
-                              ),
-                              validator: (value) {
-                                if (widget.validator != null) {
-                                  final err = widget.validator!(value);
-                                  if (_errorText != err) {
-                                    WidgetsBinding.instance
-                                        .addPostFrameCallback((_) {
-                                      if (mounted) {
-                                        setState(() => _errorText = err);
-                                      }
-                                    });
-                                  }
-                                  return err;
-                                }
-                                return null;
-                              },
-                            ),
-                            // Floating label
-                            AnimatedPositioned(
-                              duration: const Duration(milliseconds: 200),
-                              curve: Curves.easeOut,
-                              left: 0,
-                              top: isFloated ? 6 : 15,
-                              child: IgnorePointer(
-                                child: AnimatedDefaultTextStyle(
-                                  duration: const Duration(milliseconds: 200),
-                                  style: TextStyle(
-                                    color: _isFocused
-                                        ? const Color(0xFF2C3BD5)
-                                        : const Color(0xFF94A3B8),
-                                    fontSize: isFloated ? 11 : 14.5,
-                                    fontWeight: isFloated
-                                        ? FontWeight.w600
-                                        : FontWeight.w400,
-                                  ),
-                                  child: Text(widget.label),
-                                ),
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                      // Suffix (spinner etc.)
-                      if (widget.suffix != null) ...[
-                        const SizedBox(width: 6),
-                        widget.suffix!,
-                      ],
-                    ],
+    return TextFormField(
+      controller: controller,
+      focusNode: focusNode,
+      obscureText: obscureText,
+      keyboardType: keyboardType,
+      textInputAction: textInputAction,
+      inputFormatters: inputFormatters,
+      onFieldSubmitted: onSubmitted,
+      style: const TextStyle(
+        color: Color(0xFF0F172A),
+        fontSize: 14.5,
+        fontWeight: FontWeight.w500,
+      ),
+      decoration: InputDecoration(
+        labelText: label,
+        labelStyle: const TextStyle(color: Color(0xFF94A3B8)),
+        prefixIcon: prefix != null
+            ? Padding(
+                padding: const EdgeInsets.only(left: 16, right: 12),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    prefix!,
+                    const SizedBox(width: 10),
+                    Container(
+                      width: 1,
+                      height: 20,
+                      color: const Color(0xFFE2E8F0),
+                    ),
+                  ],
+                ),
+              )
+            : (icon != null
+                ? Padding(
+                    padding: const EdgeInsets.only(left: 16, right: 12),
+                    child: Icon(icon, color: const Color(0xFF2C3BD5), size: 20),
                   )
-                // ── NORMAL MODE (no prefix) ──────────────────────────────
-                : Stack(
-                    children: [
-                      TextFormField(
-                        controller: widget.controller,
-                        focusNode: _internalFocus,
-                        obscureText: widget.obscureText,
-                        keyboardType: widget.keyboardType,
-                        textInputAction: widget.textInputAction,
-                        inputFormatters: widget.inputFormatters,
-                        onFieldSubmitted: widget.onSubmitted,
-                        textAlign: TextAlign.left,
-                        style: const TextStyle(
-                          fontSize: 14.5,
-                          color: Color(0xFF0F172A),
-                          fontWeight: FontWeight.w500,
-                        ),
-                        decoration: const InputDecoration(
-                          isDense: true,
-                          contentPadding: EdgeInsets.only(top: 26, bottom: 6),
-                          border: InputBorder.none,
-                          enabledBorder: InputBorder.none,
-                          focusedBorder: InputBorder.none,
-                          errorBorder: InputBorder.none,
-                          focusedErrorBorder: InputBorder.none,
-                          disabledBorder: InputBorder.none,
-                          filled: false,
-                          fillColor: Colors.transparent,
-                          errorStyle: TextStyle(
-                            color: Colors.transparent,
-                            fontSize: 0,
-                            height: 0,
-                          ),
-                        ),
-                        validator: (value) {
-                          if (widget.validator != null) {
-                            final err = widget.validator!(value);
-                            if (_errorText != err) {
-                              WidgetsBinding.instance.addPostFrameCallback((_) {
-                                if (mounted) {
-                                  setState(() => _errorText = err);
-                                }
-                              });
-                            }
-                            return err;
-                          }
-                          return null;
-                        },
-                      ),
-                      // Smooth animated floating label and icon
-                      AnimatedPositioned(
-                        duration: const Duration(milliseconds: 200),
-                        curve: Curves.easeOut,
-                        left: 0,
-                        top: isFloated ? 6 : 20,
-                        child: IgnorePointer(
-                          child: Row(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              if (widget.icon != null) ...[
-                                Icon(
-                                  widget.icon,
-                                  size: isFloated ? 14 : 18,
-                                  color: _isFocused
-                                      ? const Color(0xFF2C3BD5)
-                                      : const Color(0xFF94A3B8),
-                                ),
-                                const SizedBox(width: 8),
-                              ],
-                              AnimatedDefaultTextStyle(
-                                duration: const Duration(milliseconds: 200),
-                                style: TextStyle(
-                                  color: _isFocused
-                                      ? const Color(0xFF2C3BD5)
-                                      : const Color(0xFF94A3B8),
-                                  fontSize: isFloated ? 11 : 14.5,
-                                  fontWeight: isFloated
-                                      ? FontWeight.w600
-                                      : FontWeight.w400,
-                                ),
-                                child: Text(widget.label),
-                              ),
-                            ],
-                          ),
-                        ),
-                      ),
-                      // Suffix (like Visibility Toggle)
-                      if (widget.suffix != null)
-                        Positioned(
-                          right: 0,
-                          top: 0,
-                          bottom: 0,
-                          child: Center(child: widget.suffix!),
-                        ),
-                    ],
-                  ),
-          ),
+                : null),
+        prefixIconConstraints: const BoxConstraints(
+          minWidth: 0,
+          minHeight: 0,
         ),
-        if (hasError) ...[
-          const SizedBox(height: 4),
-          Padding(
-            padding: const EdgeInsets.only(left: 12),
-            child: Text(
-              _errorText!,
-              style: const TextStyle(
-                color: Color(0xFFEF4444),
-                fontSize: 11,
-              ),
-            ),
-          ),
-        ],
-      ],
+        suffixIcon: suffix,
+        filled: true,
+        fillColor: const Color(0xFFF8FAFC),
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: const BorderSide(color: Color(0xFFE2E8F0)),
+        ),
+        enabledBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: const BorderSide(color: Color(0xFFE2E8F0)),
+        ),
+        focusedBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: const BorderSide(color: Color(0xFF2C3BD5), width: 1.5),
+        ),
+        errorBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: const BorderSide(color: Color(0xFFEF4444)),
+        ),
+        focusedErrorBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(12),
+          borderSide: const BorderSide(color: Color(0xFFEF4444)),
+        ),
+        errorStyle: const TextStyle(color: Color(0xFFEF4444), fontSize: 11),
+      ),
+      validator: validator,
     );
   }
 }

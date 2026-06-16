@@ -54,13 +54,15 @@ class _AdminLoginScreenState extends ConsumerState<AdminLoginScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
     return Scaffold(
-      backgroundColor: AppTheme.darkBg,
+      backgroundColor: isDark ? AppTheme.darkBg : AppTheme.lightBg,
       body: Stack(
         children: [
           // ── Elegant Floating Mesh Background ──
-          const Positioned.fill(
-            child: PolyMeshBackground(),
+          Positioned.fill(
+            child: PolyMeshBackground(isLight: !isDark),
           ),
 
           // ── Centered form content ──
@@ -70,32 +72,14 @@ class _AdminLoginScreenState extends ConsumerState<AdminLoginScreen> {
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  // Logo badge
-                  Container(
-                    width: 156,
-                    height: 48,
-                    decoration: BoxDecoration(
-                      borderRadius: BorderRadius.circular(12),
-                      gradient: AppTheme.primaryGradient,
-                      boxShadow: AppTheme.glowShadow(
-                        AppTheme.primaryColor,
-                        opacity: 0.35,
-                      ),
-                    ),
-                    child: ClipRRect(
-                      borderRadius: BorderRadius.circular(12),
-                      child: Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                        child: Image.asset(
-                          'assets/images/smart_saoji_logo.png',
-                          fit: BoxFit.contain,
-                          errorBuilder: (context, error, stackTrace) => const Icon(
-                            Icons.admin_panel_settings_rounded,
-                            color: Colors.white,
-                            size: 28,
-                          ),
-                        ),
-                      ),
+                  Image.asset(
+                    'assets/images/smart_saoji_logo.png',
+                    width: 200,
+                    height: 72,
+                    fit: BoxFit.contain,
+                    errorBuilder: (context, error, stackTrace) => const Icon(
+                      Icons.admin_panel_settings_rounded,
+                      size: 48,
                     ),
                   )
                       .animate()
@@ -104,40 +88,20 @@ class _AdminLoginScreenState extends ConsumerState<AdminLoginScreen> {
                           duration: 600.ms,
                           curve: Curves.elasticOut)
                       .fadeIn(),
-                  const SizedBox(height: 24),
-
-                  // Title
-                  const Text(
-                    'Admin Portal',
-                    style: TextStyle(
-                      color: Colors.white,
-                      fontSize: 28,
-                      fontWeight: FontWeight.w800,
-                      letterSpacing: 1,
-                    ),
-                  ).animate(delay: 200.ms).fadeIn().slideY(begin: 0.3),
-                  const SizedBox(height: 6),
-                  Text(
-                    'Smart Saoji — Restricted Access',
-                    style: TextStyle(
-                      color: Colors.white.withValues(alpha: 0.5),
-                      fontSize: 13,
-                    ),
-                  ).animate(delay: 300.ms).fadeIn(),
-                  const SizedBox(height: 40),
+                  const SizedBox(height: 32),
 
                   // Card
                   Container(
                     constraints: const BoxConstraints(maxWidth: 420),
                     padding: const EdgeInsets.all(32),
                     decoration: BoxDecoration(
-                      color: AppTheme.darkCard,
+                      color: isDark ? AppTheme.darkCard : AppTheme.lightCard,
                       borderRadius: BorderRadius.circular(20),
                       border: Border.all(
-                          color: AppTheme.darkBorder, width: 1),
+                          color: isDark ? AppTheme.darkBorder : AppTheme.lightBorder, width: 1),
                       boxShadow: [
                         BoxShadow(
-                          color: Colors.black.withValues(alpha: 0.4),
+                          color: isDark ? Colors.black.withValues(alpha: 0.4) : Colors.black.withValues(alpha: 0.05),
                           blurRadius: 40,
                           offset: const Offset(0, 20),
                         ),
@@ -171,7 +135,7 @@ class _AdminLoginScreenState extends ConsumerState<AdminLoginScreen> {
                                 _obscure
                                     ? Icons.visibility_off_outlined
                                     : Icons.visibility_outlined,
-                                color: Colors.white38,
+                                color: isDark ? Colors.white38 : AppTheme.lightTextHint,
                                 size: 20,
                               ),
                               onPressed: () =>
@@ -222,7 +186,7 @@ class _AdminLoginScreenState extends ConsumerState<AdminLoginScreen> {
                   Text(
                     '⚠️  Unauthorized access is strictly prohibited',
                     style: TextStyle(
-                      color: Colors.white.withValues(alpha: 0.3),
+                      color: isDark ? Colors.white.withValues(alpha: 0.3) : AppTheme.lightTextHint,
                       fontSize: 11,
                     ),
                   ).animate(delay: 600.ms).fadeIn(),
@@ -257,31 +221,33 @@ class _AdminField extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
     return TextFormField(
       controller: controller,
       obscureText: obscure,
       keyboardType: keyboardType,
       validator: validator,
-      style: const TextStyle(color: Colors.white, fontSize: 14),
+      style: TextStyle(color: isDark ? Colors.white : AppTheme.lightTextPrimary, fontSize: 14),
       decoration: InputDecoration(
         labelText: label,
-        labelStyle: TextStyle(color: Colors.white.withValues(alpha: 0.5)),
-        prefixIcon: Icon(icon, color: AppTheme.primaryLight, size: 20),
+        labelStyle: TextStyle(color: isDark ? Colors.white.withValues(alpha: 0.5) : AppTheme.lightTextSecondary),
+        prefixIcon: Icon(icon, color: isDark ? AppTheme.primaryLight : AppTheme.primaryColor, size: 20),
         suffixIcon: suffix,
         filled: true,
-        fillColor: AppTheme.darkSurface,
+        fillColor: isDark ? AppTheme.darkSurface : AppTheme.lightBg,
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
-          borderSide: const BorderSide(color: AppTheme.darkBorder),
+          borderSide: BorderSide(color: isDark ? AppTheme.darkBorder : AppTheme.lightBorder),
         ),
         enabledBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
-          borderSide: const BorderSide(color: AppTheme.darkBorder),
+          borderSide: BorderSide(color: isDark ? AppTheme.darkBorder : AppTheme.lightBorder),
         ),
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
           borderSide:
-              const BorderSide(color: AppTheme.primaryLight, width: 1.5),
+              BorderSide(color: isDark ? AppTheme.primaryLight : AppTheme.primaryColor, width: 1.5),
         ),
         errorBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),

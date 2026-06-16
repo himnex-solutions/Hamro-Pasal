@@ -87,12 +87,13 @@ class _AdminFeedbackScreenState extends State<AdminFeedbackScreen> {
   Future<void> _showDetailDialog(Map<String, dynamic> fb) async {
     final notesCtrl = TextEditingController(text: fb['admin_notes'] ?? '');
     String status = fb['status'] ?? 'pending';
+    final isDark = Theme.of(context).brightness == Brightness.dark;
 
     await showDialog(
       context: context,
       builder: (ctx) => StatefulBuilder(
         builder: (ctx, setLocal) => Dialog(
-          backgroundColor: AppTheme.darkCard,
+          backgroundColor: isDark ? AppTheme.darkCard : AppTheme.lightCard,
           shape:
               RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
           insetPadding:
@@ -117,16 +118,16 @@ class _AdminFeedbackScreenState extends State<AdminFeedbackScreen> {
                           children: [
                             Text(
                               fb['category'] ?? 'General',
-                              style: const TextStyle(
-                                color: AppTheme.primaryLight,
+                              style: TextStyle(
+                                color: isDark ? AppTheme.primaryLight : AppTheme.primaryColor,
                                 fontWeight: FontWeight.w700,
                                 fontSize: 13,
                               ),
                             ),
                             Text(
                               _formatDate(fb['created_at']),
-                              style: const TextStyle(
-                                color: Colors.white38,
+                              style: TextStyle(
+                                color: isDark ? Colors.white38 : AppTheme.lightTextHint,
                                 fontSize: 11,
                               ),
                             ),
@@ -136,7 +137,7 @@ class _AdminFeedbackScreenState extends State<AdminFeedbackScreen> {
                       IconButton(
                         onPressed: () => Navigator.pop(ctx),
                         icon:
-                            const Icon(Icons.close, color: Colors.white38),
+                            Icon(Icons.close, color: isDark ? Colors.white38 : AppTheme.lightTextSecondary),
                         padding: EdgeInsets.zero,
                         constraints: const BoxConstraints(),
                       ),
@@ -149,20 +150,20 @@ class _AdminFeedbackScreenState extends State<AdminFeedbackScreen> {
                   Container(
                     padding: const EdgeInsets.all(12),
                     decoration: BoxDecoration(
-                      color: AppTheme.darkSurface,
+                      color: isDark ? AppTheme.darkSurface : AppTheme.lightBg,
                       borderRadius: BorderRadius.circular(10),
                     ),
                     child: Row(
                       children: [
-                        const Icon(Icons.person_outline,
-                            color: Colors.white38, size: 18),
+                        Icon(Icons.person_outline,
+                            color: isDark ? Colors.white38 : AppTheme.lightTextHint, size: 18),
                         const SizedBox(width: 8),
                         Expanded(
                           child: Text(
                             '${(fb['user_profiles'] as Map?)?['full_name'] ?? 'Unknown'}'
                             ' • ${(fb['user_profiles'] as Map?)?['email'] ?? ''}',
-                            style: const TextStyle(
-                                color: Colors.white70, fontSize: 13),
+                            style: TextStyle(
+                                color: isDark ? Colors.white70 : AppTheme.lightTextSecondary, fontSize: 13),
                             overflow: TextOverflow.ellipsis,
                           ),
                         ),
@@ -179,14 +180,14 @@ class _AdminFeedbackScreenState extends State<AdminFeedbackScreen> {
                     width: double.infinity,
                     padding: const EdgeInsets.all(14),
                     decoration: BoxDecoration(
-                      color: AppTheme.darkSurface,
+                      color: isDark ? AppTheme.darkSurface : AppTheme.lightBg,
                       borderRadius: BorderRadius.circular(10),
-                      border: Border.all(color: AppTheme.darkBorder),
+                      border: Border.all(color: isDark ? AppTheme.darkBorder : AppTheme.lightBorder),
                     ),
                     child: Text(
                       fb['message'] ?? '',
-                      style: const TextStyle(
-                          color: Colors.white, fontSize: 14, height: 1.6),
+                      style: TextStyle(
+                          color: isDark ? Colors.white : AppTheme.lightTextPrimary, fontSize: 14, height: 1.6),
                     ),
                   ),
 
@@ -215,12 +216,12 @@ class _AdminFeedbackScreenState extends State<AdminFeedbackScreen> {
                             borderRadius: BorderRadius.circular(20),
                             border: Border.all(
                                 color:
-                                    isSelected ? col : Colors.white24),
+                                    isSelected ? col : (isDark ? Colors.white24 : AppTheme.lightBorder)),
                           ),
                           child: Text(
                             s[0].toUpperCase() + s.substring(1),
                             style: TextStyle(
-                              color: isSelected ? col : Colors.white38,
+                              color: isSelected ? col : (isDark ? Colors.white38 : AppTheme.lightTextHint),
                               fontSize: 12,
                               fontWeight: FontWeight.w600,
                             ),
@@ -239,27 +240,27 @@ class _AdminFeedbackScreenState extends State<AdminFeedbackScreen> {
                     controller: notesCtrl,
                     maxLines: 3,
                     style:
-                        const TextStyle(color: Colors.white, fontSize: 13),
+                        TextStyle(color: isDark ? Colors.white : AppTheme.lightTextPrimary, fontSize: 13),
                     decoration: InputDecoration(
                       hintText: 'Add internal notes...',
                       hintStyle:
-                          const TextStyle(color: Colors.white24),
+                          TextStyle(color: isDark ? Colors.white24 : AppTheme.lightTextHint),
                       filled: true,
-                      fillColor: AppTheme.darkSurface,
+                      fillColor: isDark ? AppTheme.darkSurface : AppTheme.lightBg,
                       border: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(10),
-                        borderSide: const BorderSide(
-                            color: AppTheme.darkBorder),
+                        borderSide: BorderSide(
+                            color: isDark ? AppTheme.darkBorder : AppTheme.lightBorder),
                       ),
                       enabledBorder: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(10),
-                        borderSide: const BorderSide(
-                            color: AppTheme.darkBorder),
+                        borderSide: BorderSide(
+                            color: isDark ? AppTheme.darkBorder : AppTheme.lightBorder),
                       ),
                       focusedBorder: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(10),
-                        borderSide: const BorderSide(
-                            color: AppTheme.primaryLight, width: 1.5),
+                        borderSide: BorderSide(
+                            color: isDark ? AppTheme.primaryLight : AppTheme.primaryColor, width: 1.5),
                       ),
                     ),
                   ),
@@ -340,6 +341,7 @@ class _AdminFeedbackScreenState extends State<AdminFeedbackScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     final pending =
         _feedbacks.where((f) => f['status'] == 'pending').length;
     final screenWidth = MediaQuery.sizeOf(context).width;
@@ -347,10 +349,10 @@ class _AdminFeedbackScreenState extends State<AdminFeedbackScreen> {
     final horizontalPad = isCompact ? 12.0 : 16.0;
 
     return Scaffold(
-      backgroundColor: AppTheme.darkBg,
+      backgroundColor: isDark ? AppTheme.darkBg : AppTheme.lightBg,
       appBar: AppBar(
-        backgroundColor: AppTheme.darkSurface,
-        foregroundColor: Colors.white,
+        backgroundColor: isDark ? AppTheme.darkSurface : AppTheme.lightSurface,
+        foregroundColor: isDark ? Colors.white : AppTheme.lightTextPrimary,
         titleSpacing: horizontalPad,
         title: Row(
           children: [
@@ -358,7 +360,7 @@ class _AdminFeedbackScreenState extends State<AdminFeedbackScreen> {
               'User Feedback',
               style: TextStyle(
                 fontWeight: FontWeight.w700,
-                color: Colors.white,
+                color: isDark ? Colors.white : AppTheme.lightTextPrimary,
                 fontSize: isCompact ? 15 : 17,
               ),
             ),
@@ -368,7 +370,7 @@ class _AdminFeedbackScreenState extends State<AdminFeedbackScreen> {
                 padding:
                     const EdgeInsets.symmetric(horizontal: 7, vertical: 2),
                 decoration: BoxDecoration(
-                  color: AppTheme.primaryLight,
+                  color: isDark ? AppTheme.primaryLight : AppTheme.primaryColor,
                   borderRadius: BorderRadius.circular(20),
                 ),
                 child: Text(
@@ -387,7 +389,7 @@ class _AdminFeedbackScreenState extends State<AdminFeedbackScreen> {
           IconButton(
             onPressed: _loadFeedbacks,
             icon:
-                const Icon(Icons.refresh_rounded, color: Colors.white54),
+                Icon(Icons.refresh_rounded, color: isDark ? Colors.white54 : AppTheme.lightTextSecondary),
             tooltip: 'Refresh',
           ),
           SizedBox(width: isCompact ? 4 : 8),
@@ -425,14 +427,14 @@ class _AdminFeedbackScreenState extends State<AdminFeedbackScreen> {
                           ),
                           decoration: BoxDecoration(
                             color: _filter == f.$1
-                                ? AppTheme.primaryLight
+                                ? (isDark ? AppTheme.primaryLight : AppTheme.primaryColor)
                                     .withValues(alpha: 0.15)
-                                : AppTheme.darkSurface,
+                                : (isDark ? AppTheme.darkSurface : AppTheme.lightSurface),
                             borderRadius: BorderRadius.circular(20),
                             border: Border.all(
                               color: _filter == f.$1
-                                  ? AppTheme.primaryLight
-                                  : AppTheme.darkBorder,
+                                  ? (isDark ? AppTheme.primaryLight : AppTheme.primaryColor)
+                                  : (isDark ? AppTheme.darkBorder : AppTheme.lightBorder),
                             ),
                           ),
                           child: Row(
@@ -442,8 +444,8 @@ class _AdminFeedbackScreenState extends State<AdminFeedbackScreen> {
                                 f.$3,
                                 size: isCompact ? 12 : 14,
                                 color: _filter == f.$1
-                                    ? AppTheme.primaryLight
-                                    : Colors.white38,
+                                    ? (isDark ? AppTheme.primaryLight : AppTheme.primaryColor)
+                                    : (isDark ? Colors.white38 : AppTheme.lightTextHint),
                               ),
                               SizedBox(width: isCompact ? 4 : 6),
                               Text(
@@ -452,8 +454,8 @@ class _AdminFeedbackScreenState extends State<AdminFeedbackScreen> {
                                   fontSize: isCompact ? 11 : 12,
                                   fontWeight: FontWeight.w600,
                                   color: _filter == f.$1
-                                      ? AppTheme.primaryLight
-                                      : Colors.white38,
+                                      ? (isDark ? AppTheme.primaryLight : AppTheme.primaryColor)
+                                      : (isDark ? Colors.white38 : AppTheme.lightTextSecondary),
                                 ),
                               ),
                             ],
@@ -468,9 +470,9 @@ class _AdminFeedbackScreenState extends State<AdminFeedbackScreen> {
         ),
       ),
       body: _loading
-          ? const Center(
+          ? Center(
               child: CircularProgressIndicator(
-                  color: AppTheme.primaryLight))
+                  color: isDark ? AppTheme.primaryLight : AppTheme.primaryColor))
           : _filtered.isEmpty
               ? Center(
                   child: Column(
@@ -478,12 +480,12 @@ class _AdminFeedbackScreenState extends State<AdminFeedbackScreen> {
                     children: [
                       Icon(Icons.feedback_outlined,
                           size: 56,
-                          color: Colors.white.withValues(alpha: 0.15)),
+                          color: isDark ? Colors.white.withValues(alpha: 0.15) : AppTheme.lightTextHint.withValues(alpha: 0.3)),
                       const SizedBox(height: 12),
                       Text(
                         'No ${_filter == 'all' ? '' : '$_filter '}feedback yet',
                         style: TextStyle(
-                            color: Colors.white.withValues(alpha: 0.4),
+                            color: isDark ? Colors.white.withValues(alpha: 0.4) : AppTheme.lightTextSecondary,
                             fontSize: 15),
                       ),
                     ],
@@ -508,13 +510,13 @@ class _AdminFeedbackScreenState extends State<AdminFeedbackScreen> {
                         margin: const EdgeInsets.only(bottom: 10),
                         padding: EdgeInsets.all(isCompact ? 12 : 16),
                         decoration: BoxDecoration(
-                          color: AppTheme.darkCard,
+                          color: isDark ? AppTheme.darkCard : AppTheme.lightCard,
                           borderRadius: BorderRadius.circular(14),
                           border: Border.all(
                             color: status == 'pending'
                                 ? AppTheme.warningColor
                                     .withValues(alpha: 0.3)
-                                : AppTheme.darkBorder,
+                                : (isDark ? AppTheme.darkBorder : AppTheme.lightBorder),
                           ),
                         ),
                         child: Column(
@@ -562,8 +564,8 @@ class _AdminFeedbackScreenState extends State<AdminFeedbackScreen> {
                                   Text(
                                     _formatDate(
                                         fb['created_at'] as String?),
-                                    style: const TextStyle(
-                                        color: Colors.white24,
+                                    style: TextStyle(
+                                        color: isDark ? Colors.white24 : AppTheme.lightTextHint,
                                         fontSize: 10),
                                   ),
                               ],
@@ -579,8 +581,8 @@ class _AdminFeedbackScreenState extends State<AdminFeedbackScreen> {
                                 child: Text(
                                   _formatDate(
                                       fb['created_at'] as String?),
-                                  style: const TextStyle(
-                                      color: Colors.white24,
+                                  style: TextStyle(
+                                      color: isDark ? Colors.white24 : AppTheme.lightTextHint,
                                       fontSize: 10),
                                 ),
                               ),
@@ -588,15 +590,15 @@ class _AdminFeedbackScreenState extends State<AdminFeedbackScreen> {
                             // ── User + category ───────────────────
                             Row(
                               children: [
-                                const Icon(Icons.person_outline,
-                                    color: Colors.white38, size: 13),
+                                Icon(Icons.person_outline,
+                                    color: isDark ? Colors.white38 : AppTheme.lightTextHint, size: 13),
                                 const SizedBox(width: 5),
                                 Flexible(
                                   child: Text(
                                     profile?['full_name'] ??
                                         'Unknown User',
-                                    style: const TextStyle(
-                                        color: Colors.white60,
+                                    style: TextStyle(
+                                        color: isDark ? Colors.white60 : AppTheme.lightTextSecondary,
                                         fontSize: 12,
                                         fontWeight: FontWeight.w600),
                                     overflow: TextOverflow.ellipsis,
@@ -607,15 +609,14 @@ class _AdminFeedbackScreenState extends State<AdminFeedbackScreen> {
                                   padding: const EdgeInsets.symmetric(
                                       horizontal: 6, vertical: 2),
                                   decoration: BoxDecoration(
-                                    color: Colors.white
-                                        .withValues(alpha: 0.06),
+                                    color: isDark ? Colors.white.withValues(alpha: 0.06) : AppTheme.lightBg,
                                     borderRadius:
                                         BorderRadius.circular(8),
                                   ),
                                   child: Text(
                                     fb['category'] ?? 'General',
-                                    style: const TextStyle(
-                                        color: Colors.white38,
+                                    style: TextStyle(
+                                        color: isDark ? Colors.white38 : AppTheme.lightTextSecondary,
                                         fontSize: 10),
                                   ),
                                 ),
@@ -630,7 +631,7 @@ class _AdminFeedbackScreenState extends State<AdminFeedbackScreen> {
                               maxLines: 2,
                               overflow: TextOverflow.ellipsis,
                               style: TextStyle(
-                                  color: Colors.white,
+                                  color: isDark ? Colors.white : AppTheme.lightTextPrimary,
                                   fontSize: isCompact ? 12 : 13,
                                   height: 1.5),
                             ),
@@ -656,10 +657,11 @@ class _SectionLabel extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     return Text(
       text,
       style: TextStyle(
-        color: Colors.white.withValues(alpha: 0.5),
+        color: isDark ? Colors.white.withValues(alpha: 0.5) : AppTheme.lightTextSecondary,
         fontSize: 11,
         fontWeight: FontWeight.w600,
         letterSpacing: 0.4,
@@ -674,13 +676,14 @@ class _StarRating extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     return Row(
       mainAxisSize: MainAxisSize.min,
       children: List.generate(5, (i) {
         return Icon(
           i < rating ? Icons.star_rounded : Icons.star_outline_rounded,
           size: 14,
-          color: i < rating ? AppTheme.warningColor : Colors.white24,
+          color: i < rating ? AppTheme.warningColor : (isDark ? Colors.white24 : AppTheme.lightBorder),
         );
       }),
     );

@@ -81,22 +81,23 @@ class _AdminShellScreenState extends ConsumerState<AdminShellScreen> {
   }
 
   Future<bool> _showLogoutConfirmDialog() async {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
     return await showDialog<bool>(
           context: context,
           builder: (ctx) => AlertDialog(
-            backgroundColor: AppTheme.darkCard,
+            backgroundColor: isDark ? AppTheme.darkCard : AppTheme.lightCard,
             shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-            title: const Text(
+            title: Text(
               'Confirm Logout',
-              style: TextStyle(color: Colors.white, fontWeight: FontWeight.w700),
+              style: TextStyle(color: isDark ? Colors.white : AppTheme.lightTextPrimary, fontWeight: FontWeight.w700),
             ),
             content: Column(
               mainAxisSize: MainAxisSize.min,
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Text(
+                Text(
                   'Are you sure you want to log out of the admin portal?',
-                  style: TextStyle(color: Colors.white70),
+                  style: TextStyle(color: isDark ? Colors.white70 : AppTheme.lightTextSecondary),
                 ),
                 const SizedBox(height: 24),
                 Row(
@@ -120,8 +121,8 @@ class _AdminShellScreenState extends ConsumerState<AdminShellScreen> {
                       child: OutlinedButton(
                         onPressed: () => Navigator.pop(ctx, false),
                         style: OutlinedButton.styleFrom(
-                          foregroundColor: Colors.white54,
-                          side: const BorderSide(color: Colors.white24),
+                          foregroundColor: isDark ? Colors.white54 : AppTheme.lightTextSecondary,
+                          side: BorderSide(color: isDark ? Colors.white24 : AppTheme.lightBorder),
                           padding: const EdgeInsets.symmetric(vertical: 12),
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(8),
@@ -146,22 +147,23 @@ class _AdminShellScreenState extends ConsumerState<AdminShellScreen> {
     final isWide = screenWidth >= 900;
     final showLabels = screenWidth >= 360;
     final showUnselected = screenWidth >= 480;
+    final isDark = Theme.of(context).brightness == Brightness.dark;
 
     // Show loader while the async session check is in progress (page refresh).
     // The GoRouter redirect passes through during `initial` — this prevents
     // any flash of the shell content before auth is confirmed.
     if (adminState.status == AdminAuthStatus.initial) {
-      return const Scaffold(
-        backgroundColor: AppTheme.darkBg,
+      return Scaffold(
+        backgroundColor: isDark ? AppTheme.darkBg : AppTheme.lightBg,
         body: Center(
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              CircularProgressIndicator(color: AppTheme.primaryLight),
-              SizedBox(height: 16),
+              CircularProgressIndicator(color: isDark ? AppTheme.primaryLight : AppTheme.primaryColor),
+              const SizedBox(height: 16),
               Text(
                 'Verifying session…',
-                style: TextStyle(color: Colors.white38, fontSize: 13),
+                style: TextStyle(color: isDark ? Colors.white38 : AppTheme.lightTextHint, fontSize: 13),
               ),
             ],
           ),
@@ -170,18 +172,18 @@ class _AdminShellScreenState extends ConsumerState<AdminShellScreen> {
     }
 
     return Scaffold(
-      backgroundColor: AppTheme.darkBg,
+      backgroundColor: isDark ? AppTheme.darkBg : AppTheme.lightBg,
       body: Row(
         children: [
           // ── Sidebar (wide screens) ─────────────────────────
           if (isWide)
             Container(
               width: 240,
-              decoration: const BoxDecoration(
-                color: AppTheme.darkSurface,
+              decoration: BoxDecoration(
+                color: isDark ? AppTheme.darkSurface : AppTheme.lightSurface,
                 border: Border(
                   right: BorderSide(
-                      color: AppTheme.darkBorder, width: 1),
+                      color: isDark ? AppTheme.darkBorder : AppTheme.lightBorder, width: 1),
                 ),
               ),
               child: Column(
@@ -203,13 +205,13 @@ class _AdminShellScreenState extends ConsumerState<AdminShellScreen> {
                               color: Colors.white, size: 20),
                         ),
                         const SizedBox(width: 12),
-                        const Column(
+                        Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Text(
                               'Admin Portal',
                               style: TextStyle(
-                                color: Colors.white,
+                                color: isDark ? Colors.white : AppTheme.lightTextPrimary,
                                 fontSize: 13,
                                 fontWeight: FontWeight.w700,
                               ),
@@ -217,7 +219,7 @@ class _AdminShellScreenState extends ConsumerState<AdminShellScreen> {
                             Text(
                               'Smart Saoji',
                               style: TextStyle(
-                                color: AppTheme.primaryLight,
+                                color: isDark ? AppTheme.primaryLight : AppTheme.primaryColor,
                                 fontSize: 10,
                                 fontWeight: FontWeight.w600,
                               ),
@@ -227,7 +229,7 @@ class _AdminShellScreenState extends ConsumerState<AdminShellScreen> {
                       ],
                     ),
                   ),
-                  const Divider(color: AppTheme.darkBorder),
+                  Divider(color: isDark ? AppTheme.darkBorder : AppTheme.lightBorder),
                   const SizedBox(height: 8),
 
                   // Nav items
@@ -249,13 +251,13 @@ class _AdminShellScreenState extends ConsumerState<AdminShellScreen> {
                                   horizontal: 14, vertical: 12),
                               decoration: BoxDecoration(
                                 color: selected
-                                    ? AppTheme.primaryColor
+                                    ? (isDark ? AppTheme.primaryColor : AppTheme.primaryColor)
                                         .withValues(alpha: 0.15)
                                     : Colors.transparent,
                                 borderRadius: BorderRadius.circular(10),
                                 border: selected
                                     ? Border.all(
-                                        color: AppTheme.primaryLight
+                                        color: (isDark ? AppTheme.primaryLight : AppTheme.primaryColor)
                                             .withValues(alpha: 0.3),
                                         width: 1)
                                     : null,
@@ -269,8 +271,8 @@ class _AdminShellScreenState extends ConsumerState<AdminShellScreen> {
                                         item.icon,
                                         size: 20,
                                         color: selected
-                                            ? AppTheme.primaryLight
-                                            : Colors.white38,
+                                            ? (isDark ? AppTheme.primaryLight : AppTheme.primaryColor)
+                                            : (isDark ? Colors.white38 : AppTheme.lightTextHint),
                                       ),
                                       if (isFeedback && _pendingFeedback > 0)
                                         Positioned(
@@ -304,8 +306,8 @@ class _AdminShellScreenState extends ConsumerState<AdminShellScreen> {
                                     item.label,
                                     style: TextStyle(
                                       color: selected
-                                          ? AppTheme.primaryLight
-                                          : Colors.white60,
+                                          ? (isDark ? AppTheme.primaryLight : AppTheme.primaryColor)
+                                          : (isDark ? Colors.white60 : AppTheme.lightTextSecondary),
                                       fontWeight: selected
                                           ? FontWeight.w600
                                           : FontWeight.w400,
@@ -327,12 +329,12 @@ class _AdminShellScreenState extends ConsumerState<AdminShellScreen> {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        const Divider(color: AppTheme.darkBorder),
+                        Divider(color: isDark ? AppTheme.darkBorder : AppTheme.lightBorder),
                         const SizedBox(height: 8),
                         Row(
                           children: [
-                            const Icon(Icons.account_circle_outlined,
-                                color: Colors.white38, size: 18),
+                            Icon(Icons.account_circle_outlined,
+                                color: isDark ? Colors.white38 : AppTheme.lightTextHint, size: 18),
                             const SizedBox(width: 8),
                             Expanded(
                               child: Column(
@@ -340,8 +342,8 @@ class _AdminShellScreenState extends ConsumerState<AdminShellScreen> {
                                 children: [
                                   Text(
                                     adminState.adminFullName ?? adminState.adminEmail ?? 'Admin',
-                                    style: const TextStyle(
-                                      color: Colors.white,
+                                    style: TextStyle(
+                                      color: isDark ? Colors.white : AppTheme.lightTextPrimary,
                                       fontSize: 13,
                                       fontWeight: FontWeight.bold,
                                     ),
@@ -351,7 +353,9 @@ class _AdminShellScreenState extends ConsumerState<AdminShellScreen> {
                                     Text(
                                       adminState.adminEmail!,
                                       style: TextStyle(
-                                        color: Colors.white.withValues(alpha: 0.4),
+                                        color: isDark
+                                            ? Colors.white.withValues(alpha: 0.4)
+                                            : AppTheme.lightTextSecondary,
                                         fontSize: 10,
                                       ),
                                       overflow: TextOverflow.ellipsis,
@@ -405,12 +409,12 @@ class _AdminShellScreenState extends ConsumerState<AdminShellScreen> {
           : BottomNavigationBar(
               currentIndex: _selectedIndex,
               onTap: _onNavTap,
-              backgroundColor: AppTheme.darkSurface,
-              selectedItemColor: AppTheme.primaryLight,
-              unselectedItemColor: Colors.white38,
+              backgroundColor: isDark ? AppTheme.darkSurface : AppTheme.lightSurface,
+              selectedItemColor: isDark ? AppTheme.primaryLight : AppTheme.primaryColor,
+              unselectedItemColor: isDark ? Colors.white38 : AppTheme.lightTextHint,
               type: BottomNavigationBarType.fixed,
-              showSelectedLabels: showLabels,
-              showUnselectedLabels: showLabels && showUnselected,
+              showSelectedLabels: true,
+              showUnselectedLabels: true,
               selectedLabelStyle: const TextStyle(
                   fontSize: 10, fontWeight: FontWeight.w600),
               unselectedLabelStyle: const TextStyle(
