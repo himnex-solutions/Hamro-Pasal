@@ -7,6 +7,8 @@ import 'package:go_router/go_router.dart';
 import 'package:smart_saoji/core/router/app_router.dart';
 import 'package:smart_saoji/core/widgets/app_snackbar.dart';
 import 'package:smart_saoji/features/auth/presentation/providers/auth_provider.dart';
+import 'package:smart_saoji/core/providers/locale_provider.dart';
+import 'package:smart_saoji/core/l10n/app_strings.dart';
 
 import 'package:smart_saoji/core/widgets/wavy_divider.dart';
 
@@ -66,9 +68,7 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
     if (!mounted) return;
     setState(() {
       _checkingPhone = false;
-      _phoneError = taken
-          ? 'This phone number is already registered. Please use a different number.'
-          : null;
+      _phoneError = taken ? 'taken' : null;
     });
     _formKey.currentState?.validate();
   }
@@ -82,9 +82,7 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
     if (!mounted) return;
     setState(() {
       _checkingEmail = false;
-      _emailError = taken
-          ? 'This email is already registered. Please sign in instead.'
-          : null;
+      _emailError = taken ? 'taken' : null;
     });
     _formKey.currentState?.validate();
   }
@@ -120,7 +118,7 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
     if (success) {
       AppSnackbar.show(
         context,
-        'Account created! Please sign in.',
+        context.l10n.accountCreated,
         isSuccess: true,
         duration: const Duration(seconds: 4),
       );
@@ -128,10 +126,10 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
     } else {
       final msg = ref.read(authProvider).errorMessage ?? 'Registration failed';
       if (msg.toLowerCase().contains('phone')) {
-        setState(() => _phoneError = msg);
+        setState(() => _phoneError = 'taken');
         _formKey.currentState?.validate();
       } else if (msg.toLowerCase().contains('email')) {
-        setState(() => _emailError = msg);
+        setState(() => _emailError = 'taken');
         _formKey.currentState?.validate();
       } else {
         AppSnackbar.show(context, msg, isError: true);
@@ -156,6 +154,7 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
   Widget build(BuildContext context) {
     final screenHeight = MediaQuery.of(context).size.height;
     final topSectionHeight = screenHeight * 0.28;
+    final currentLocale = ref.watch(localeProvider);
 
     return Scaffold(
       resizeToAvoidBottomInset: true,
@@ -203,6 +202,82 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
                           Icons.arrow_back_ios_new_rounded,
                           color: Colors.white,
                           size: 18,
+                        ),
+                      ),
+                    ),
+
+                    // Language Selector
+                    PopupMenuButton<Locale>(
+                      initialValue: currentLocale,
+                      tooltip: 'Select Language',
+                      onSelected: (Locale locale) async {
+                        await ref
+                            .read(localeProvider.notifier)
+                            .setLocale(locale);
+                      },
+                      itemBuilder: (context) => [
+                        const PopupMenuItem(
+                          value: Locale('en'),
+                          child: Row(
+                            children: [
+                              Text('🇬🇧', style: TextStyle(fontSize: 16)),
+                              SizedBox(width: 8),
+                              Text('EN',
+                                  style:
+                                      TextStyle(fontWeight: FontWeight.w600)),
+                            ],
+                          ),
+                        ),
+                        const PopupMenuItem(
+                          value: Locale('ne'),
+                          child: Row(
+                            children: [
+                              Text('🇳🇵', style: TextStyle(fontSize: 16)),
+                              SizedBox(width: 8),
+                              Text('NP',
+                                  style:
+                                      TextStyle(fontWeight: FontWeight.w600)),
+                            ],
+                          ),
+                        ),
+                      ],
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(
+                            horizontal: 12, vertical: 6),
+                        decoration: BoxDecoration(
+                          color: Colors.white.withValues(alpha: 0.15),
+                          borderRadius: BorderRadius.circular(20),
+                          border: Border.all(
+                            color: Colors.white.withValues(alpha: 0.25),
+                            width: 1,
+                          ),
+                        ),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Text(
+                              currentLocale.languageCode == 'ne' ? '🇳🇵' : '🇬🇧',
+                              style: const TextStyle(fontSize: 14),
+                            ),
+                            const SizedBox(width: 6),
+                            Text(
+                              currentLocale.languageCode == 'ne'
+                                  ? 'NP'
+                                  : 'EN',
+                              style: const TextStyle(
+                                color: Colors.white,
+                                fontSize: 12,
+                                fontWeight: FontWeight.w700,
+                                letterSpacing: 0.3,
+                              ),
+                            ),
+                            const SizedBox(width: 4),
+                            const Icon(
+                              Icons.keyboard_arrow_down_rounded,
+                              color: Colors.white,
+                              size: 16,
+                            ),
+                          ],
                         ),
                       ),
                     ),
@@ -257,6 +332,7 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
   }
 
   Widget _buildForm() {
+    final l = context.l10n;
     return Form(
       key: _formKey,
       child: Column(
@@ -267,12 +343,12 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
           // Full Name
           _CustomAuthField(
             controller: _fullNameCtrl,
-            label: 'Full Name',
+            label: l.fullName,
             icon: Icons.person_outline_rounded,
             textInputAction: TextInputAction.next,
             validator: (v) {
-              if (v == null || v.trim().isEmpty) return 'Full name is required';
-              if (v.trim().length < 2) return 'Name is too short';
+              if (v == null || v.trim().isEmpty) return l.fullNameRequired;
+              if (v.trim().length < 2) return l.nameTooShort;
               return null;
             },
           ).animate().fadeIn(delay: 255.ms),
@@ -283,7 +359,7 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
           _CustomAuthField(
             controller: _phoneCtrl,
             focusNode: _phoneFocus,
-            label: 'Phone Number',
+            label: l.phoneNumber,
             icon: Icons.phone_iphone_rounded,
             keyboardType: TextInputType.phone,
             textInputAction: TextInputAction.next,
@@ -304,13 +380,15 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
                 : null,
             validator: (v) {
               if (v == null || v.trim().isEmpty) {
-                return 'Phone number is required';
+                return l.phoneRequired;
               }
               final digits = v.trim().replaceAll(RegExp(r'[^0-9]'), '');
               if (digits.length != 10) {
-                return 'Phone number must be exactly 10 digits';
+                return l.phoneInvalid;
               }
-              if (_phoneError != null) return _phoneError;
+              if (_phoneError != null) {
+                return _phoneError == 'taken' ? l.phoneTaken : _phoneError;
+              }
               return null;
             },
           ).animate().fadeIn(delay: 265.ms),
@@ -321,7 +399,7 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
           _CustomAuthField(
             controller: _emailCtrl,
             focusNode: _emailFocus,
-            label: 'Email Address',
+            label: l.emailAddress,
             icon: Icons.mail_outline_rounded,
             keyboardType: TextInputType.emailAddress,
             textInputAction: TextInputAction.next,
@@ -336,9 +414,11 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
                   )
                 : null,
             validator: (v) {
-              if (v == null || v.isEmpty) return 'Email is required';
-              if (!v.contains('@')) return 'Enter a valid email';
-              if (_emailError != null) return _emailError;
+              if (v == null || v.isEmpty) return l.emailRequired;
+              if (!v.contains('@')) return l.emailInvalid;
+              if (_emailError != null) {
+                return _emailError == 'taken' ? l.emailTaken : _emailError;
+              }
               return null;
             },
           ).animate().fadeIn(delay: 270.ms),
@@ -348,7 +428,7 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
           // Password
           _CustomAuthField(
             controller: _passwordCtrl,
-            label: 'Password',
+            label: l.password,
             icon: Icons.lock_outline_rounded,
             obscureText: _obscurePassword,
             textInputAction: TextInputAction.next,
@@ -363,8 +443,8 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
               ),
             ),
             validator: (v) {
-              if (v == null || v.isEmpty) return 'Password is required';
-              if (v.length < 6) return 'Minimum 6 characters';
+              if (v == null || v.isEmpty) return l.passwordRequired;
+              if (v.length < 6) return l.passwordTooShort;
               return null;
             },
           ).animate().fadeIn(delay: 300.ms),
@@ -374,7 +454,7 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
           // Confirm Password
           _CustomAuthField(
             controller: _confirmCtrl,
-            label: 'Confirm Password',
+            label: l.confirmPassword,
             icon: Icons.lock_outline_rounded,
             obscureText: _obscureConfirm,
             textInputAction: TextInputAction.done,
@@ -390,8 +470,8 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
               ),
             ),
             validator: (v) {
-              if (v == null || v.isEmpty) return 'Please confirm password';
-              if (v != _passwordCtrl.text) return 'Passwords do not match';
+              if (v == null || v.isEmpty) return l.confirmPasswordRequired;
+              if (v != _passwordCtrl.text) return l.passwordsDoNotMatch;
               return null;
             },
           ).animate().fadeIn(delay: 330.ms),
@@ -400,7 +480,7 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
 
           // Sign Up button
           _GradientButton(
-            label: 'Sign Up',
+            label: l.signUp,
             isLoading: _isLoading,
             onPressed: _signup,
           ).animate().fadeIn(delay: 360.ms),
@@ -408,20 +488,20 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
           const SizedBox(height: 22),
 
           // Divider
-          const Row(children: [
-            Expanded(child: Divider(color: _border, thickness: 1)),
+          Row(children: [
+            const Expanded(child: Divider(color: _border, thickness: 1)),
             Padding(
-              padding: EdgeInsets.symmetric(horizontal: 16),
+              padding: const EdgeInsets.symmetric(horizontal: 16),
               child: Text(
-                'Or sign up with',
-                style: TextStyle(
+                l.orSignUpWith,
+                style: const TextStyle(
                   fontSize: 13,
                   color: _grey,
                   fontWeight: FontWeight.w500,
                 ),
               ),
             ),
-            Expanded(child: Divider(color: _border, thickness: 1)),
+            const Expanded(child: Divider(color: _border, thickness: 1)),
           ]).animate().fadeIn(delay: 390.ms),
 
           const SizedBox(height: 18),
@@ -452,7 +532,7 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
                   onTap: () {
                     AppSnackbar.show(
                       context,
-                      'Apple signup is not configured yet.',
+                      l.appleNotConfigured,
                       isError: false,
                     );
                   },
@@ -467,9 +547,9 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
           Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              const Text(
-                'Already have an account? ',
-                style: TextStyle(
+              Text(
+                '${l.haveAccount} ',
+                style: const TextStyle(
                   color: Color(0xFF64748B), // Slate 500
                   fontSize: 14,
                   fontWeight: FontWeight.w500,
@@ -477,9 +557,9 @@ class _SignupScreenState extends ConsumerState<SignupScreen> {
               ),
               GestureDetector(
                 onTap: () => context.go(AppRoutes.login),
-                child: const Text(
-                  'Sign In',
-                  style: TextStyle(
+                child: Text(
+                  l.signIn,
+                  style: const TextStyle(
                     color: Color(0xFF2C3BD5), // Accent blue
                     fontSize: 14,
                     fontWeight: FontWeight.w700,

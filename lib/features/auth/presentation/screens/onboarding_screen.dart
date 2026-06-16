@@ -105,51 +105,37 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      Row(
-                        children: [
-                          Container(
-                            width: 40,
-                            height: 40,
-                            decoration: BoxDecoration(
-                              borderRadius: BorderRadius.circular(12),
-                              boxShadow: AppTheme.cardShadow(
-                                AppTheme.primaryColor,
-                                opacity: 0.2,
+                      Image.asset(
+                        'assets/images/smart_saoji_logo.png',
+                        height: 38,
+                        fit: BoxFit.contain,
+                        errorBuilder: (context, error, stackTrace) => Row(
+                          children: [
+                            Container(
+                              width: 32,
+                              height: 32,
+                              decoration: BoxDecoration(
+                                borderRadius: BorderRadius.circular(8),
+                                gradient: AppTheme.primaryGradient,
+                              ),
+                              child: const Icon(
+                                Icons.store_rounded,
+                                color: Colors.white,
+                                size: 16,
                               ),
                             ),
-                            child: ClipRRect(
-                              borderRadius: BorderRadius.circular(12),
-                              child: Image.asset(
-                                'assets/images/logo.png',
-                                width: 40,
-                                height: 40,
-                                fit: BoxFit.cover,
-                                errorBuilder: (context, error, stackTrace) => Container(
-                                  width: 40,
-                                  height: 40,
-                                  decoration: const BoxDecoration(
-                                    gradient: AppTheme.primaryGradient,
-                                  ),
-                                  child: const Icon(
-                                    Icons.store_rounded,
-                                    color: Colors.white,
-                                    size: 20,
-                                  ),
-                                ),
+                            const SizedBox(width: 8),
+                            const Text(
+                              'Smart Saoji',
+                              style: TextStyle(
+                                color: AppTheme.primaryColor,
+                                fontSize: 18,
+                                fontWeight: FontWeight.w800,
+                                letterSpacing: 0.5,
                               ),
                             ),
-                          ),
-                          const SizedBox(width: 12),
-                          const Text(
-                            'Smart Saoji',
-                            style: TextStyle(
-                              color: AppTheme.primaryColor,
-                              fontSize: 18,
-                              fontWeight: FontWeight.w800,
-                              letterSpacing: 0.5,
-                            ),
-                          ),
-                        ],
+                          ],
+                        ),
                       ),
                       if (_currentIndex < _slides.length - 1)
                         TextButton(

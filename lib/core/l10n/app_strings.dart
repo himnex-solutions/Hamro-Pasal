@@ -401,4 +401,20 @@ class AppStrings {
   String get addAccount => _s('Add Account', 'खाता थप्नुहोस्');
   String get accountName => _s('Account Name', 'खाताको नाम');
   String get accountType => _s('Account Type', 'खाताको प्रकार');
+
+  // ── Signup Screen Localization ─────────────────────────────
+  String get fullName => _s('Full Name', 'पूरा नाम');
+  String get fullNameRequired => _s('Full name is required', 'पूरा नाम आवश्यक छ');
+  String get nameTooShort => _s('Name is too short', 'नाम धेरै छोटो भयो');
+  String get phoneRequired => _s('Phone number is required', 'फोन नम्बर आवश्यक छ');
+  String get phoneInvalid => _s('Phone number must be exactly 10 digits', 'फोन नम्बर ठीक १० अंकको हुनुपर्छ');
+  String get phoneTaken => _s('This phone number is already registered. Please use a different number.', 'यो फोन नम्बर पहिले नै दर्ता भइसकेको छ। कृपया अर्को नम्बर प्रयोग गर्नुहोस्।');
+  String get emailAddress => _s('Email Address', 'इमेल ठेगाना');
+  String get emailTaken => _s('This email is already registered. Please sign in instead.', 'यो इमेल पहिले नै दर्ता भइसकेको छ। कृपया यसको सट्टा साइन इन गर्नुहोस्।');
+  String get confirmPassword => _s('Confirm Password', 'पासवर्ड पुष्टि गर्नुहोस्');
+  String get confirmPasswordRequired => _s('Please confirm password', 'कृपया पासवर्ड पुष्टि गर्नुहोस्');
+  String get passwordsDoNotMatch => _s('Passwords do not match', 'पासवर्डहरू मिलेनन्');
+  String get orSignUpWith => _s('Or sign up with', 'अथवा यसबाट साइन अप गर्नुहोस्');
+  String get accountCreated => _s('Account created! Please sign in.', 'खाता सिर्जना भयो! कृपया साइन इन गर्नुहोस्।');
+  String get appleNotConfigured => _s('Apple signup is not configured yet.', 'Apple साइन अप अझै कन्फिगर गरिएको छैन।');
 }

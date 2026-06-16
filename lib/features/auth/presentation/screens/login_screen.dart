@@ -128,6 +128,8 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                       onTap: () {
                         if (Navigator.of(context).canPop()) {
                           context.pop();
+                        } else {
+                          context.go(AppRoutes.onboarding);
                         }
                       },
                       child: const Padding(
@@ -156,7 +158,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                             children: [
                               Text('🇬🇧', style: TextStyle(fontSize: 16)),
                               SizedBox(width: 8),
-                              Text('English',
+                              Text('EN',
                                   style:
                                       TextStyle(fontWeight: FontWeight.w600)),
                             ],
@@ -168,7 +170,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                             children: [
                               Text('🇳🇵', style: TextStyle(fontSize: 16)),
                               SizedBox(width: 8),
-                              Text('नेपाली',
+                              Text('NP',
                                   style:
                                       TextStyle(fontWeight: FontWeight.w600)),
                             ],
@@ -196,8 +198,8 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                             const SizedBox(width: 6),
                             Text(
                               currentLocale.languageCode == 'ne'
-                                  ? 'नेपाली'
-                                  : 'English',
+                                  ? 'NP'
+                                  : 'EN',
                               style: const TextStyle(
                                 color: Colors.white,
                                 fontSize: 12,

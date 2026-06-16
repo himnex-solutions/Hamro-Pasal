@@ -132,39 +132,27 @@ class _SplashScreenState extends ConsumerState<SplashScreen>
                         child: child,
                       );
                     },
-                    child: Container(
-                      width: 112,
-                      height: 112,
-                      decoration: BoxDecoration(
-                        borderRadius: BorderRadius.circular(32),
-                        border: Border.all(
-                          color: Colors.white.withValues(alpha: 0.25),
-                          width: 1.5,
-                        ),
-                        gradient: const LinearGradient(
-                          colors: [Color(0xFF2537D5), Color(0xFF6B58F5)],
-                          begin: Alignment.topLeft,
-                          end: Alignment.bottomRight,
-                        ),
-                        boxShadow: [
-                          BoxShadow(
-                            color:
-                                const Color(0xFF2537D5).withValues(alpha: 0.35),
-                            blurRadius: 45,
-                            spreadRadius: 8,
+                    child: SizedBox(
+                      width: 300,
+                      height: 87,
+                      child: Image.asset(
+                        'assets/images/smart_saoji_logo.png',
+                        fit: BoxFit.contain,
+                        errorBuilder: (context, error, stackTrace) => Container(
+                          width: 112,
+                          height: 112,
+                          decoration: BoxDecoration(
+                            borderRadius: BorderRadius.circular(32),
+                            gradient: const LinearGradient(
+                              colors: [Color(0xFF2537D5), Color(0xFF6B58F5)],
+                            ),
                           ),
-                          BoxShadow(
-                            color:
-                                const Color(0xFF6B58F5).withValues(alpha: 0.20),
-                            blurRadius: 80,
-                            spreadRadius: 15,
+                          child: const Icon(
+                            Icons.store_rounded,
+                            size: 58,
+                            color: Colors.white,
                           ),
-                        ],
-                      ),
-                      child: const Icon(
-                        Icons.store_rounded,
-                        size: 58,
-                        color: Colors.white,
+                        ),
                       ),
                     ),
                   )
@@ -175,28 +163,7 @@ class _SplashScreenState extends ConsumerState<SplashScreen>
                           begin: const Offset(0.3, 0.3))
                       .fadeIn(duration: 500.ms),
 
-                  const SizedBox(height: 32),
-
-                  // App name with gradient text
-                  ShaderMask(
-                    shaderCallback: (bounds) => const LinearGradient(
-                      colors: [Color(0xFF1E2ED2), Color(0xFF6B58F5)],
-                    ).createShader(bounds),
-                    child: const Text(
-                      'Smart Saoji',
-                      style: TextStyle(
-                        color: Colors.white,
-                        fontSize: 38,
-                        fontWeight: FontWeight.w900,
-                        letterSpacing: -0.8,
-                      ),
-                    ),
-                  )
-                      .animate(delay: 300.ms)
-                      .fadeIn(duration: 600.ms)
-                      .slideY(begin: 0.4, end: 0),
-
-                  const SizedBox(height: 10),
+                  const SizedBox(height: 18),
 
                   const Text(
                     'Your Business, Simplified.',
